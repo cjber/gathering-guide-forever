@@ -37,6 +37,7 @@ read_globals = {
 	"CreateVector2D",
 	"CreateFrame",
 	"C_AddOns",
+	"C_Item",
 	"C_Map",
 	"C_SkillInfo",
 	"C_Texture",
@@ -48,7 +49,6 @@ read_globals = {
 	"GameFontNormal",
 	"GameFontNormalSmall",
 	"GameTooltip",
-	"GetItemCount",
 	"UIParent",
 	"UnitPosition",
 }

@@ -198,7 +198,7 @@ function Planner.ListRows()
 		rows[#rows + 1] = {
 			item = entry.item,
 			need = entry.need,
-			have = GetItemCount and GetItemCount(entry.item) or 0,
+			have = C_Item.GetItemCount(entry.item) or 0,
 		}
 	end
 	return rows
