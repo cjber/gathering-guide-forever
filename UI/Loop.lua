@@ -97,7 +97,7 @@ function Loop.Draw()
 		return
 	end
 	local map = Map()
-	if not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
+	if not map or not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
 		return
 	end
 	local order, total = shown.order, 0
