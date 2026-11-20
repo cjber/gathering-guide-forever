@@ -1,0 +1,33 @@
+package-as: GatheringGuideForever
+
+move-folders:
+  GatheringGuideForever/ForeverCore: ForeverCore
+
+manual-changelog:
+  filename: .release-notes.md
+  markup-type: markdown
+
+ignore:
+  - .agents
+  - AGENTS.md
+  - tools
+  - tests
+  - types
+  - docs
+  - forever-core
+  - stylua.toml
+  - ruff.toml
+  - .claude
+
+# CurseForge relations: the CurseForge slug of every OptionalDeps folder in the root .toc (WFA-28).
+optional-dependencies:
+  - shortest-path-forever
+  - gathermate2
+
+# ForeverCore ships inside this zip as its own folder, at the release tools/forever-core.txt pins, so an
+# update brings it along: players who updated did not get it as a required dependency.
+externals:
+  ForeverCore: https://github.com/cjber/forever-core/releases/download/v1.15.4/ForeverCore-v1.15.4-forever.zip
+
+required-dependencies:
+  - forevercore

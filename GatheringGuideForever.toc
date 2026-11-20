@@ -1,0 +1,34 @@
+## Interface: 16001
+## Title: Gathering Guide Forever
+## Notes: Plan a mining or herbalism skill-up tour: the best zones for your skill, a walking loop through every node, and farming lists, guided by Shortest Path Forever.
+## Author: cjber
+## Version: @project-version@
+## Category: Professions
+## IconTexture: Interface\Icons\INV_Misc_Herb_07
+## X-Forever-Icon: Interface\Icons\INV_Misc_Herb_07
+## X-License: GPL-3.0-or-later
+## X-Website: https://github.com/cjber/gathering-guide-forever
+## X-Donate: https://github.com/sponsors/cjber
+## OptionalDeps: GatherMate2, ShortestPathForever, ForeverCore
+## X-Forever-Core: v1.15.4
+## SavedVariables: GatheringGuideForeverDB
+## SavedVariablesPerCharacter: GatheringGuideForeverCharDB
+
+Core\ForeverRequire.lua
+Core\Require.lua
+Locales\enUS.lua
+Data\NodeSkills.lua
+Data\Items.lua
+Data\Credits.lua
+Core\Core.lua
+Core\World.lua
+Core\GatherMate.lua
+Core\Skills.lua
+Core\Navigation.lua
+Journey\Order.lua
+Core\Planner.lua
+Core\Settings.lua
+Journey\Tour.lua
+UI\Loop.lua
+UI\Tracker.lua
+UI\Panel.lua
