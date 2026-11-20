@@ -1,0 +1,21 @@
+---@meta
+---@class GGNode
+---@field uiMapID number
+---@field kind string
+---@field coord number
+---@field nodeID number
+---@field x number
+---@field y number
+---@field name string
+---@field wx number?
+---@field wy number?
+---@field world number?
+---@field line number?
+---@field required number?
+
+---@class GGNamespace
+---@field [string] any
+---@field L table<string, string>
+---@field core table
+---@field Credits table
+---@field NodeSkills table<string, number[]>
