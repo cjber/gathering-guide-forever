@@ -56,7 +56,7 @@ function Tour.NextBatch(order, pos, skip, rank, max)
 end
 
 local function Rank()
-	return (ns.Skills.Rank(state.line))
+	return (ns.Skills.Rank(assert(state).line))
 end
 
 -- Sends the next batch to the journey. Returns whether it started.

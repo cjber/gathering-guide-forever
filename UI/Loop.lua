@@ -92,10 +92,11 @@ function Loop.Draw()
 	end
 	pool:ReleaseAll()
 	dots:ReleaseAll()
-	if not ns.DB or not ns.DB.loopOnMap or not plan then
+	local shown = plan
+	if not ns.DB or not ns.DB.loopOnMap or not shown then
 		return
 	end
-	local map, shown = Map(), plan
+	local map = Map()
 	if not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
 		return
 	end
