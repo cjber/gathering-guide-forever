@@ -621,11 +621,11 @@ local function Build()
 	ns.Tour.Listen(Panel.Refresh)
 end
 
--- Opens the world map on the Gathering page.
+-- Opens the world map on the Gathering page. ForeverCore opens the map through the client's secure boundary, which is
+-- the only way an addon opens it without tainting it; in combat the player opens it themselves.
 function Panel.Open()
-	if not WorldMapFrame:IsShown() then
-		-- The map opens and retargets from the game's own code; the Mixin calls that do it from an addon taint it.
-		C_Map.OpenWorldMap(ns.World.PlayerMap())
+	if not WorldMapFrame:IsShown() and not (ForeverCore.OpenMap and ForeverCore.OpenMap()) then
+		return
 	end
 	C_Timer.After(0.1, function()
 		ForeverCore.QuestLogTabs.Select("gathering")
