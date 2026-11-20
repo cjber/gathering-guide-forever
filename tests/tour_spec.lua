@@ -16,6 +16,9 @@ C_SkillInfo = {
 	end,
 }
 ns.On = function() end
+ns.Defer = function(fn)
+	fn()
+end
 H.Load(ns, "Journey/Tour.lua")
 local Tour = ns.Tour
 
@@ -83,12 +86,15 @@ assert(Tour.Active() and Tour.Progress().visited == 0)
 
 observer("arrived", 1, routes[1][1])
 assert(Tour.Progress().visited == 1, "an arrival advances the tour")
-for i = 2, 6 do
+observer("settled", 6, routes[1][6])
+assert(#routes == 1, "a settled plan for the last stop is not an arrival")
+for i = 2, 5 do
 	observer("arrived", i, routes[1][i])
 end
+assert(#routes == 1, "the batch is not resent before its last stop")
+observer("arrived", 6, routes[1][6])
 assert(Tour.Progress().laps == 1, "the last stop closes a lap")
-observer("settled", 6, routes[1][6])
-assert(#routes == 2, "the loop repeats once the batch settles")
+assert(#routes == 2, "the loop repeats after the last arrival")
 assert(routes[2][1].x == routes[1][1].x, "and begins again where it began")
 
 Tour.Stop()

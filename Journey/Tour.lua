@@ -6,8 +6,8 @@ end
 local L = ns.L
 
 -- A tour: the loop through a zone's nodes, started at the one nearest the player and handed to Shortest Path Forever in
--- batches of up to 64 stops. The tour advances when the journey reports a stop arrived and sends the next batch once it
--- has settled on the last stop of this one, so the loop repeats until the player stops it.
+-- batches of up to 64 stops. The tour advances when the journey reports a stop arrived and sends the next batch after
+-- the last stop of this one, so the loop repeats until the player stops it.
 -- Batching follows Shortest Path Forever's Journey/FarmingCursor.lua (GPL-3.0).
 local Tour = {}
 ns.Tour = Tour
@@ -61,7 +61,9 @@ end
 
 -- Sends the next batch to the journey. Returns whether it started.
 local function Submit()
-	local batch = Tour.NextBatch(state.order, state.pos, ns.DB.skipNoSkillUp, Rank(), ns.Navigation.MAX_STOPS)
+	-- A shopping-list tour gathers every wanted node, whatever it does for the skill.
+	local skip = ns.DB.skipNoSkillUp and not state.list
+	local batch = Tour.NextBatch(state.order, state.pos, skip, Rank(), ns.Navigation.MAX_STOPS)
 	if #batch == 0 then
 		state.status = "nothing"
 		return false
@@ -89,20 +91,26 @@ local function Observed(phase, index)
 	if not orderIndex then
 		return
 	end
-	if phase == "arrived" then
-		state.visited = state.visited + 1
-		state.pos = orderIndex % #state.order + 1
-		if orderIndex == #state.order then
-			state.laps = state.laps + 1
-		end
-		Notify()
-	elseif phase == "settled" and index == #state.batch then
-		if not Submit() then
-			Notify()
-			return
-		end
-		Notify()
+	if phase ~= "arrived" then
+		return
 	end
+	state.visited = state.visited + 1
+	state.pos = orderIndex % #state.order + 1
+	if orderIndex == #state.order then
+		state.laps = state.laps + 1
+	end
+	if index < #state.batch then
+		Notify()
+		return
+	end
+	-- The last stop of the batch was reached: send the next batch once the journey's own callback has returned.
+	local tour = state
+	ns.Defer(function()
+		if state == tour then
+			Submit()
+			Notify()
+		end
+	end)
 end
 
 -- Starts a tour over a planned zone. Returns whether it started and why not: "navigation" when Shortest Path Forever
@@ -135,6 +143,7 @@ function Tour.Start(plan)
 		kind = plan.kind,
 		line = k and k.line or 0,
 		name = plan.name,
+		list = plan.list == true,
 		uiMapID = plan.uiMapID,
 		order = order,
 		pos = 1,

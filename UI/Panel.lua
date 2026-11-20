@@ -48,7 +48,7 @@ local function Result(key, work, done)
 		results[key] = value
 		done()
 	end)
-	return nil
+	return results[key]
 end
 
 function Panel.ClearResults()
@@ -624,7 +624,8 @@ end
 -- Opens the world map on the Gathering page.
 function Panel.Open()
 	if not WorldMapFrame:IsShown() then
-		ToggleWorldMap()
+		-- The map opens and retargets from the game's own code; the Mixin calls that do it from an addon taint it.
+		C_Map.OpenWorldMap(ns.World.PlayerMap())
 	end
 	C_Timer.After(0.1, function()
 		ForeverCore.QuestLogTabs.Select("gathering")

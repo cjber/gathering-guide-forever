@@ -53,11 +53,12 @@ end
 ---@param nodes GGNode[]
 ---@return string
 local function Signature(nodes)
-	local sum = 0
-	for _, n in ipairs(nodes) do
-		sum = (sum + n.coord) % 1e9
+	local ids = {}
+	for i, n in ipairs(nodes) do
+		ids[i] = ("%s:%s:%s:%s"):format(n.kind, n.uiMapID, n.nodeID, n.coord)
 	end
-	return (nodes[1] and nodes[1].uiMapID or 0) .. ":" .. #nodes .. ":" .. sum
+	table.sort(ids)
+	return table.concat(ids, "|")
 end
 
 -- The nodes of a zone the player can gather now. With skipNoSkillUp only those that can still raise the skill.
@@ -241,30 +242,38 @@ function Planner.ListZones(limit, yield)
 			end
 		end
 	end
-	local zones = {}
+	-- One loop per map across both professions, over the wanted nodes the player's skill can already gather.
+	local byMap, maps = {}, {}
 	for kind in pairs(kinds) do
+		local rank = ns.Skills.Rank(ns.KindByName[kind].line)
 		for _, uiMapID in ipairs(ns.GatherMate.Zones(kind)) do
-			local nodes = {}
 			for _, node in ipairs(Planner.Place(ns.GatherMate.Nodes(uiMapID, kind))) do
-				if wanted[node.name] then
-					nodes[#nodes + 1] = node
+				if wanted[node.name] and rank >= node.required then
+					if not byMap[uiMapID] then
+						byMap[uiMapID] = { kind = kind, nodes = {} }
+						maps[#maps + 1] = uiMapID
+					end
+					table.insert(byMap[uiMapID].nodes, node)
 				end
 			end
-			if #nodes > 0 then
-				local order, yards = Planner.Loop(nodes, yield)
-				local seconds = Planner.Seconds(yards, #order)
-				zones[#zones + 1] = {
-					kind = kind,
-					uiMapID = uiMapID,
-					name = Planner.ZoneName(uiMapID),
-					order = order,
-					count = #order,
-					yards = yards,
-					seconds = seconds,
-					rate = #order / seconds * 600,
-				}
-			end
 		end
+	end
+	local zones = {}
+	for _, uiMapID in ipairs(maps) do
+		local entry = byMap[uiMapID]
+		local order, yards = Planner.Loop(entry.nodes, yield)
+		local seconds = Planner.Seconds(yards, #order)
+		zones[#zones + 1] = {
+			kind = entry.kind,
+			list = true,
+			uiMapID = uiMapID,
+			name = Planner.ZoneName(uiMapID),
+			order = order,
+			count = #order,
+			yards = yards,
+			seconds = seconds,
+			rate = #order / seconds * 600,
+		}
 	end
 	table.sort(zones, function(a, b)
 		if a.rate ~= b.rate then
