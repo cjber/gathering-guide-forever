@@ -10,7 +10,7 @@ local L = ns.L
 local Tracker = {}
 ns.Tracker = Tracker
 
----@type table?
+---@type ForeverTrackerModule?
 local module
 
 function Tracker.Refresh()
@@ -57,8 +57,9 @@ local function Create()
 	if not (ObjectiveTrackerFrame and ObjectiveTrackerManager) then
 		return
 	end
-	local section =
-		CreateFrame("Frame", "GatheringGuideForeverObjectiveTracker", UIParent, "ObjectiveTrackerModuleTemplate")
+	local template = "ObjectiveTrackerModuleTemplate"
+	local frame = CreateFrame("Frame", "GatheringGuideForeverObjectiveTracker", UIParent, template)
+	local section = frame --[[@as ForeverTrackerModule]]
 	Mixin(section, ModuleMixin)
 	section:SetHeader(ModuleMixin.headerText)
 	section.uiOrder = 20

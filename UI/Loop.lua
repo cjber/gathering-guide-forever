@@ -95,11 +95,11 @@ function Loop.Draw()
 	if not ns.DB or not ns.DB.loopOnMap or not plan then
 		return
 	end
-	local map = Map()
-	if not map:IsVisible() or map:GetMapID() ~= plan.uiMapID then
+	local map, shown = Map(), plan
+	if not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
 		return
 	end
-	local order, total = plan.order, 0
+	local order, total = shown.order, 0
 	for i, node in ipairs(order) do
 		local following = order[i % #order + 1]
 		if #order > 1 then

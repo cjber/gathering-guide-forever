@@ -9,6 +9,7 @@
 ---@field name string
 ---@field wx number?
 ---@field wy number?
+---@field world number?
 ---@field line number?
 ---@field required number?
 

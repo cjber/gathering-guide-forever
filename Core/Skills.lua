@@ -37,7 +37,9 @@ end
 ---@return number rank
 ---@return number max
 function Skills.Rank(line)
-	local info = C_SkillInfo and C_SkillInfo.GetSkillLineInfoByID and C_SkillInfo.GetSkillLineInfoByID(line)
+	---@diagnostic disable-next-line: undefined-global
+	local api = C_SkillInfo
+	local info = api and api.GetSkillLineInfoByID and api.GetSkillLineInfoByID(line)
 	if not info then
 		return 0, 0
 	end

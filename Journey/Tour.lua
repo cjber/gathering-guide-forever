@@ -61,25 +61,26 @@ end
 
 -- Sends the next batch to the journey. Returns whether it started.
 local function Submit()
+	local tour, db = assert(state), assert(ns.DB)
 	-- A shopping-list tour gathers every wanted node, whatever it does for the skill.
-	local skip = ns.DB.skipNoSkillUp and not state.list
-	local batch = Tour.NextBatch(state.order, state.pos, skip, Rank(), ns.Navigation.MAX_STOPS)
+	local skip = db.skipNoSkillUp and not tour.list
+	local batch = Tour.NextBatch(tour.order, tour.pos, skip, Rank(), ns.Navigation.MAX_STOPS)
 	if #batch == 0 then
-		state.status = "nothing"
+		tour.status = "nothing"
 		return false
 	end
 	local stops = {}
 	for i, index in ipairs(batch) do
-		local node = state.order[index]
+		local node = tour.order[index]
 		stops[i] = { map = node.uiMapID, x = node.x, y = node.y, title = node.name }
 	end
 	local ok, why = ns.Navigation.Route(stops)
 	if not ok then
-		state.status = why or "refused"
+		tour.status = why or "refused"
 		return false
 	end
-	state.batch = batch
-	state.status = "running"
+	tour.batch = batch
+	tour.status = "running"
 	return true
 end
 

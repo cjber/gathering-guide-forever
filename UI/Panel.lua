@@ -475,6 +475,9 @@ end
 
 local function Footer()
 	local active = ns.Tour.Active()
+	if not footerButton or not footerText then
+		return
+	end
 	local text, onClick
 	if active then
 		text = L["Stop tour"]
@@ -500,7 +503,7 @@ end
 
 -- Draws the current view.
 function Panel.Refresh()
-	if not panel then
+	if not panel or not content or not search then
 		return
 	end
 	pickedZone = nil
@@ -616,6 +619,7 @@ local function Build()
 		end,
 	})
 	if tab then
+		---@diagnostic disable-next-line: undefined-field
 		ns.Fit(tab.Icon, "Mobile-Mining", 30, 30)
 	end
 	ns.Tour.Listen(Panel.Refresh)
