@@ -10,6 +10,8 @@ Each version's entry is also its release notes on GitHub and CurseForge.
 
 ## [Unreleased]
 
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ### Added
 
 - **A Gathering page in the world map's quest log.** It lists the best mining and herbalism zones for your skill with their skill range, travel time and skill-ups per ten minutes, and a zone view with every node coloured by its chance to raise your skill.
