@@ -18,6 +18,7 @@ local HEIGHTS =
 	{ header = 24, card = 50, node = 18, toggle = 24, button = 28, text = 34, item = 30, back = 24, search = 28 }
 local ROW_GAP = 2
 local FOOTER = 40
+local TOP_BAR = 29
 local MIN_WIDTH = 240
 
 ---@type Frame?
@@ -374,8 +375,12 @@ local function NewRow(index)
 	row.Back:SetColorTexture(1, 1, 1, 0)
 	row.Check = row:CreateTexture(nil, "ARTWORK")
 	row.Bar = CreateFrame("StatusBar", nil, row)
-	row.Bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8")
+	row.Bar:SetStatusBarTexture("common-stat-bar-white")
 	row.Bar:SetHeight(4)
+	local trough = row.Bar:CreateTexture(nil, "BACKGROUND")
+	trough:SetPoint("TOPLEFT", -2, 1)
+	trough:SetPoint("BOTTOMRIGHT", 2, -1)
+	trough:SetAtlas("common-stat-bar-BG") -- art-ok: bar rim follows the size of its fill
 	rows[index] = row
 	return row
 end
@@ -514,7 +519,7 @@ function Panel.Refresh()
 	else
 		specs = Panel.OverviewSpecs(Panel.Refresh)
 	end
-	local width = math.max(panel:GetWidth(), MIN_WIDTH)
+	local width = math.max(2 * PAD + 1, panel:GetWidth() - 4)
 	local y = PAD
 	local searchSpec
 	for i, spec in ipairs(specs) do
@@ -571,20 +576,42 @@ function Panel.Go(name, kind, uiMapID)
 	Panel.Refresh()
 end
 
+-- Centre-crop the native quest list artwork as Adventure Guide does on the same host.
+---@param background Texture
+---@param width number
+---@param height number
+local function LayoutBackground(background, width, height)
+	local info = C_Texture.GetAtlasInfo("QuestLog-main-background")
+	if not info or width <= 0 or height <= 0 then
+		return
+	end
+	local left, right, top, bottom = info.leftTexCoord, info.rightTexCoord, info.topTexCoord, info.bottomTexCoord
+	local aspect = width / height
+	local native = info.width / info.height
+	if native > aspect then
+		local cut = (right - left) * (1 - aspect / native) / 2
+		left, right = left + cut, right - cut
+	else
+		local cut = (bottom - top) * (1 - native / aspect) / 2
+		top, bottom = top + cut, bottom - cut
+	end
+	background:SetTexCoord(left, right, top, bottom)
+end
+
 local function Build()
 	local map = QuestMapFrame
 	panel = CreateFrame("Frame", "GatheringGuideForeverPanel", map)
 	panel:SetPoint("TOPLEFT", map.ContentsAnchor)
 	panel:SetPoint("BOTTOMRIGHT", map.ContentsAnchor, -22, 0)
 	local background = panel:CreateTexture(nil, "BACKGROUND")
-	background:SetPoint("TOPLEFT", 0, -29)
+	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
 	background:SetAtlas("QuestLog-main-background")
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
 	local scroll = CreateFrame("ScrollFrame", nil, panel, "ScrollFrameTemplate")
-	scroll:SetPoint("TOPLEFT", 0, -29)
+	scroll:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	scroll:SetPoint("BOTTOMRIGHT", -4, FOOTER)
 	content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(MIN_WIDTH, 10)
@@ -604,7 +631,12 @@ local function Build()
 	footerButton:SetPoint("BOTTOM", 0, 8)
 	footerText = panel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	footerText:SetPoint("BOTTOM", footerButton, "TOP", 0, 2)
-	panel:SetScript("OnSizeChanged", Panel.Refresh)
+	local function Resize(_, width, height)
+		LayoutBackground(background, width, height - TOP_BAR)
+		Panel.Refresh()
+	end
+	panel:SetScript("OnSizeChanged", Resize)
+	LayoutBackground(background, panel:GetWidth(), panel:GetHeight() - TOP_BAR)
 	-- The panel sets no OnShow or OnHide script because it lives under the world map; the tab module reports changes.
 	local tab = ForeverCore.QuestLogTabs.Register("gathering", {
 		name = "GatheringGuideForeverTab",
@@ -620,7 +652,15 @@ local function Build()
 	})
 	if tab then
 		---@diagnostic disable-next-line: undefined-field
-		ns.Fit(tab.Icon, "Mobile-Mining", 30, 30)
+		local icon = tab.Icon
+		ns.Fit(icon, "Mobile-Mining", 30, 30)
+		-- The stock icon's left offset is for full-bleed art. Keep the smaller glyph clear of the mask bevel.
+		---@diagnostic disable-next-line: inject-field
+		tab.GetFinalIconAnchorOffsets = function()
+			return 0, 0
+		end
+		icon:ClearAllPoints()
+		icon:SetPoint("CENTER", 0, 0)
 	end
 	ns.Tour.Listen(Panel.Refresh)
 end
