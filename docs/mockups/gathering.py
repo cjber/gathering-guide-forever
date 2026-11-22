@@ -209,7 +209,7 @@ def panel(canvas, x, y, w, h):
 
 WANT = [  # item icon, name, have, need, source node, nodes on the loop
     ("INV_Ore_Iron_01", "Iron Ore", 6, 20, "Iron Deposit", 38),
-    ("INV_Misc_Herb_03", "Kingsblood", 3, 10, "Kingsblood", 31),
+    ("INV_Misc_Herb_03", "Kingsblood", 10, 10, "Kingsblood", 31),
     ("INV_Ore_Gold_01", "Gold Ore", 0, 4, "Gold Vein", 5),
 ]
 
@@ -245,7 +245,7 @@ def panel_list(canvas, x, y, w, h):
         canvas.draw(ui.texture(f"Interface\\Icons\\{icon}.blp"), cx + 6, ry + 2, 26, 26)
         canvas.text(cx + 40, ry + 1, name, NORMAL)
         canvas.text(cx, ry + 1, f"{have} / {need}", SMALL, WHITE, justify="RIGHT", width=cw - 10)
-        bar(canvas, cx + 40, ry + 19, cw - 50, 7, have / need)
+        bar(canvas, cx + 4, ry + 25, cw - 8, 4, have / need)
         ry += 32
     wowmock.search_box(canvas, cx + 6, ry + 4, cw - 12, instructions="Add an item")
 
