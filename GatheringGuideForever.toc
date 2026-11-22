@@ -10,7 +10,7 @@
 ## X-Website: https://github.com/cjber/gathering-guide-forever
 ## X-Donate: https://github.com/sponsors/cjber
 ## OptionalDeps: GatherMate2, ShortestPathForever, ForeverCore
-## X-Forever-Core: v1.16.3
+## X-Forever-Core: v1.17.0
 ## SavedVariables: GatheringGuideForeverDB
 ## SavedVariablesPerCharacter: GatheringGuideForeverCharDB
 
