@@ -374,8 +374,12 @@ local function NewRow(index)
 	row.Back:SetColorTexture(1, 1, 1, 0)
 	row.Check = row:CreateTexture(nil, "ARTWORK")
 	row.Bar = CreateFrame("StatusBar", nil, row)
-	row.Bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8")
+	row.Bar:SetStatusBarTexture("common-stat-bar-white")
 	row.Bar:SetHeight(4)
+	local trough = row.Bar:CreateTexture(nil, "BACKGROUND")
+	trough:SetPoint("TOPLEFT", -2, 1)
+	trough:SetPoint("BOTTOMRIGHT", 2, -1)
+	trough:SetAtlas("common-stat-bar-BG") -- art-ok: bar rim follows the size of its fill
 	rows[index] = row
 	return row
 end
