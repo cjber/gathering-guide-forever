@@ -10,9 +10,11 @@ standalone-window take.
     python3 gathering.py        # writes gathering.png
 """
 
+import argparse
 import math
 import os
 import random
+import subprocess
 import sys
 from pathlib import Path
 
@@ -20,7 +22,7 @@ FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().pare
 sys.path.insert(0, str(FOREVER_CORE / "tools" / "wowmock"))
 
 import wowmock
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 from wowmock import FONTS, FRIZQT, Font
 
 OUT = Path(__file__).resolve().parent
@@ -468,10 +470,12 @@ def arathi_loop(ui, art, at):
     art.draw(arrow, ax - 14, ay - 14, 28, 28)
 
 
-def window(draw_panel=None, map_id=ARATHI, nav=("World", "Eastern Kingdoms", "Arathi Highlands"), map_extras=None):
+def window(draw_panel=None, map_id=ARATHI, nav=("World", "Eastern Kingdoms", "Arathi Highlands"), map_extras=None,
+           proof=None):
     ui = wowmock.Ui(scale=1.2)
     m = wowmock.WORLD_MAP_MARGIN
-    w, h = wowmock.WORLD_MAP_WIDTH + QUEST_LOG_WIDTH, wowmock.WORLD_MAP_HEIGHT
+    quest_width, height = proof["size"] if proof else (330, wowmock.WORLD_MAP_HEIGHT - 28)
+    w, h = wowmock.WORLD_MAP_WIDTH + quest_width + 3, height + 28
     canvas = ui.canvas(w + 2 * m + 64, h + 2 * m)
     rock = ui.texture("interface/framegeneral/ui-background-rock.blp")
     wowmock.tiled(canvas, rock, m + 2, m + 21, w - 4, h - 23, rock.width / ui.scale, rock.height / ui.scale)
@@ -508,7 +512,7 @@ def window(draw_panel=None, map_id=ARATHI, nav=("World", "Eastern Kingdoms", "Ar
     canvas.draw(ui.atlas("QuestCollapse-Hide-Up"), toggle_x, toggle_y, 32, 32)
 
     # The quest log's pane, its border, and the planner in it.
-    qx, qy, qw, qh = m + w - 3 - 330, m + 25, 330, h - 25 - 3
+    qx, qy, qw, qh = m + w - 3 - quest_width, m + 25, quest_width, height
     draw_panel = draw_panel or panel
     draw_panel(canvas, qx, qy, qw, qh)
     top = getattr(draw_panel, "search_row", 0)
@@ -529,12 +533,107 @@ def window(draw_panel=None, map_id=ARATHI, nav=("World", "Eastern Kingdoms", "Ar
     tab_x = m + w + 2
     quest = ui.atlas("questlog-questtypeicon-quest").image
     tab_h = wowmock.side_tab(canvas, tab_x, qy + 40, quest)
-    wowmock.side_tab(canvas, tab_x, qy + 40 + tab_h + 2, ICON["mining"], selected=True)
+    tab_y = qy + 40 + tab_h + 2
+    if proof:
+        draw_mining_tab(canvas, tab_x, tab_y, proof)
+        marks = ImageDraw.Draw(canvas.image)
+        for box in ((tab_x - 2, tab_y - 2, tab_x + 57, tab_y + 54),
+                    (qx + 3, qy + 28, qx + qw - 3, qy + 220)):
+            marks.rectangle(tuple(canvas.px(v) for v in box), outline="#ffd058", width=2)
+        canvas.text(qx + 6, qy + 5, f"MOCK | {proof['state'].upper()}", SMALL)
+    else:
+        wowmock.side_tab(canvas, tab_x, tab_y, ICON["mining"], selected=True)
     return wowmock.scene(ui, [(canvas, 0, 0)], margin=20)
 
 
+def draw_mining_tab(canvas, x, y, proof):
+    ui = canvas.ui
+    back = ui.atlas("common-sidetab")
+    cx, cy = x + back.width / 2, y + (back.height - 5) / 2
+    canvas.draw(back, cx - back.width / 2, cy - back.height / 2)
+    layer = ui.canvas(canvas.width, canvas.height)
+    atlas = ui.atlas("Mobile-Mining")
+    fit = 30 / max(atlas.width, atlas.height)
+    w, h = atlas.width * fit, atlas.height * fit
+    left = cx - 4 if proof["state"] == "before" else cx
+    layer.draw(atlas, left - w / 2, cy - h / 2, w, h)
+    mask = ui.atlas("common-sidetab-mask")
+    layer.mask(mask.image, cx - mask.width / 2, cy - mask.height / 2, mask.width, mask.height)
+    canvas.paste(layer, 0, 0)
+    selected = ui.atlas("common-sidetab-selected")
+    canvas.draw(selected, cx - selected.width / 2, cy - selected.height / 2)
+
+
+def simulated_panel(proof):
+    def draw(canvas, x, y, width, height):
+        atlas = canvas.ui.atlas("QuestLog-main-background")
+        art = atlas.image
+        if proof["state"] == "after":
+            art = ImageOps.fit(art, (round(width), round(height - 29)), Image.Resampling.LANCZOS)
+        canvas.draw(art, x, y + 29, width, height - 29)
+        viewport = canvas.ui.canvas(width - 4, height - 69)
+        for left, top, row_height, row_width, label, right, value, maximum in proof["rows"]:
+            row_x, row_y, row_height, row_width = float(left), -float(top), float(row_height), float(row_width)
+            if proof["state"] == "before":
+                row_width += 4
+            if row_y == 60:
+                wowmock.search_box(viewport, row_x + 6, row_y + 2, row_width - 12, instructions=label)
+            elif value:
+                viewport.text(row_x + 4, row_y + 6, label, NORMAL)
+                viewport.text(row_x, row_y + 6, right, SMALL, justify="RIGHT", width=row_width - 4)
+                bar(viewport, row_x + 4, row_y + row_height - 7, row_width - 8, 4, float(value) / float(maximum))
+            elif label == "Back":
+                atlas = canvas.ui.atlas("common-icon-backarrow")
+                fit = 14 / max(atlas.width, atlas.height)
+                viewport.draw(atlas, row_x + 4, row_y + 5, atlas.width * fit, atlas.height * fit)
+                viewport.text(row_x + 24, row_y + 5, label, NORMAL)
+            elif row_height == 34:
+                font = FONTS["GameFontDisableSmall"]
+                text = "\n".join(wowmock.wrap_text(viewport, label, font, row_width - 8))
+                viewport.text(row_x + 4, row_y + 2, text, font)
+            else:
+                viewport.text(row_x + 4, row_y + 5, label, FONTS["GameFontNormal"])
+        canvas.paste(viewport, x, y + 29)
+
+    draw.search_row = 29
+    return draw
+
+
+def capture_panel(width):
+    repo = OUT.parents[1]
+    env = {**os.environ, "FOREVER_CORE": str(FOREVER_CORE.resolve()), "GATHERING_MOCK_SCENE": "1"}
+    if width:
+        env["GATHERING_MOCK_WIDTH"] = str(width)
+    dump = subprocess.check_output(
+        ["luajit", "tools/forever_sim/run.lua", "tests/sim/panel_mock_scenario.lua", "--only=Gathering shopping list mock"],
+        cwd=repo, env=env, stdin=subprocess.DEVNULL, text=True,
+    )
+    proof = {"rows": []}
+    for line in dump.splitlines():
+        if line.startswith("MOCK\t"):
+            _, key, *fields = line.split("\t")
+            if key == "size":
+                proof["size"] = tuple(map(float, fields))
+            elif key == "row":
+                proof["rows"].append(fields)
+    return proof
+
+
 if __name__ == "__main__":
-    window().save(OUT / "gathering.png")
-    window(panel_list).save(OUT / "gathering-list.png")
-    window(panel_overview(), map_extras=arathi_pins).save(OUT / "gathering-overview.png")
-    print("done")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--proof", type=Path, help="write marked simulator-based proof pairs to this directory")
+    args = parser.parse_args()
+    if args.proof:
+        args.proof.mkdir(parents=True, exist_ok=True)
+        for label, width in (("default", None), ("narrow", 240)):
+            proof = capture_panel(width)
+            for state in ("before", "after"):
+                proof["state"] = state
+                window(simulated_panel(proof), map_extras=lambda *_: None, proof=proof).save(
+                    args.proof / f"gathering-{label}-{state}.png"
+                )
+    else:
+        window().save(OUT / "gathering.png")
+        window(panel_list).save(OUT / "gathering-list.png")
+        window(panel_overview(), map_extras=arathi_pins).save(OUT / "gathering-overview.png")
+        print("done")
