@@ -25,6 +25,13 @@ scenario("Gathering shopping list mock", { addons = { { core, "ForeverCore" } } 
 	sim:advance(0.2)
 	local panel = assert(G.GatheringGuideForeverPanel, "missing Gathering panel")
 	assert(panel:IsVisible(), "Gathering panel hidden")
+	local tab = G.GatheringGuideForeverTab
+	sim:input(function()
+		tab:OnMouseDown("LeftButton")
+		tab:OnMouseUp("LeftButton", true)
+	end)
+	local _, _, _, iconX, iconY = tab.Icon:GetPoint()
+	assert(iconX == 0 and iconY == 0, "the native press cycle must keep the icon centred")
 	local width = tonumber(os.getenv("GATHERING_MOCK_WIDTH"))
 	if width then
 		local height = panel:GetHeight()

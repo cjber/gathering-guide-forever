@@ -655,8 +655,12 @@ local function Build()
 		local icon = tab.Icon
 		ns.Fit(icon, "Mobile-Mining", 30, 30)
 		-- The stock icon's left offset is for full-bleed art. Keep the smaller glyph clear of the mask bevel.
+		---@diagnostic disable-next-line: inject-field
+		tab.GetFinalIconAnchorOffsets = function()
+			return 0, 0
+		end
 		icon:ClearAllPoints()
-		icon:SetPoint("CENTER", tab, "CENTER")
+		icon:SetPoint("CENTER", 0, 0)
 	end
 	ns.Tour.Listen(Panel.Refresh)
 end
