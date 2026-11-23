@@ -1,5 +1,5 @@
 {
-  "policy": "Check reviewed phrase-to-widget bindings with confirmed FontObjects. Review callers, template inheritance and later font setters before refreshing source digests. Check localized wording independently of substituted values. Exclude dynamic game text, user input, tooltips and labels rendered by shared tracker or options widgets.",
+  "policy": "Check reviewed phrase-to-widget bindings with confirmed FontObjects. Review callers, template inheritance and later font setters before refreshing source digests. Check localized wording independently of substituted values. Exclude dynamic game text, user input, tooltips and labels rendered by unreviewed shared widgets.",
   "producers": [
     {
       "source": "UI/Panel.lua",
@@ -206,7 +206,7 @@
     {
       "source": "Core/Core.lua",
       "sha256": "33d5e68c1b3fd25f0beae79ed57dfd7c108fe0c4e6151f901193c6f31a7b447a",
-      "review": "The Kinds labels reach both an overview or zone header and the Continue card through UI/Panel.lua. Layout draws headers with GameFontNormal and cards with GameFontHighlight.",
+      "review": "The Kinds labels reach both an overview or zone header and the Continue card through UI/Panel.lua. Layout draws headers with GameFontNormal and cards with GameFontHighlight. ReportTitle configures the ForeverCore v1.17.1 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
       "bindings": [
         {
           "font": "GameFontNormal",
@@ -227,13 +227,18 @@
           "font": "GameFontHighlight",
           "widget": "Panel Layout Continue card row.Left",
           "phrase": "Herbalism"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "ForeverCore report PortraitFrameTemplate TitleText",
+          "phrase": "Gathering Guide Forever report"
         }
       ]
     },
     {
       "source": "Journey/Tour.lua",
       "sha256": "161442763b8ccaadcd93d85b2fd7c269947f9e63572de9f6d297bf8f8f307944",
-      "review": "Tour.Reason feeds the explicit GameFontDisableSmall footerText on a failed tour start. Its other caller is the shared tracker and is excluded.",
+      "review": "Tour.Reason feeds the explicit GameFontDisableSmall footerText on a failed tour start and the default ObjectiveTrackerLineFont objective line when Tracker.Lines includes a non-running status. Neither caller changes the font after setting the text.",
       "bindings": [
         {
           "font": "GameFontDisableSmall",
@@ -259,6 +264,58 @@
           "font": "GameFontDisableSmall",
           "widget": "Panel Footer footerText",
           "phrase": "The journey could not start."
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker.Lines default objective line Text",
+          "phrase": "Shortest Path Forever needs an update to guide a tour."
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker.Lines default objective line Text",
+          "phrase": "Guidance is paused in combat or while dead."
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker.Lines default objective line Text",
+          "phrase": "There is nothing to gather here at your skill."
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker.Lines default objective line Text",
+          "phrase": "No node here can raise your skill."
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker.Lines default objective line Text",
+          "phrase": "The journey could not start."
+        }
+      ]
+    },
+    {
+      "source": "UI/Tracker.lua",
+      "sha256": "eb5a97c621c2c858d47d55790f5f6fc6c7c60abe5507df58999fc0a05612cc1d",
+      "review": "The pinned Blizzard ObjectiveTrackerModuleTemplate draws SetHeader on Header.Text with ObjectiveTrackerHeaderFont. LayoutContents calls AddObjective with the default line template, whose Text inherits ObjectiveTrackerLineFont. Blizzard_ObjectiveTrackerManager changes the tracker font sizes within the same per-locale font file mappings. ForeverCore v1.17.1 attaches the module without overriding these fonts. The block header is a client map name or numeric ID and the next node name comes from game data, so only the localized format is bound.",
+      "bindings": [
+        {
+          "font": "ObjectiveTrackerHeaderFont",
+          "widget": "ObjectiveTrackerModuleTemplate Header.Text",
+          "phrase": "Gathering Tour"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "Node %d of %d"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "Next: %s"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "Loops finished: %d"
         }
       ]
     }
