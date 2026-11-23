@@ -1,0 +1,266 @@
+{
+  "policy": "Check reviewed phrase-to-widget bindings with confirmed FontObjects. Review callers, template inheritance and later font setters before refreshing source digests. Check localized wording independently of substituted values. Exclude dynamic game text, user input, tooltips and labels rendered by shared tracker or options widgets.",
+  "producers": [
+    {
+      "source": "UI/Panel.lua",
+      "sha256": "ea3e87b0516832b51456b5c4f7c554e871a3c746927e519da143a4a4069f0bd8",
+      "review": "Reviewed the view specs, NewRow, Layout, Footer, Refresh and tab attachment. Layout resets the left font for each reused row and changes text rows to GameFontDisableSmall. Color changes do not change the font. Refresh draws the search placeholder on the left label and assigns user input to the edit box. ZoneSub reaches both text and card sublabels. SharedButtonSmallTemplate declares the normal, highlight and disabled FontObjects in the pinned Blizzard SharedXML ThreeSliceButtonTemplate.xml. The row and tab tooltips are excluded.",
+      "bindings": [
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "Continue"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "%s, skill %d"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "Farm for a list"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "Next zones"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "Best zone for the whole list"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Layout header row.Left",
+          "phrase": "Other places"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Layout card, back and button row.Left",
+          "phrase": "%s: %s"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Layout card, back and button row.Left",
+          "phrase": "Back"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Layout card, back and button row.Left",
+          "phrase": "Open my farming list"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Refresh search placeholder row.Left",
+          "phrase": "Add an item"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "GatherMate2 supplies the node locations. Install it to plan a tour."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Update Shortest Path Forever to start a tour. You can still plan one here."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Planning loops..."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "No zone in your GatherMate2 data has nodes for this skill."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Learn Mining or Herbalism to see the best zones for your skill."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Planning the loop..."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Nothing here can raise your skill yet."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Search for an herb or ore to add it."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Nothing on your list is in your GatherMate2 data."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "Skill %d to %d"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "travel %d min"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout text row.Left",
+          "phrase": "%.1f per 10 min"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout card row.Sub",
+          "phrase": "Start again from the node nearest you"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout card row.Sub",
+          "phrase": "%d nodes, %d min a loop"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout card row.Sub",
+          "phrase": "Skill %d to %d"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout card row.Sub",
+          "phrase": "travel %d min"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Layout card row.Sub",
+          "phrase": "%.1f per 10 min"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Layout toggle row.Left",
+          "phrase": "Skip nodes with no skill-up"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "Layout row.Right",
+          "phrase": "needs %d"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "Layout row.Right",
+          "phrase": "Add"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Stop tour"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start tour"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start farming"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Stop tour"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start tour"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start farming"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Stop tour"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start tour"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Footer SharedButtonSmallTemplate",
+          "phrase": "Start farming"
+        }
+      ]
+    },
+    {
+      "source": "Core/Core.lua",
+      "sha256": "33d5e68c1b3fd25f0beae79ed57dfd7c108fe0c4e6151f901193c6f31a7b447a",
+      "review": "The Kinds labels reach both an overview or zone header and the Continue card through UI/Panel.lua. Layout draws headers with GameFontNormal and cards with GameFontHighlight.",
+      "bindings": [
+        {
+          "font": "GameFontNormal",
+          "widget": "Panel Layout header row.Left",
+          "phrase": "Mining"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Panel Layout header row.Left",
+          "phrase": "Herbalism"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Panel Layout Continue card row.Left",
+          "phrase": "Mining"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "Panel Layout Continue card row.Left",
+          "phrase": "Herbalism"
+        }
+      ]
+    },
+    {
+      "source": "Journey/Tour.lua",
+      "sha256": "161442763b8ccaadcd93d85b2fd7c269947f9e63572de9f6d297bf8f8f307944",
+      "review": "Tour.Reason feeds the explicit GameFontDisableSmall footerText on a failed tour start. Its other caller is the shared tracker and is excluded.",
+      "bindings": [
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Panel Footer footerText",
+          "phrase": "Shortest Path Forever needs an update to guide a tour."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Panel Footer footerText",
+          "phrase": "Guidance is paused in combat or while dead."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Panel Footer footerText",
+          "phrase": "There is nothing to gather here at your skill."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Panel Footer footerText",
+          "phrase": "No node here can raise your skill."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Panel Footer footerText",
+          "phrase": "The journey could not start."
+        }
+      ]
+    }
+  ]
+}
