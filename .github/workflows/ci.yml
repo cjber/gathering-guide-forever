@@ -42,7 +42,7 @@ jobs:
           persist-credentials: false
       # Every tool version lives in this checkout's tools/toolchain.json, which the action reads (its manifest input
       # defaults to that file, resolved against the workspace) and installs and verifies each pin from.
-      - uses: cjber/forever-core/.github/actions/toolchain@5af33e8122201201634ef3efc80977a407e1e7a2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@3776350a0b7bd71448ac7a8db8bf58d60303b4d3 # main
         with:
           tools: lua stylua
       - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: cjber/forever-core/.github/actions/toolchain@5af33e8122201201634ef3efc80977a407e1e7a2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@3776350a0b7bd71448ac7a8db8bf58d60303b4d3 # main
         with:
           tools: lua luals
       - name: Read the ForeverCore ref
@@ -150,7 +150,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: cjber/forever-core/.github/actions/toolchain@5af33e8122201201634ef3efc80977a407e1e7a2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@3776350a0b7bd71448ac7a8db8bf58d60303b4d3 # main
         with:
           tools: gitleaks
       - run: gitleaks git --redact --no-banner .
