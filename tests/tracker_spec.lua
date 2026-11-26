@@ -28,13 +28,9 @@ ns.Tour = {
 		}
 	end,
 }
-ns.Planner = {
-	Items = function()
-		return { ["Copper Ore"] = { kind = "Mining", nodes = { "Copper Vein" } } }
-	end,
-}
 ns.DB.showTracker = true
 ns.ItemIDs = { ["Copper Ore"] = 2770 }
+ns.OreNodes = { ["Copper Ore"] = { "Copper Vein" } }
 local bags = { [2770] = 5 }
 C_Item = {
 	GetItemCount = function(item)
@@ -80,7 +76,7 @@ Mixin = function(target, mixin)
 	end
 end
 ForeverCore = { TrackerHost = { Attach = function() end } }
-H.Load(ns, "Locales/enUS.lua", "Journey/Session.lua", "UI/Tracker.lua")
+H.Load(ns, "Locales/enUS.lua", "Core/Planner.lua", "Journey/Session.lua", "UI/Tracker.lua")
 for _, fn in ipairs(loaded) do
 	fn()
 end
@@ -134,6 +130,25 @@ assert(lines[#lines].text == "Gold per hour: 1000c", lines[#lines].text)
 now = 3600
 lines = Draw()
 assert(lines[#lines].text == "Gold per hour: 500c", "the rate follows the clock")
+
+-- A change to the shopping list marks the section dirty at once, without waiting for loot or the ticker.
+for _, change in ipairs({
+	function()
+		ns.Planner.SetNeed("Copper Ore", 45)
+	end,
+	function()
+		ns.Planner.RemoveItem("Copper Ore")
+	end,
+	function()
+		ns.Planner.AddItem("Copper Ore", 30)
+	end,
+}) do
+	before = dirty
+	change()
+	assert(dirty > before, "a list change marks the section dirty")
+end
+lines = Draw()
+assert(lines[#lines - 1].text == "Copper Ore: 5 gathered, 20 still needed", lines[#lines - 1].text)
 
 -- A tour with no items to tally draws no rate line.
 ns.Session.Begin({ kind = "Mining", name = "Zone", order = { { name = "Elsewhere" } } }, 0)

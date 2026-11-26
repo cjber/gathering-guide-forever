@@ -12,6 +12,7 @@ ns.Defer = function(fn)
 	fn()
 end
 debugprofilestop = os.clock
+ns.Session = { ListChanged = function() end }
 H.Load(ns, "Locales/enUS.lua", "Core/GatherMate.lua", "Core/Planner.lua")
 
 -- GatherMate2's real shape: gmdbs[kind] is a proxy with string metadata keys, and a zone's nodes come through __index

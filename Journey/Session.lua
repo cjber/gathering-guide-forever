@@ -35,6 +35,9 @@ local function Notify()
 	end
 end
 
+-- The rows read the shopping list live, so a changed list only has to be drawn again.
+Session.ListChanged = Notify
+
 ---@param item string
 ---@return number
 local function Count(item)

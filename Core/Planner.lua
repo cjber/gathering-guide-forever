@@ -273,6 +273,7 @@ end
 function Planner.AddItem(item, need)
 	if not Listed(item) then
 		table.insert(ns.Char.list, { item = item, need = need })
+		ns.Session.ListChanged()
 	end
 end
 
@@ -282,6 +283,7 @@ function Planner.SetNeed(item, need)
 	local entry = Listed(item)
 	if entry then
 		entry.need = need
+		ns.Session.ListChanged()
 	end
 end
 
@@ -290,6 +292,7 @@ function Planner.RemoveItem(item)
 	for i, entry in ipairs(ns.Char.list) do
 		if entry.item == item then
 			table.remove(ns.Char.list, i)
+			ns.Session.ListChanged()
 			return
 		end
 	end
