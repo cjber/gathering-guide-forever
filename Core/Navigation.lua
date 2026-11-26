@@ -37,11 +37,18 @@ function Nav.Available()
 		and type(api.JourneyState) == "function"
 end
 
--- Starts a walking journey through the stops. Returns whether it started, and why not.
+-- The NavigateRoute option that draws the route line without its numbered stop markers, as the newer Shortest Path
+-- Forever publishes it (docs/api.md there). An older one answers any other option with "invalid" and changes nothing,
+-- so a tour asks once with it and once without.
+Nav.MARKERS_OPTION = "stopMarkers"
+
+-- Starts a walking journey through the stops. Returns whether it started, and why not. With bare set, Shortest Path
+-- Forever draws the route line without its numbered markers when this version can; an older one keeps them.
 ---@param stops {map: number, x: number, y: number, title: string?, tooltip: string?}[]
+---@param bare boolean?
 ---@return boolean ok
 ---@return string? reason
-function Nav.Route(stops)
+function Nav.Route(stops, bare)
 	local api = API()
 	if not Nav.Available() or not api then
 		return false, "unavailable"
@@ -49,7 +56,13 @@ function Nav.Route(stops)
 	if #stops == 0 or #stops > Nav.MAX_STOPS then
 		return false, "invalid"
 	end
-	local ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking" })
+	local ok, result
+	if bare then
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking", [Nav.MARKERS_OPTION] = false })
+	end
+	if not (ok and result == true) then
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking" })
+	end
 	if not ok or result ~= true then
 		return false, ok and "refused" or "error"
 	end

@@ -14,9 +14,10 @@ local Panel = {}
 ns.Panel = Panel
 
 local PAD = 8
-local HIDE_TIP = "Turns GatherMate2's world map icons off, so the map shows only this addon's pins for the zone "
-	.. "you are viewing or touring. Your own GatherMate2 setting is put back when you turn this off, log out or "
-	.. "disable the addon. Minimap icons are not changed."
+local HIDE_TIP = "Shows only this addon's pins on the world map. It hides GatherMate2's world map icons, and during a "
+	.. "tour Shortest Path Forever's numbered stop markers and Adventure Guide Forever's map pins (these two need "
+	.. "their newer versions). Everything is put back when you turn this off, stop the tour, log out or disable the "
+	.. "addon. Minimap icons are not changed."
 local HEIGHTS = { title = 44, header = 22, card = 42, node = 30, toggle = 24, text = 34, item = 42, search = 28 }
 local ICON = 32
 local NODE_ICON = 22
@@ -175,11 +176,11 @@ function Panel.OverviewSpecs(refresh)
 	}
 	out[#out + 1] = {
 		type = "toggle",
-		text = L["Hide GatherMate2 map icons"],
-		checked = ns.DB.hideGatherMate,
+		text = L["Only show Gathering pins on the map"],
+		checked = ns.DB.onlyGatheringPins,
 		tooltip = L[HIDE_TIP],
 		onClick = function()
-			ns.SettingsModule.Set("hideGatherMate", not ns.DB.hideGatherMate)
+			ns.SettingsModule.Set("onlyGatheringPins", not ns.DB.onlyGatheringPins)
 			refresh()
 		end,
 	}

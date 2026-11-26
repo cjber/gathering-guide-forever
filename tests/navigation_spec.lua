@@ -44,6 +44,26 @@ assert(Nav.Route(stops) == true)
 assert(calls[1].owner == "GatheringGuideForever" and calls[1].stops == stops)
 assert(calls[1].options.policy == "walking", "tours ask for walking guidance")
 
+-- A bare route asks Shortest Path Forever to leave out its numbered markers; one that refuses the option is asked again
+-- without it, and a plain route never sends it.
+calls = {}
+assert(Nav.Route(stops, true) == true)
+assert(calls[1].options[Nav.MARKERS_OPTION] == false and #calls == 1, "a newer Shortest Path draws the line bare")
+Nav.Route(stops)
+assert(calls[2].options[Nav.MARKERS_OPTION] == nil, "a plain route sends no marker option")
+local accept = ShortestPathForever.API.NavigateRoute
+ShortestPathForever.API.NavigateRoute = function(owner, list, options)
+	calls[#calls + 1] = { options = options }
+	if options[Nav.MARKERS_OPTION] ~= nil then
+		return nil, "invalid"
+	end
+	return accept(owner, list, options)
+end
+calls = {}
+assert(Nav.Route(stops, true) == true, "an older Shortest Path still starts the tour")
+assert(calls[1].options[Nav.MARKERS_OPTION] == false and calls[2].options[Nav.MARKERS_OPTION] == nil)
+ShortestPathForever.API.NavigateRoute = accept
+
 ok, why = Nav.Route({})
 assert(ok == false and why == "invalid", "no stops")
 local many = {}

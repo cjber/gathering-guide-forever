@@ -18,6 +18,12 @@ local state
 local unobserve
 local listeners = {}
 
+-- With the Only show Gathering pins setting on, Adventure Guide Forever's map pins are set aside for as long as a tour
+-- runs; Shortest Path Forever's numbered markers are left out of its route line (Submit).
+local function SyncGuidePins()
+	ns.AdventureGuide.SetHidden(state ~= nil and ns.DB.onlyGatheringPins == true)
+end
+
 local function Notify()
 	for _, fn in ipairs(listeners) do
 		ns.core.SafeCall("tour listener", fn)
@@ -74,7 +80,7 @@ local function Submit()
 		local node = tour.order[index]
 		stops[i] = { map = node.uiMapID, x = node.x, y = node.y, title = node.name }
 	end
-	local ok, why = ns.Navigation.Route(stops)
+	local ok, why = ns.Navigation.Route(stops, db.onlyGatheringPins)
 	if not ok then
 		tour.status = why or "refused"
 		return false
@@ -166,6 +172,7 @@ function Tour.Start(plan)
 	unobserve = ns.Navigation.Observe(Observed)
 	ns.Char.last = { kind = plan.kind, uiMapID = plan.uiMapID, name = plan.name }
 	ns.Session.Begin(plan, GetServerTime())
+	SyncGuidePins()
 	Notify()
 	return true
 end
@@ -182,6 +189,7 @@ function Tour.Stop(quiet)
 		state = nil
 	end
 	ns.Session.End()
+	SyncGuidePins()
 	if not quiet then
 		Notify()
 	end
@@ -231,7 +239,8 @@ end
 -- A changed setting that affects the batch in flight sends it again from the current stop.
 ---@param key string
 function Tour.OnSettingChanged(key)
-	if state and key == "skipNoSkillUp" then
+	if state and (key == "skipNoSkillUp" or key == "onlyGatheringPins") then
+		SyncGuidePins()
 		if Submit() then
 			Notify()
 		end

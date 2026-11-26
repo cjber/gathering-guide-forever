@@ -9,7 +9,7 @@
 ## X-License: GPL-3.0-or-later
 ## X-Website: https://github.com/cjber/gathering-guide-forever
 ## X-Donate: https://github.com/sponsors/cjber
-## OptionalDeps: GatherMate2, ShortestPathForever, ForeverCore
+## OptionalDeps: GatherMate2, AdventureGuideForever, ShortestPathForever, ForeverCore
 ## X-Forever-Core: v1.17.3
 ## X-Forever-Core-Embed: 1
 ## SavedVariables: GatheringGuideForeverDB
@@ -26,6 +26,7 @@ Core\World.lua
 Core\GatherMate.lua
 Core\Skills.lua
 Core\Navigation.lua
+Core\AdventureGuide.lua
 Journey\Order.lua
 Core\Planner.lua
 Core\Settings.lua

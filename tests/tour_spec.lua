@@ -28,6 +28,12 @@ ns.Session = {
 		ended = ended + 1
 	end,
 }
+local hidden = false
+ns.AdventureGuide = {
+	SetHidden = function(value)
+		hidden = value
+	end,
+}
 GetServerTime = function()
 	return 0
 end
@@ -90,12 +96,14 @@ for i = 1, 6 do
 end
 local loop = ns.Order.Solve(nodes)
 ns.World.player = { x = 300, y = 0 }
+ns.DB.onlyGatheringPins = true
 local started, why = Tour.Start({ kind = "Mining", uiMapID = 1, name = "Zone", order = loop })
 assert(started, why)
 assert(routes[1][1].x == 0.3, "the tour starts at the node nearest the player")
 assert(#routes[1] == 6, "every node in one batch")
 assert(Tour.Active() and Tour.Progress().visited == 0)
 assert(began == 1, "a started tour begins a session")
+assert(hidden == true, "the guide's pins are set aside during a tour")
 local progress = Tour.Progress()
 assert(progress.stop == 1 and progress.stops == 6 and progress.total == 6, "the count is the batch SPF shows")
 
@@ -124,6 +132,7 @@ assert(Tour.Progress().name == "Zone" and observer and began == 1 and ended == 0
 ShortestPathForever.API.NavigateRoute = navigate
 
 Tour.Stop()
+assert(hidden == false, "stopping brings the guide's pins back")
 assert(not Tour.Active() and observer == nil, "stop ends the tour and unsubscribes")
 assert(ended == 1, "stop ends the session")
 
