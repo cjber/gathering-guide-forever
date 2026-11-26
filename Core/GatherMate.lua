@@ -135,8 +135,9 @@ end
 -- GatherMate2's own way to apply a setting change (its minimap button sends it after toggling showWorldMap): modules
 -- listening re-read the profile and redraw. Display listens only once enabled and takes its profile from this message,
 -- so nothing is redrawn before it exists, and it reads the switch itself when it enables.
--- The redraw reads the profile's show table, which a profile in an older format lacks and which makes that redraw raise inside GatherMate2: such a
--- profile is not redrawn from here, and GatherMate2 applies the switch on its next refresh.
+-- The redraw reads the profile's show table, which a profile in an older format lacks and which makes that redraw
+-- raise inside GatherMate2: such a profile is not redrawn from here, and GatherMate2 applies the switch on its next
+-- refresh.
 ---@param profile table
 local function Refresh(profile)
 	if type(profile.show) == "table" then
