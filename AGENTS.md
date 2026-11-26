@@ -35,7 +35,8 @@ required check. `headless-smoke` is a commit status posted from the in-game agen
 - Atlases from the client only, native aspect (`ns.Fit`), no minimap button, no chat messages. Vendored
   `tools/forever_tools` and `tools/forever_sim` refresh with
   `python3 tools/forever_tools/sync.py update --source ../forever-core`; never edit them here.
-- `tools/forever-core.txt` pins the ForeverCore release and must equal the TOC's `X-Forever-Core`.
+- `tools/forever-core.txt` pins the ForeverCore release and must equal the TOC's `X-Forever-Core`; the package
+  carries that release under `Libs/ForeverCore`.
 
 ## Standards
 
