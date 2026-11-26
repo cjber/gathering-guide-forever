@@ -9,17 +9,41 @@ Plan a mining or herbalism skill-up tour in WoW: Forever: the best zones for you
 
 Gathering Guide Forever adds a Gathering page to the world map's quest log. It reads the nodes in your GatherMate2 database, works out which zones will raise your mining or herbalism fastest at your current skill, and hands a walking loop through the nodes to [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever), which guides you from node to node.
 
-The images below are mocks of the planned interface, not captures from the game.
+All images are real captures from the game client.
 
-<p align="center"><img src="docs/mockups/gathering-overview.png" width="640" alt="Mock: the Gathering page with the best mining and herbalism zones for your skill"></p>
+<p align="center"><img src="docs/screenshots/gathering-overview.png" width="960" alt="The Gathering page with the best mining zones for your skill"></p>
 
 Each zone card shows the skill range it covers, the travel time and the skill-ups you can expect per ten minutes.
 
-<p align="center"><img src="docs/mockups/gathering.png" width="640" alt="Mock: a zone with every node coloured by its chance to raise your skill"></p>
+<p align="center"><img src="docs/screenshots/gathering-zone.png" width="960" alt="A zone with its nodes and the next zones to move on to"></p>
 
 A zone lists its nodes by the chance each has to raise your skill, and the next zones to move on to as it rises.
 
-<p align="center"><img src="docs/mockups/gathering-list.png" width="640" alt="Mock: a farming list with how many of each herb you carry and the best zone for all of it"></p>
+<p align="center"><img src="docs/screenshots/gathering-tour.png" width="960" alt="A tour running in Dun Morogh, with the Gathering Tour section in the objective tracker"></p>
+
+A tour starts at the node nearest you. Shortest Path Forever draws the way to the next stop.
+
+<p align="center"><img src="docs/screenshots/gathering-map-pins.png" width="640" alt="The world map during a tour: small pins for the nodes still to visit and the journey line"></p>
+
+Only the nodes still to visit get a pin, and the next one is clearer.
+
+<p align="center"><img src="docs/screenshots/gathering-tracker.png" width="420" alt="The Gathering Tour section of the objective tracker"></p>
+
+The objective tracker shows the stop, the size of the loop, what you gathered and your gold per hour.
+
+<p align="center"><img src="docs/screenshots/gathering-map-setting-off.png" width="960" alt="The same map with Only show Gathering pins on the map turned off, showing every GatherMate2 icon"></p>
+
+With Only show Gathering pins on the map turned off, GatherMate2's icons come back.
+
+<p align="center"><img src="docs/screenshots/gathering-map-setting-on.png" width="960" alt="The same map with the setting turned on again"></p>
+
+Turned on again, the map shows only this addon's pins.
+
+<p align="center"><img src="docs/screenshots/gathering-tour-stopped.png" width="960" alt="The Gathering page after stopping the tour"></p>
+
+Stopping the tour clears the pins and the tracker section.
+
+<p align="center"><img src="docs/screenshots/gathering-list.png" width="960" alt="A farming list with how many of each item you carry and the best zone for all of it"></p>
 
 Farm for a list instead: add herbs and ores with how many you need, and the page finds the zone that gets you everything still missing soonest, the trip there included.
 
@@ -99,7 +123,7 @@ python3 -m tools.forever_tools.specs      # the specs (set FOREVER_CORE to a for
 python3 tools/repo_rules.py
 ```
 
-[AGENTS.md](AGENTS.md) lists the full gate. The mock images in `docs/mockups/` are drawn by the scripts beside them.
+[AGENTS.md](AGENTS.md) lists the full gate.
 
 **Releasing:** move the `[Unreleased]` notes in `CHANGELOG.md` under `## [X.Y.Z] - YYYY-MM-DD`, then `git tag -s vX.Y.Z && git push --tags`.
 

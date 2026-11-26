@@ -6,17 +6,29 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 
 [![Join me on Discord](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/discord-button.png)](https://discord.gg/FpHugGxRJY) [![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
 
-![Mock: the best mining and herbalism zones for your skill](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-overview.png)
+![The best mining zones for your skill](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-overview.png)
 
 The Gathering page lists the best zones for your mining and herbalism skill with their skill range, travel time and rate.
 
-![Mock: a zone with every node coloured by its chance to raise your skill](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering.png)
+![A zone with its nodes and the next zones to move on to](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-zone.png)
 
 A zone lists its nodes by their chance to raise your skill, with the next zones to move on to.
 
-![Mock: a farming list and the best zone for all of it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
+![A tour running in Dun Morogh](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tour.png)
 
-Farm for a list: how many of each herb you carry, and the best zone for all of it.
+A tour starts at the node nearest you, with Shortest Path Forever drawing the way.
+
+![Small pins for the nodes still to visit](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-map-pins.png)
+
+Only the nodes still to visit get a pin on the world map.
+
+![The Gathering Tour section of the objective tracker](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tracker.png)
+
+The objective tracker shows the stop, the loop size, what you gathered and your gold per hour.
+
+![A farming list and the best zone for all of it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
+
+Farm for a list: how many of each herb or ore you carry, and the best zone for all of it.
 
 These images are generated previews of the Gathering Guide Forever UI.
 
