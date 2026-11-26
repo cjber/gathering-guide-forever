@@ -20,7 +20,8 @@ function GM.Available()
 	return gm ~= nil and type(gm.GetNodesForZone) == "function"
 end
 
--- Every uiMapID GatherMate2 holds nodes of this kind for.
+-- Every uiMapID GatherMate2 holds nodes of this kind for. The table also holds GatherMate2's own metadata under string
+-- keys (__gm2_prefix and the like), which are not zones.
 ---@param kind string
 ---@return number[]
 function GM.Zones(kind)
@@ -28,7 +29,9 @@ function GM.Zones(kind)
 	local zones = {}
 	if gm and type(gm.gmdbs) == "table" and type(gm.gmdbs[kind]) == "table" then
 		for uiMapID in pairs(gm.gmdbs[kind]) do
-			zones[#zones + 1] = uiMapID
+			if type(uiMapID) == "number" then
+				zones[#zones + 1] = uiMapID
+			end
 		end
 		table.sort(zones)
 	end

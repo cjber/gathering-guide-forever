@@ -148,9 +148,8 @@ end
 ---@param skipNoSkillUp boolean
 ---@param limit number
 ---@param yield fun()?
----@param progress fun(best: table[])? called after each zone joins the list, with the best so far
 ---@return table[]
-function Planner.Best(kind, rank, skipNoSkillUp, limit, yield, progress)
+function Planner.Best(kind, rank, skipNoSkillUp, limit, yield)
 	local zones = {}
 	for _, uiMapID in ipairs(ns.GatherMate.Zones(kind)) do
 		local zone = Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
@@ -159,23 +158,16 @@ function Planner.Best(kind, rank, skipNoSkillUp, limit, yield, progress)
 		end
 		if zone and zone.rate > 0 then
 			zones[#zones + 1] = zone
-			table.sort(zones, function(a, b)
-				if a.rate ~= b.rate then
-					return a.rate > b.rate
-				end
-				return a.uiMapID < b.uiMapID
-			end)
-			while #zones > limit do
-				zones[#zones] = nil
-			end
-			if progress then
-				local snapshot = {}
-				for i, z in ipairs(zones) do
-					snapshot[i] = z
-				end
-				progress(snapshot)
-			end
 		end
+	end
+	table.sort(zones, function(a, b)
+		if a.rate ~= b.rate then
+			return a.rate > b.rate
+		end
+		return a.uiMapID < b.uiMapID
+	end)
+	while #zones > limit do
+		zones[#zones] = nil
 	end
 	return zones
 end
@@ -295,14 +287,24 @@ function Planner.ListZones(limit, yield)
 	return zones
 end
 
--- Runs work(yield) as a coroutine across frames, a few milliseconds at a time, then calls done with its results. Work
--- already running for the same key is not started twice.
+-- Runs work(yield) as a coroutine across frames, a few milliseconds at a time, then calls done with its results, or
+-- failed when the work raises. Work already running for the same key is not started twice.
 ---@type table<string, boolean>
 local running = {}
+---@type string?
+local lastError
+
+-- The message of the last plan that failed, for the report window.
+---@return string?
+function Planner.LastError()
+	return lastError
+end
+
 ---@param key string
 ---@param work fun(yield: fun()): any
 ---@param done fun(result: any)
-function Planner.Async(key, work, done)
+---@param failed fun()
+function Planner.Async(key, work, done, failed)
 	if running[key] then
 		return
 	end
@@ -323,7 +325,9 @@ function Planner.Async(key, work, done)
 		local ok, result = coroutine.resume(co)
 		if not ok then
 			running[key] = nil
-			ns.core.SafeCall("planner", error, result)
+			lastError = debug.traceback(co, tostring(result))
+			ns.core.SafeCall("planner", error, lastError, 0)
+			failed()
 		elseif coroutine.status(co) == "dead" then
 			running[key] = nil
 			done(result)

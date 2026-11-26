@@ -89,6 +89,7 @@ function ns.ReportLines()
 		"GatherMate2: " .. (ns.GatherMate.Available() and "loaded" or "missing"),
 		"Shortest Path Forever: " .. (ns.Navigation.Available() and "ready" or "missing or too old"),
 		"Tour: " .. (ns.Tour and ns.Tour.Describe() or "idle"),
+		"Last plan error: " .. (ns.Planner and ns.Planner.LastError() or "none"),
 		"Journey busy: " .. tostring(nav.busy) .. ", blocked: " .. tostring(nav.blocked),
 	}
 end

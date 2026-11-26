@@ -40,26 +40,35 @@ local function Minutes(seconds)
 end
 
 -- Planned numbers for each view, filled in over frames by the planner and kept until the skill or setting changes.
--- The second value is what the work has found so far, for a view that shows its cards as each zone finishes.
-local results, partials = {}, {}
+-- The second value is true once the plan raised an error, so the view says so instead of planning for ever.
+local results, failures = {}, {}
 local function Result(key, work, done)
 	if results[key] ~= nil then
 		return results[key]
 	end
-	ns.Planner.Async(key, function(yield)
-		return work(yield, function(found)
-			partials[key] = found
-			done()
-		end)
-	end, function(value)
+	if failures[key] then
+		return nil, true
+	end
+	ns.Planner.Async(key, work, function(value)
 		results[key] = value
 		done()
+	end, function()
+		failures[key] = true
+		done()
 	end)
-	return results[key], partials[key]
+	return results[key]
+end
+
+-- What a view with no result yet says: that it is planning, or that the plan failed.
+---@param failed boolean?
+---@param planning string
+---@return string
+local function PlanText(failed, planning)
+	return failed and L["The plan failed. The report window (/ggf report) shows why."] or planning
 end
 
 function Panel.ClearResults()
-	results, partials = {}, {}
+	results, failures = {}, {}
 end
 
 --[[ View specs ]]
@@ -118,16 +127,16 @@ function Panel.OverviewSpecs(refresh)
 			learned = true
 			out[#out + 1] = { type = "header", text = string.format(L["%s, skill %d"], k.label, rank) }
 			local key = ("best:%s:%d:%s"):format(k.kind, rank, tostring(ns.DB.skipNoSkillUp))
-			local zones, soFar = Result(key, function(yield, progress)
-				return ns.Planner.Best(k.kind, rank, ns.DB.skipNoSkillUp, 3, yield, progress)
+			local zones, failed = Result(key, function(yield)
+				return ns.Planner.Best(k.kind, rank, ns.DB.skipNoSkillUp, 3, yield)
 			end, refresh)
 			if not zones then
-				out[#out + 1] = { type = "text", text = L["Planning loops..."] }
+				out[#out + 1] = { type = "text", text = PlanText(failed, L["Planning loops..."]) }
 			elseif #zones == 0 then
 				out[#out + 1] =
 					{ type = "text", text = L["No zone in your GatherMate2 data has nodes for this skill."] }
 			end
-			for _, zone in ipairs(zones or soFar or {}) do
+			for _, zone in ipairs(zones or {}) do
 				out[#out + 1] = {
 					type = "card",
 					text = zone.name,
@@ -172,7 +181,7 @@ function Panel.ZoneSpecs(refresh)
 	local rank = Rank(view.kind)
 	local skip = ns.DB.skipNoSkillUp
 	local key = ("zone:%s:%d:%d:%s"):format(view.kind, view.uiMapID, rank, tostring(skip))
-	local zone = Result(key, function(yield)
+	local zone, zoneFailed = Result(key, function(yield)
 		return ns.Planner.Zone(view.kind, view.uiMapID, rank, skip, yield) or false
 	end, refresh)
 	out[#out + 1] = { type = "header", text = ns.Planner.ZoneName(view.uiMapID) }
@@ -215,19 +224,19 @@ function Panel.ZoneSpecs(refresh)
 		}
 	end
 	if zone == nil then
-		out[#out + 1] = { type = "text", text = L["Planning the loop..."] }
+		out[#out + 1] = { type = "text", text = PlanText(zoneFailed, L["Planning the loop..."]) }
 	elseif zone == false then
 		out[#out + 1] = { type = "text", text = L["Nothing here can raise your skill yet."] }
 	else
 		pickedZone = zone
 		out[#out + 1] = { type = "text", text = ZoneSub(zone), color = "grey" }
 		local nextKey = key .. ":next"
-		local later = Result(nextKey, function(yield)
+		local later, laterFailed = Result(nextKey, function(yield)
 			return ns.Planner.Next(zone, rank, skip, yield)
 		end, refresh)
 		out[#out + 1] = { type = "header", text = L["Next zones"] }
 		if not later then
-			out[#out + 1] = { type = "text", text = L["Planning loops..."] }
+			out[#out + 1] = { type = "text", text = PlanText(laterFailed, L["Planning loops..."]) }
 		end
 		for _, z in ipairs(later or {}) do
 			out[#out + 1] = {
@@ -326,12 +335,12 @@ function Panel.ListSpecs(refresh)
 			end)(),
 			","
 		)
-	local zones = Result(key, function(yield)
+	local zones, listFailed = Result(key, function(yield)
 		return ns.Planner.ListZones(4, yield)
 	end, refresh)
 	out[#out + 1] = { type = "header", text = L["Best zone for the whole list"] }
 	if not zones then
-		out[#out + 1] = { type = "text", text = L["Planning loops..."] }
+		out[#out + 1] = { type = "text", text = PlanText(listFailed, L["Planning loops..."]) }
 		return out
 	end
 	if #zones == 0 then
