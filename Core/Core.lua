@@ -75,6 +75,12 @@ ns.On("ADDON_LOADED", function(name)
 		end
 	end
 	ns.Char.list = ns.Char.list or {}
+	-- A saved item the data does not know has no ID or nodes to show or count.
+	for i = #ns.Char.list, 1, -1 do
+		if not ns.ItemIDs[ns.Char.list[i].item] then
+			table.remove(ns.Char.list, i)
+		end
+	end
 	ns.ready = true
 	for _, fn in ipairs(ns.loadedHooks or {}) do
 		ns.core.SafeCall("loaded", fn)
