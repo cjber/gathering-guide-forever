@@ -1,0 +1,78 @@
+{
+  "input_digest": "62ecef05d11c10cff0fef3be39f1ee2c0f5695fbd96d0fa44809f754df423744",
+  "runtime_sha256": "62ecef05d11c10cff0fef3be39f1ee2c0f5695fbd96d0fa44809f754df423744",
+  "candidate": "d4d999f9412908092617f3c4037441b45e542c113c9fcb2fe5b8394d76ca5228",
+  "client_build": "1.60.1.71139 (Interface 16001)",
+  "tested_artifact": "source-tree",
+  "source_commit": "d861124b5605ebcd91c2bcecf4839d1af5bc321e",
+  "flows": [
+    {
+      "name": "overview",
+      "steps": [
+        "sha256:316e3635e7b06a11b65355984e88df5f57f8d8f057e1e9b90b422127401fea8e overview.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "zone",
+      "steps": [
+        "sha256:65fbad70507b7673ece76f230ba1607b4d2858ff6315ea0ad1550e707654e5fc zone.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "tour",
+      "steps": [
+        "sha256:cadcbe06a74a545ed8e106b60dc7eb422c1d9210d181b034b3b7879f95534be4 tour.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "map-setting-off",
+      "steps": [
+        "sha256:93ad07eaf7e8014094ceaa5a3f2a34c5da4f73366705b0dcf58c8dae795e01a9 map-setting-off.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "map-setting-on",
+      "steps": [
+        "sha256:0653d98f7868031692c136069fc8b537262a887fcf469450d49d2edccd950699 map-setting-on.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "farm-list",
+      "steps": [
+        "sha256:396485ec920590b7f22a9702993b5c569771913e3b08fb8c1f36d557ecd72134 farm-list.lua"
+      ],
+      "result": "pass"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/1-overview.png",
+      "sha256": "778100448c2b647a21c3848584fd56feea1b4b2ddfc675b5b4a96b431b980948"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/2-zone.png",
+      "sha256": "2b84cd666925c0067e6ab9fa28d7775be868db8eca126913d66bc5c6b2068cb9"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/3-tour.png",
+      "sha256": "c2bc55a33d8557fe2041a91fe572339e54ffb1a7aeed2c52bde5abe7819cd775"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/4-map-setting-off.png",
+      "sha256": "e181df2ff30054cdc1daa7a592cb9bee4b230f78ccd300467dda3bee7610fc27"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/5-map-setting-on.png",
+      "sha256": "29425dc7ba9be0d454a69bbfea19f4cfc3d61985124ce54b7bda8ae88fb63aa6"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ae788e4864bdad28834dca3ac925988a/raw/c7550fc8805b5ba840d52b16f93cba2443d051e9/6-farm-list.png",
+      "sha256": "ebc2279211e5d6b3d8713cb2147acc948fe6645423cb0f28766ca5dc3e35ce1c"
+    }
+  ]
+}
