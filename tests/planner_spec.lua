@@ -102,7 +102,7 @@ ns.Planner.ClearResults()
 GatherMate2.gmdbs.Mining.__gm2_base_storage[1411][9999999] = 202
 local before = plans
 ns.Planner.ClearResults()
-cached = Open(39)
+Open(39)
 assert(plans == before + 1, "changed GatherMate2 data plans again")
 ns.DB.plans = nil
 ns.Planner.ClearResults()
