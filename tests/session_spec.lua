@@ -107,6 +107,16 @@ table.remove(ns.Char.list, 1)
 rows = Session.Rows()
 assert(#rows == 1 and rows[1].item == "Tin Ore", "an item taken off the list has no row")
 
+-- An item added mid-tour counts from what is carried then, and gets one tally however often the list changes.
+bags.Peacebloom = 2
+table.insert(ns.Char.list, { item = "Peacebloom", need = 5 })
+Session.ListChanged()
+Session.ListChanged()
+rows = Session.Rows()
+assert(#rows == 2 and rows[2].item == "Peacebloom" and rows[2].gathered == 0 and rows[2].left == 3, "added mid-tour")
+loot("Peacebloom", 1)
+assert(Session.Rows()[2].gathered == 1, "its loot is counted")
+
 -- Ending the session ends the loot window it watched: the old window's loot never reaches the next tour.
 Session.LootOpened()
 Session.End()

@@ -35,14 +35,34 @@ local function Notify()
 	end
 end
 
--- The rows read the shopping list live, so a changed list only has to be drawn again.
-Session.ListChanged = Notify
-
 ---@param item string
 ---@return number
 local function Count(item)
 	return C_Item.GetItemCount(ns.ItemIDs[item]) or 0
 end
+
+-- A tally that counts from what the bags hold now.
+---@param item string
+local function Entry(item)
+	return { item = item, last = Count(item), gathered = 0 }
+end
+
+-- Counts and removals are read from the shopping list live; an item added during a list tour starts its tally here.
+function Session.ListChanged()
+	if session and session.list then
+		local tracked = {}
+		for _, entry in ipairs(session.entries) do
+			tracked[entry.item] = true
+		end
+		for _, want in ipairs(ns.Char.list) do
+			if not tracked[want.item] then
+				session.entries[#session.entries + 1] = Entry(want.item)
+			end
+		end
+	end
+	Notify()
+end
+
 -- The items a tour is after: the shopping list for a list tour, otherwise every item the zone's nodes give.
 ---@param plan table a Planner zone
 ---@return {item: string, need: number?}[]
@@ -81,7 +101,7 @@ end
 function Session.Begin(plan, now)
 	local entries = {}
 	for i, want in ipairs(Session.Wanted(plan)) do
-		entries[i] = { item = want.item, last = Count(want.item), gathered = 0 }
+		entries[i] = Entry(want.item)
 	end
 	session = { startedAt = now, list = plan.list == true, entries = entries }
 	if ticker then
