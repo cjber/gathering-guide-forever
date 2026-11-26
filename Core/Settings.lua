@@ -49,6 +49,7 @@ function Settings.Set(key, value)
 	ns.DB[key] = value and true or false
 	if key == "onlyGatheringPins" then
 		Settings.SyncGatherMate()
+		ns.MapFocus.Sync()
 	end
 	if ns.Tour then
 		ns.Tour.OnSettingChanged(key)

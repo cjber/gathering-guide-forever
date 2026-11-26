@@ -9,6 +9,9 @@ ns.OnLoaded = function() end
 H.Load(ns, "Locales/enUS.lua", "Core/GatherMate.lua", "Core/Settings.lua")
 ns.DB = { onlyGatheringPins = true }
 ns.Tour = nil
+ns.MapFocus = {
+	Sync = function() end,
+}
 
 -- GatherMate2's profile switches: the world map and the minimap each have their own.
 local refreshes, profileName = 0, "Default"

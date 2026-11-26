@@ -32,9 +32,9 @@ ns.Session = {
 	end,
 }
 local hidden = false
-ns.AdventureGuide = {
-	SetHidden = function(value)
-		hidden = value
+ns.MapFocus = {
+	Sync = function()
+		hidden = ns.Tour.Active() and ns.DB.onlyGatheringPins == true
 	end,
 }
 GetServerTime = function()

@@ -894,6 +894,7 @@ local function Build()
 		order = 30,
 		safeCall = ns.core.SafeCall,
 		shown = function(visible)
+			ns.MapFocus.SetPanelShown(visible)
 			if visible then
 				Panel.Refresh()
 			end

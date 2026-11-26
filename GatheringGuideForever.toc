@@ -31,6 +31,7 @@ Core\AdventureGuide.lua
 Journey\Order.lua
 Core\Planner.lua
 Core\Settings.lua
+Core\MapFocus.lua
 Journey\Session.lua
 Journey\Tour.lua
 UI\Loop.lua

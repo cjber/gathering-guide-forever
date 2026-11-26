@@ -4,7 +4,7 @@ if ns.broken then
 	return
 end
 
--- Adventure Guide Forever's map pins, set aside while a tour shows only this addon's. The newer Adventure Guide
+-- Adventure Guide Forever's map pins, set aside while Core/MapFocus.lua clears the map. The newer Adventure Guide
 -- Forever publishes SuspendMapPins(owner) and ResumeMapPins(owner) on its API; an older one has neither, and then
 -- nothing is called. Adventure Guide Forever forgets a suspension when the session ends.
 local AG = {}
