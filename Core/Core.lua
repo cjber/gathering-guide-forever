@@ -22,8 +22,8 @@ ns.Kinds = {
 	{ kind = "Mining", line = 186, label = L["Mining"] },
 	{ kind = "Herb Gathering", line = 182, label = L["Herbalism"] },
 }
--- The client's profession atlases (UiTextureAtlasElement: Mobile-Mining, Mobile-Herbalism) by GatherMate2's kind.
-ns.KIND_ATLAS = { ["Mining"] = "Mobile-Mining", ["Herb Gathering"] = "Mobile-Herbalism" }
+-- The minimap tracking art (UiTextureAtlasElement: an ore chunk and a herb leaf) by GatherMate2's kind.
+ns.KIND_ATLAS = { ["Mining"] = "Professions_Tracking_Ore", ["Herb Gathering"] = "Professions_Tracking_Herb" }
 ns.KindByName = {}
 for _, k in ipairs(ns.Kinds) do
 	ns.KindByName[k.kind] = k

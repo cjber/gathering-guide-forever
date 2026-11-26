@@ -5,7 +5,9 @@ if ns.broken then
 end
 
 -- Draws a loop on the world map: calm pins for the nodes still to visit, one atlas per GatherMate2 node kind, the next
--- one slightly clearer. A visited node is not drawn: only the pins that matter stay on the map.
+-- one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their middle, in the first one's
+-- art; the next node keeps its own pin, which also stands for the nodes under it. A visited node is not drawn: only the
+-- pins that matter stay on the map.
 -- The way between them is Shortest Path Forever's own journey line. GatherMate2's own world map pins are switched off
 -- by the Only show Gathering pins on the map setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
@@ -57,6 +59,17 @@ local function Build()
 	end)
 end
 
+-- One pin for a group of nodes, at their middle.
+---@param group table[]
+---@return table node
+local function Middle(group)
+	local x, y = 0, 0
+	for _, node in ipairs(group) do
+		x, y = x + node.x, y + node.y
+	end
+	return { x = x / #group, y = y / #group, kind = group[1].kind }
+end
+
 -- Redraws the loop for the map now showing.
 function Loop.Draw()
 	Build()
@@ -73,10 +86,23 @@ function Loop.Draw()
 		return
 	end
 	local order = shown.order
+	-- The size a pin has on screen at this zoom, as its scaling limits set it.
+	local size = PIN_SIZE * map:GetGlobalPinScale() * Lerp(1, 1.2, Saturate(map:GetCanvasZoomPercent()))
+	local Group = ns.core.MapCanvas.OverlapGroups
+	local nextNode = nextIndex and order[nextIndex]
 	-- Nodes before the next one are visited and stay off the map; a preview has no next node and draws all of them.
-	local first = nextIndex or 1
-	for i = first, #order do
-		pool:Acquire(order[i], i == nextIndex and "next" or "ahead")
+	local ahead = {}
+	for i = nextIndex or 1, #order do
+		local node = order[i]
+		if node ~= nextNode and not (nextNode and #Group(map, { nextNode, node }, size) == 1) then
+			ahead[#ahead + 1] = node
+		end
+	end
+	for _, group in ipairs(Group(map, ahead, size)) do
+		pool:Acquire(Middle(group), "ahead")
+	end
+	if nextNode then
+		pool:Acquire(nextNode, "next")
 	end
 end
 

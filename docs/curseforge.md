@@ -20,7 +20,7 @@ A tour starts at the node nearest you, with Shortest Path Forever drawing the wa
 
 ![Small pins for the nodes still to visit](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-map-pins.png)
 
-Only the nodes still to visit get a pin on the world map.
+Only the nodes still to visit get a pin on the world map. Nearby nodes share one pin until you zoom in.
 
 ![The Gathering Tour section of the objective tracker](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tracker.png)
 

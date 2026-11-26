@@ -903,7 +903,7 @@ local function Build()
 	if tab then
 		---@diagnostic disable-next-line: undefined-field
 		local icon = tab.Icon
-		ns.Fit(icon, "Mobile-Mining", 30, 30)
+		ns.Fit(icon, ns.KIND_ATLAS["Mining"], 30, 30)
 		-- The stock icon's left offset is for full-bleed art. Keep the smaller glyph clear of the mask bevel.
 		---@diagnostic disable-next-line: inject-field
 		tab.GetFinalIconAnchorOffsets = function()
