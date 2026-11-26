@@ -144,4 +144,66 @@ spot = 1411
 ranked = Open(39)
 assert(plans == before + 3 and #ranked == 1, "the current zone is not offered twice")
 
+-- A list needs a finite number of nodes, so a far zone's trip is weighed against what is needed, not against its whole
+-- lap: with 12 ore missing the near, smaller zone wins; with a whole lap or more missing the bigger zone's rate does.
+do
+	local loops = {
+		[1426] = { count = 183, seconds = 4660, travel = 217 },
+		[2521] = { count = 294, seconds = 5412, travel = 1475 },
+	}
+	local missing
+	ns.Planner.Items = function()
+		return { ore = { kind = "Mining", nodes = { "Vein" } } }
+	end
+	ns.Planner.ListRows = function()
+		return { { item = "ore", need = 20, have = 20 - missing } }
+	end
+	ns.KindByName = { Mining = { line = 186 } }
+	ns.Skills = {
+		Rank = function()
+			return 100
+		end,
+	}
+	ns.GatherMate.Zones = function()
+		return { 1426, 2521 }
+	end
+	ns.GatherMate.Nodes = function(uiMapID)
+		local nodes = {}
+		for i = 1, loops[uiMapID].count do
+			nodes[i] = { uiMapID = uiMapID, name = "Vein", required = 1, x = 0, y = 0 }
+		end
+		return nodes
+	end
+	ns.Planner.Place = function(nodes)
+		return nodes
+	end
+	ns.Planner.Loop = function(nodes)
+		return nodes, 0
+	end
+	ns.Planner.Seconds = function()
+		return loops[ns.listMap].seconds
+	end
+	ns.Planner.ZoneName = tostring
+	ns.Navigation = {
+		Estimate = function(uiMapID)
+			ns.listMap = uiMapID
+			return loops[uiMapID].travel
+		end,
+	}
+	-- Seconds is called after Loop, so Loop records the map being planned.
+	local loopFn = ns.Planner.Loop
+	ns.Planner.Loop = function(nodes)
+		ns.listMap = nodes[1].uiMapID
+		return loopFn(nodes)
+	end
+
+	missing = 12
+	local list = ns.Planner.ListZones(4)
+	assert(list[1].uiMapID == 1426, "12 missing: the near zone finishes first")
+	missing = 600
+	list = ns.Planner.ListZones(4)
+	assert(list[1].uiMapID == 2521, "more than a lap missing: the denser zone wins on its full-lap rate")
+	assert(math.abs(list[1].rate - 294 / (5412 + 1475) * 600) < 1e-6, "a whole lap is the full-lap rate")
+end
+
 print("planner_spec ok")

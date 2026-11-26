@@ -66,13 +66,7 @@ ns.DB.loopOnMap = true
 H.Load(ns, "UI/Loop.lua")
 local Loop = ns.Loop
 
--- A node is visited before the next one, next on it and ahead after it; a preview has no next.
-assert(Loop.State(1, 3) == "visited" and Loop.State(2, 3) == "visited", "earlier stops are visited")
-assert(Loop.State(3, 3) == "next", "the next stop is marked")
-assert(Loop.State(4, 3) == "ahead", "later stops are ahead")
-assert(Loop.State(1, nil) == "ahead", "a preview draws every pin ahead")
-
--- One pin per node on the loop, the right atlas per kind, dimmed when visited and clearer when next.
+-- A pin per node still to visit, the right atlas per kind, the next one clearer; visited nodes are not drawn.
 local order = {
 	{ x = 0.1, y = 0.1, kind = "Mining" },
 	{ x = 0.3, y = 0.1, kind = "Herb Gathering" },
@@ -85,21 +79,22 @@ for _, pin in ipairs(acquired) do
 		pins[#pins + 1] = pin
 	end
 end
-assert(#pins == 3, "every node on the loop gets a pin")
+assert(#pins == 2, "visited nodes are not drawn, every later node gets a pin")
 assert(
-	pins[1].Texture.atlas == "Mobile-Mining" and pins[3].Texture.atlas == "Mobile-Mining",
-	"ore wears the mining atlas"
+	pins[2].Texture.atlas == "Mobile-Mining" and pins[1].Texture.atlas == "Mobile-Herbalism",
+	"ore wears the mining atlas and herbs the herbalism atlas"
 )
-assert(pins[2].Texture.atlas == "Mobile-Herbalism", "herbs wear the herbalism atlas")
-assert(
-	pins[1].Texture.desaturated == true and pins[2].Texture.desaturated == false,
-	"only visited pins are desaturated"
-)
-assert(pins[1].alpha < pins[3].alpha and pins[3].alpha < pins[2].alpha, "visited dimmest, next clearest")
-assert(pins[2].alpha < 1, "no pin is fully opaque")
+assert(pins[1].Texture.desaturated ~= true and pins[2].Texture.desaturated ~= true, "no pin is grey")
+assert(pins[2].alpha < pins[1].alpha, "the next pin is the clearest")
+assert(pins[1].alpha < 1, "no pin is fully opaque")
 for _, drawn in ipairs(fitted) do
 	assert(drawn.w <= 16 and drawn.w == drawn.h, "pins stay calm in size and keep their aspect")
 end
+
+-- A preview with no next node draws every pin.
+acquired = {}
+Loop.Show({ uiMapID = 7, order = order }, nil)
+assert(#acquired >= 3, "a preview draws the whole loop")
 
 -- A zone on another map, or the setting off, draws nothing.
 acquired = {}

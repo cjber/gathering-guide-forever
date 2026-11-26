@@ -123,16 +123,20 @@ function GM.NodeNames(kind)
 end
 
 ---@return table? profile GatherMate2's active profile
----@return table? display its Display module
 local function Profile()
 	local gm = Addon()
-	local db = gm and type(gm.db) == "table" and gm.db
-	local profile = db and db.profile
-	local display = gm and type(gm.GetModule) == "function" and gm:GetModule("Display", true)
-	if type(profile) ~= "table" or not display or type(display.UpdateWorldMap) ~= "function" then
+	local profile = gm and type(gm.db) == "table" and gm.db.profile
+	if type(profile) ~= "table" or type(gm.SendMessage) ~= "function" then
 		return nil
 	end
-	return profile, display
+	return profile
+end
+
+-- GatherMate2's own way to apply a setting change (its minimap button sends it after toggling showWorldMap): modules
+-- listening re-read the profile and redraw. Display listens only once enabled and takes its profile from this message,
+-- so nothing is redrawn before it exists, and it reads the switch itself when it enables.
+local function Refresh()
+	Addon():SendMessage("GatherMate2ConfigChanged")
 end
 
 ---@return string?
@@ -141,10 +145,10 @@ local function ProfileName()
 	return gm and gm.db and type(gm.db.GetCurrentProfile) == "function" and gm.db:GetCurrentProfile() or nil
 end
 
--- Turns GatherMate2's world map pins off through its own profile switch and refresh. The player's value and profile are
--- saved first (ns.DB.gm2WorldMap) and kept across a crash, so a later restore still has the original.
+-- Turns GatherMate2's world map pins off through its own profile switch. The player's value and profile are saved
+-- first (ns.DB.gm2WorldMap) and kept across a crash, so a later restore still has the original.
 function GM.HideWorldMap()
-	local profile, display = Profile()
+	local profile = Profile()
 	if not profile or not ns.DB then
 		return
 	end
@@ -153,7 +157,7 @@ function GM.HideWorldMap()
 	end
 	if profile.showWorldMap then
 		profile.showWorldMap = false
-		display:UpdateWorldMap()
+		Refresh()
 	end
 end
 
@@ -163,13 +167,13 @@ function GM.RestoreWorldMap()
 	if saved == nil then
 		return
 	end
-	local profile, display = Profile()
+	local profile = Profile()
 	if not profile then
 		return
 	end
 	ns.DB.gm2WorldMap = nil
 	if saved.profile == ProfileName() and profile.showWorldMap ~= saved.shown then
 		profile.showWorldMap = saved.shown
-		display:UpdateWorldMap()
+		Refresh()
 	end
 end

@@ -283,16 +283,20 @@ function Planner.RemoveItem(item)
 	end
 end
 
--- Best places to farm everything still needed on the list, by wanted nodes per ten minutes, best first.
+-- Best places to farm everything still needed on the list, by wanted nodes per ten minutes, best first. The list is
+-- finite: only as many nodes as the items still missing (one item per node) are walked, from the loop's start, so the
+-- trip there is weighed against that and not spread over a lap the player will not finish. When the list needs a whole
+-- lap or more this is the full lap's rate.
 ---@param limit number
 ---@param yield fun()?
 ---@return table[]
 function Planner.ListZones(limit, yield)
 	local items = Planner.Items()
-	local wanted, kinds = {}, {}
+	local wanted, kinds, missing = {}, {}, 0
 	for _, row in ipairs(Planner.ListRows()) do
 		local def = items[row.item]
 		if def and row.have < row.need then
+			missing = missing + row.need - row.have
 			kinds[def.kind] = true
 			for _, node in ipairs(def.nodes) do
 				wanted[node] = true
@@ -321,6 +325,7 @@ function Planner.ListZones(limit, yield)
 		local order, yards = Planner.Loop(entry.nodes, yield)
 		local seconds = Planner.Seconds(yards, #order)
 		local travel = Travel(uiMapID, order)
+		local walked = math.min(#order, missing)
 		zones[#zones + 1] = {
 			kind = entry.kind,
 			list = true,
@@ -331,7 +336,7 @@ function Planner.ListZones(limit, yield)
 			yards = yards,
 			seconds = seconds,
 			travel = travel,
-			rate = Planner.Rate(#order, seconds, travel),
+			rate = Planner.Rate(walked, seconds * walked / #order, travel),
 		}
 	end
 	table.sort(zones, function(a, b)

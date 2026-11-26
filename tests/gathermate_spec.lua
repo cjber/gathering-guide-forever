@@ -21,12 +21,9 @@ GatherMate2 = {
 			return profileName
 		end,
 	},
-	GetModule = function()
-		return {
-			UpdateWorldMap = function()
-				refreshes = refreshes + 1
-			end,
-		}
+	SendMessage = function(_, message)
+		assert(message == "GatherMate2ConfigChanged", "GatherMate2's own config message is the refresh")
+		refreshes = refreshes + 1
 	end,
 }
 local Settings = ns.SettingsModule
@@ -84,5 +81,40 @@ GatherMate2 = nil
 ns.DB.gm2WorldMap = nil
 Settings.Set("onlyGatheringPins", true)
 assert(ns.DB.gm2WorldMap == nil, "no GatherMate2, nothing saved")
+
+-- Shaped like GatherMate2's Display: its profile upvalue is nil until OnEnable, a redraw before that raises inside
+-- GatherMate2 (Display.lua:748/364), and it listens to the config message only while enabled.
+do
+	local listener, db, errors = nil, nil, 0
+	local real = { showWorldMap = true, show = {} }
+	local gm = {
+		db = {
+			profile = real,
+			GetCurrentProfile = function()
+				return "Default"
+			end,
+		},
+		SendMessage = function(_, message)
+			if message == "GatherMate2ConfigChanged" and listener then
+				db = real
+				if not db.showWorldMap then
+					return
+				end
+				if db.show == nil then
+					errors = errors + 1
+				end
+			end
+		end,
+	}
+	GatherMate2 = gm
+	ns.DB = { onlyGatheringPins = true }
+	Settings.SyncGatherMate()
+	assert(real.showWorldMap == false and errors == 0, "a hide before Display is enabled only writes the switch")
+	listener = true -- Display:OnEnable
+	db = real
+	assert(db.showWorldMap == false, "Display reads the hidden switch when it enables")
+	Settings.Set("onlyGatheringPins", false)
+	assert(real.showWorldMap == true and errors == 0, "a restore after enable redraws through the message")
+end
 
 print("gathermate_spec ok")

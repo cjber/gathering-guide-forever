@@ -359,7 +359,7 @@ function Panel.ListSpecs(refresh)
 			(function()
 				local parts = {}
 				for _, row in ipairs(listRows) do
-					parts[#parts + 1] = row.item .. row.need .. (row.have < row.need and "o" or "d")
+					parts[#parts + 1] = row.item .. math.max(row.need - row.have, 0)
 				end
 				return parts
 			end)(),

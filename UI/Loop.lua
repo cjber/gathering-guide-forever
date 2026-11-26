@@ -4,18 +4,18 @@ if ns.broken then
 	return
 end
 
--- Draws a loop on the world map: calm pins for the nodes on it, one atlas per GatherMate2 node kind. Visited nodes are
--- dimmed and the next one is slightly clearer. The way between them is Shortest Path Forever's own journey line.
--- GatherMate2's own world map pins are switched off by the Hide GatherMate2 map icons setting (Core/GatherMate.lua).
+-- Draws a loop on the world map: calm pins for the nodes still to visit, one atlas per GatherMate2 node kind, the next
+-- one slightly clearer. A visited node is not drawn: only the pins that matter stay on the map.
+-- The way between them is Shortest Path Forever's own journey line. GatherMate2's own world map pins are switched off
+-- by the Only show Gathering pins on the map setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
 local Loop = {}
 ns.Loop = Loop
 
--- A calm size that still reads at map scale. A visited node shrinks as well as dims, so it reads as done.
+-- A calm size that still reads at map scale.
 local PIN_SIZE = 12
 local NEXT_SIZE = 16
-local VISITED_SIZE = 9
-local ALPHA = { ahead = 0.6, visited = 0.25, next = 0.95 }
+local ALPHA = { ahead = 0.6, next = 0.95 }
 
 local NodePin = {}
 local pool
@@ -33,24 +33,11 @@ function NodePin:OnLoad()
 	self.Texture:SetPoint("CENTER")
 end
 function NodePin:OnAcquired(node, state)
-	local size = ({ next = NEXT_SIZE, visited = VISITED_SIZE })[state] or PIN_SIZE
+	local size = state == "next" and NEXT_SIZE or PIN_SIZE
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
-	self.Texture:SetDesaturated(state == "visited")
 	ns.Fit(self.Texture, ns.KIND_ATLAS[node.kind], size, size)
 	self:SetPosition(node.x, node.y)
-end
-
--- How a loop's node i is drawn when the next one is index pos: "visited" before it, "next" on it, else "ahead". A loop
--- with no next node (a zone preview) draws every pin "ahead".
----@param i number
----@param pos number?
----@return "visited"|"next"|"ahead"
-function Loop.State(i, pos)
-	if not pos or i > pos then
-		return "ahead"
-	end
-	return i == pos and "next" or "visited"
 end
 
 ---@return table?
@@ -86,8 +73,10 @@ function Loop.Draw()
 		return
 	end
 	local order = shown.order
-	for i, node in ipairs(order) do
-		pool:Acquire(node, Loop.State(i, nextIndex))
+	-- Nodes before the next one are visited and stay off the map; a preview has no next node and draws all of them.
+	local first = nextIndex or 1
+	for i = first, #order do
+		pool:Acquire(order[i], i == nextIndex and "next" or "ahead")
 	end
 end
 
