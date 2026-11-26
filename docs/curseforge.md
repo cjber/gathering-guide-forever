@@ -20,11 +20,11 @@ A tour starts at the node nearest you, with Shortest Path Forever drawing the wa
 
 ![Small pins for the nodes still to visit](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-map-pins.png)
 
-Only the nodes still to visit get a pin on the world map. Nearby nodes share one pin until you zoom in.
+Only the nodes still to visit get a pin on the world map, showing the herb or ore. Nearby nodes share one pin until you zoom in.
 
 ![The Gathering Tour section of the objective tracker](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tracker.png)
 
-The objective tracker shows the stop, the loop size, what you gathered and your gold per hour.
+The objective tracker shows the next node and its distance, your place in the loop, your skill and skill-ups, what you gathered and your gold per hour.
 
 ![A farming list and the best zone to farm it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
 

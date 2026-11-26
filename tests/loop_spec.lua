@@ -2,18 +2,28 @@ local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local H = dofile(here .. "/harness.lua")
 local ns = H.Namespace()
 
--- Frames and the map canvas the loop draws through, recording what each pin was given.
-local fitted, acquired = {}, {}
-ns.Fit = function(texture, atlas, w, h)
-	fitted[#fitted + 1] = { atlas = atlas, w = w, h = h }
-	texture.atlas = atlas
+-- Every node the addon knows a skill for has its own picture, and the file it names is there.
+H.Load(ns, "Data/NodeSkills.lua")
+H.Load(ns, "Data/NodeArt.lua")
+for name in pairs(ns.NodeSkills) do
+	local path = ns.NodeArt[name]
+	assert(path, name .. " has no map pin art")
+	local file = path:match("^Interface\\AddOns\\GatheringGuideForever\\(.+)$")
+	assert(file, name .. " names art outside the addon: " .. path)
+	local handle = io.open(H.root .. "/" .. file:gsub("\\", "/"), "rb")
+	assert(handle, name .. " names a missing art file: " .. path)
+	handle:close()
 end
-ns.KIND_ATLAS = { ["Mining"] = "ore", ["Herb Gathering"] = "herb" }
+
+-- Frames and the map canvas the loop draws through, recording what each pin was given.
+local acquired = {}
 ns.OnLoaded = function() end
 ns.On = function() end
 local function Pin()
 	local pin = { alpha = 1 }
-	function pin.SetSize() end
+	function pin:SetSize(w, h)
+		self.width, self.height = w, h
+	end
 	function pin:SetAlpha(a)
 		self.alpha = a
 	end
@@ -26,8 +36,10 @@ local function Pin()
 	end
 	function pin.CreateTexture()
 		local t = {}
-		function t.SetPoint() end
 		function t.SetAllPoints() end
+		function t:SetTexture(path)
+			self.path = path
+		end
 		function t:SetDesaturated(d)
 			self.desaturated = d
 		end
@@ -99,25 +111,26 @@ ns.DB.loopOnMap = true
 H.Load(ns, "UI/Loop.lua")
 local Loop = ns.Loop
 
--- A pin per node still to visit, the right atlas per kind, the next one clearer; visited nodes are not drawn.
+local function Art(pin, name)
+	return pin.Texture.path == ns.NodeArt[name]
+end
+
+-- A pin per node still to visit, in that node's art, the next one clearer; visited nodes are not drawn.
 local order = {
-	{ x = 0.1, y = 0.1, kind = "Mining" },
-	{ x = 0.3, y = 0.1, kind = "Herb Gathering" },
-	{ x = 0.5, y = 0.1, kind = "Mining" },
+	{ x = 0.1, y = 0.1, name = "Copper Vein" },
+	{ x = 0.3, y = 0.1, name = "Peacebloom" },
+	{ x = 0.5, y = 0.1, name = "Tin Vein" },
 }
 Loop.Show({ uiMapID = 7, order = order }, 2)
 local pins = acquired
 assert(#pins == 2, "visited nodes are not drawn, every later node gets a pin")
-assert(
-	pins[1].Texture.atlas == "ore" and pins[2].Texture.atlas == "herb",
-	"ore wears the ore art and herbs the herb art"
-)
+assert(Art(pins[1], "Tin Vein") and Art(pins[2], "Peacebloom"), "each node wears its own art")
 assert(pins[1].Texture.desaturated ~= true and pins[2].Texture.desaturated ~= true, "no pin is grey")
 assert(pins[1].levelType == "PIN_FRAME_LEVEL_AREA_POI", "pins draw above the map's explored-area art")
 assert(pins[1].alpha < pins[2].alpha, "the next pin is the clearest")
 assert(pins[2].alpha < 1, "no pin is fully opaque")
-for _, drawn in ipairs(fitted) do
-	assert(drawn.w <= 16 and drawn.w == drawn.h, "pins stay calm in size and keep their aspect")
+for _, pin in ipairs(pins) do
+	assert(pin.width <= 16 and pin.width == pin.height, "pins stay calm in size and keep their aspect")
 end
 
 -- A preview with no next node draws every pin.
@@ -127,9 +140,9 @@ assert(#acquired >= 3, "a preview draws the whole loop")
 
 -- Overlapping nodes share a pin at their middle, in the first node's art, sized as the pins are at this zoom.
 local crowd = {
-	{ x = 0.1, y = 0.2, kind = "Herb Gathering" },
-	{ x = 0.12, y = 0.4, kind = "Mining" },
-	{ x = 0.8, y = 0.5, kind = "Mining" },
+	{ x = 0.1, y = 0.2, name = "Peacebloom" },
+	{ x = 0.12, y = 0.4, name = "Copper Vein" },
+	{ x = 0.8, y = 0.5, name = "Copper Vein" },
 }
 local function Draw(index)
 	acquired = {}
@@ -138,11 +151,12 @@ local function Draw(index)
 end
 reach, zoom = 0.05, 1
 assert(#Draw(nil) == 2, "two overlapping nodes share one pin")
-assert(math.abs(askedSize - 14.4) < 1e-9, "the grouping is asked at the pin's size at this zoom")
-assert(acquired[1].Texture.atlas == "herb" and math.abs(acquired[1].x - 0.11) < 1e-9, "the shared pin is in the middle")
+assert(math.abs(askedSize - 16.8) < 1e-9, "the grouping is asked at the pin's size at this zoom")
+assert(Art(acquired[1], "Peacebloom"), "the shared pin wears the first node's art")
+assert(math.abs(acquired[1].x - 0.11) < 1e-9, "the shared pin is in the middle")
 assert(math.abs(acquired[1].y - 0.3) < 1e-9, "the shared pin is in the middle both ways")
 -- The next node keeps its own pin and covers the one under it; a node further along the same chain keeps a pin.
-crowd[3] = { x = 0.16, y = 0.5, kind = "Mining" }
+crowd[3] = { x = 0.16, y = 0.5, name = "Copper Vein" }
 local grouped = Draw(1)
 assert(#grouped == 2, "the node under the next stop has no pin of its own, the one beyond it does")
 assert(grouped[1].x == 0.16 and grouped[2].x == 0.1 and grouped[2].y == 0.2, "the next stop keeps its place")

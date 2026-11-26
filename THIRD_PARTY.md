@@ -12,6 +12,10 @@ whether any of it reaches the zip players install. The addon itself is GPL-3.0-o
 | [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) by Kagaro, Xinhuan, Nevcairiel and Ammo | The node ID numbers and English names in `Data/NodeNames.lua`, from its `Constants.lua`. Node locations are read from the player's own database at runtime; `Core/GatherMate.lua` is a reader written for this addon | GatherMate2 1.52.7 | GPL-2.0-or-later |
 | [wago.tools](https://wago.tools/db2/ItemSparse) ItemSparse | The item ID of each herb and ore, in `Data/Items.lua` | `1.60.1.71091` | Game data |
 
+The map pins in `media/Nodes/`, one per herb and ore, are original art made for this addon with AI assistance
+(Google's `gemini-nano-banana-2.1`) and no Blizzard art. `tools/export_nodes.py` exports them from the originals in
+`tools/pin_source/`.
+
 ## Read in game, never bundled
 
 | Input | Used for | Licence |

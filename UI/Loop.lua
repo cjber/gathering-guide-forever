@@ -4,20 +4,20 @@ if ns.broken then
 	return
 end
 
--- Draws a loop on the world map: calm pins for the nodes still to visit, one atlas per GatherMate2 node kind, the next
--- one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their middle, in the first one's
--- art; the next node keeps its own pin, which also stands for the nodes under it. A visited node is not drawn: only the
--- pins that matter stay on the map.
+-- Draws a loop on the world map: calm pins for the nodes still to visit, each herb and ore in the addon's own art
+-- (Data/NodeArt.lua), the next one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their
+-- middle, in the first one's art; the next node keeps its own pin, which also stands for the nodes under it. A visited
+-- node is not drawn: only the pins that matter stay on the map.
 -- The way between them is Shortest Path Forever's own journey line. GatherMate2's own world map pins are switched off
 -- by the Only show Gathering pins on the map setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
 local Loop = {}
 ns.Loop = Loop
 
--- A calm size that still reads at map scale.
-local PIN_SIZE = 12
+-- A calm size at which the pictures still tell apart.
+local PIN_SIZE = 14
 local NEXT_SIZE = 16
-local ALPHA = { ahead = 0.6, next = 0.95 }
+local ALPHA = { ahead = 0.8, next = 0.95 }
 
 local NodePin = {}
 local pool
@@ -25,22 +25,18 @@ local pool
 local plan
 local nextIndex
 
-local function Setup(self)
-	self.Texture = self:CreateTexture(nil, "ARTWORK")
-end
-
 function NodePin:OnLoad()
 	self:SetScalingLimits(1, 1, 1.2)
 	-- Without a level type the pin sits under the map's explored-area art and shows only over unexplored ground.
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
-	Setup(self)
-	self.Texture:SetPoint("CENTER")
+	self.Texture = self:CreateTexture(nil, "ARTWORK")
+	self.Texture:SetAllPoints()
 end
 function NodePin:OnAcquired(node, state)
 	local size = state == "next" and NEXT_SIZE or PIN_SIZE
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
-	ns.Fit(self.Texture, ns.KIND_ATLAS[node.kind], size, size)
+	self.Texture:SetTexture(ns.NodeArt[node.name])
 	self:SetPosition(node.x, node.y)
 end
 
@@ -69,7 +65,7 @@ local function Middle(group)
 	for _, node in ipairs(group) do
 		x, y = x + node.x, y + node.y
 	end
-	return { x = x / #group, y = y / #group, kind = group[1].kind }
+	return { x = x / #group, y = y / #group, name = group[1].name }
 end
 
 -- Redraws the loop for the map now showing.

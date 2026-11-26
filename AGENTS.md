@@ -32,7 +32,8 @@ required check. `headless-smoke` is a commit status posted from the in-game agen
   (`NavigateRoute` with `{policy = "walking"}`, `ObserveStops`, `JourneyState`, `Cancel`, `Estimate`). Settings may read
   its saved farming options once, read-only. `tools/repo_rules.py` enforces this.
 - Node skill requirements are `Data/NodeSkills.lua`, copied from SkillUp Forever's data; GatherMate2 does not hold them.
-- Atlases from the client only, native aspect (`ns.Fit`), no minimap button, no chat messages. Vendored
+- Atlases from the client only, native aspect (`ns.Fit`), except the map pins, which are the addon's own art
+  (`media/Nodes/`, `tools/export_nodes.py`). No minimap button, no chat messages. Vendored
   `tools/forever_tools` and `tools/forever_sim` refresh with
   `python3 tools/forever_tools/sync.py update --source ../forever-core`; never edit them here.
 - `tools/forever-core.txt` pins the ForeverCore release and must equal the TOC's `X-Forever-Core`; the package
