@@ -4,10 +4,10 @@ if ns.broken then
 	return
 end
 
--- The farming session of a tour: what the player looted since the tour began, counted from bag count gains while a
--- loot window is open (so mail, the bank, the auction house, trades and crafting never count), and the gold per hour
--- those items are worth. It lives exactly as long as its tour: a new tour replaces it, and stopping the tour or
--- leaving the game ends it.
+-- The farming session of a tour: the skill gained since the tour began, what the player looted, counted from bag count
+-- gains while a loot window is open (so mail, the bank, the auction house, trades and crafting never count), and the
+-- gold per hour those items are worth. It lives exactly as long as its tour: a new tour replaces it, and stopping the
+-- tour or leaving the game ends it.
 local Session = {}
 ns.Session = Session
 
@@ -16,7 +16,18 @@ local SECONDS_PER_HOUR = 3600
 local RATE_REFRESH_SECONDS = 60
 local CALLER = "GatheringGuideForever"
 
----@type {startedAt: number, list: boolean, entries: {item: string, last: number, gathered: number}[]}?
+---@class GGSessionSkill
+---@field kind string
+---@field line number
+---@field start number
+
+---@class GGSession
+---@field startedAt number
+---@field list boolean
+---@field entries {item: string, last: number, gathered: number}[]
+---@field skills GGSessionSkill[]
+
+---@type GGSession?
 local session
 local looting = false
 ---@type {Cancel: fun(self)}?
@@ -78,14 +89,11 @@ function Session.Wanted(plan)
 	for _, node in ipairs(plan.order) do
 		present[node.name] = true
 	end
-	local items = ns.Planner.Items()
-	for item, def in pairs(items) do
-		if def.kind == plan.kind then
-			for _, node in ipairs(def.nodes) do
-				if present[node] then
-					wanted[#wanted + 1] = { item = item }
-					break
-				end
+	for item, def in pairs(ns.Planner.Items()) do
+		for _, node in ipairs(def.nodes) do
+			if present[node] then
+				wanted[#wanted + 1] = { item = item }
+				break
 			end
 		end
 	end
@@ -103,7 +111,17 @@ function Session.Begin(plan, now)
 	for i, want in ipairs(Session.Wanted(plan)) do
 		entries[i] = Entry(want.item)
 	end
-	session = { startedAt = now, list = plan.list == true, entries = entries }
+	local present = {}
+	for _, node in ipairs(plan.order) do
+		present[node.kind] = true
+	end
+	local skills = {}
+	for _, k in ipairs(ns.Kinds) do
+		if present[k.kind] then
+			skills[#skills + 1] = { kind = k.kind, line = k.line, start = (ns.Skills.Rank(k.line)) }
+		end
+	end
+	session = { startedAt = now, list = plan.list == true, entries = entries, skills = skills }
 	if ticker then
 		ticker:Cancel()
 	end
@@ -118,6 +136,29 @@ function Session.End()
 		ticker:Cancel()
 		ticker = nil
 	end
+end
+
+-- The professions the tour's nodes belong to, with the skill each had when the session began.
+---@return GGSessionSkill[]
+function Session.Skills()
+	return session and session.skills or {}
+end
+
+-- Skill points gained in those professions since the session began, and the rate per ten minutes once there is a gain
+-- and time has passed. Nil without a session.
+---@param now number seconds
+---@return number? gained
+---@return number? rate
+function Session.SkillUps(now)
+	if not session then
+		return nil
+	end
+	local gained = 0
+	for _, skill in ipairs(session.skills) do
+		gained = gained + math.max((ns.Skills.Rank(skill.line)) - skill.start, 0)
+	end
+	local elapsed = now - session.startedAt
+	return gained, gained > 0 and elapsed > 0 and gained / elapsed * 600 or nil
 end
 
 -- Moves each item's baseline to what the bags hold; a gain counts as gathered only when credit is set.
@@ -227,6 +268,11 @@ end
 ns.On("BAG_UPDATE_DELAYED", Session.BagsChanged)
 ns.On("LOOT_OPENED", Session.LootOpened)
 ns.On("LOOT_CLOSED", Session.LootClosed)
+ns.On("SKILL_LINES_CHANGED", function()
+	if session then
+		Notify()
+	end
+end)
 -- A price the client had not cached arrives as item data; the rate can be drawn then.
 ns.On("GET_ITEM_INFO_RECEIVED", function()
 	if session then

@@ -23,6 +23,14 @@ ns.core = {
 }
 H.Load(ns, "Locales/enUS.lua", "Journey/Session.lua")
 
+local ranks = { [186] = 100, [182] = 40 }
+ns.Kinds = { { kind = "Mining", line = 186 }, { kind = "Herb Gathering", line = 182 } }
+ns.Skills = {
+	Rank = function(line)
+		return ranks[line]
+	end,
+}
+
 local bags = { ["Copper Ore"] = 5, ["Tin Ore"] = 0 }
 ns.ItemIDs = { ["Copper Ore"] = 2770, ["Tin Ore"] = 2771, Peacebloom = 2447 }
 local names = { [2770] = "Copper Ore", [2771] = "Tin Ore", [2447] = "Peacebloom" }
@@ -55,7 +63,10 @@ local function loot(item, count)
 end
 
 -- A plain tour tracks the items its nodes give, from the bags as they are now.
-local zone = { kind = "Mining", name = "Zone", order = { { name = "Copper Vein" }, { name = "Tin Vein" } } }
+local zone = {
+	name = "Zone",
+	order = { { name = "Copper Vein", kind = "Mining" }, { name = "Tin Vein", kind = "Mining" } },
+}
 Session.Begin(zone, 1000)
 local rows = Session.Rows()
 assert(#rows == 2 and rows[1].item == "Copper Ore" and rows[2].item == "Tin Ore", "the zone's items, sorted")
@@ -136,6 +147,31 @@ Session.Begin(zone, 2000)
 assert(Session.Rows()[1].gathered == 0, "a new tour resets")
 Session.End()
 assert(#Session.Rows() == 0 and Session.PerHour(9999) == nil, "ending clears the session")
+
+-- Skill-ups count from the rank each of the tour's professions had at the start; the rate needs a gain and time.
+assert(Session.SkillUps(100) == nil and #Session.Skills() == 0, "no session, no skills")
+Session.Begin(zone, 1000)
+assert(#Session.Skills() == 1 and Session.Skills()[1].kind == "Mining", "only the professions the nodes belong to")
+local gained, rate = Session.SkillUps(1300)
+assert(gained == 0 and rate == nil, "no rate without a gain")
+ranks[186], ranks[182] = 103, 60
+gained, rate = Session.SkillUps(1000)
+assert(gained == 3 and rate == nil, "no rate before time passes")
+gained, rate = Session.SkillUps(2200)
+assert(gained == 3 and rate == 1.5, "three points in twenty minutes")
+Session.End()
+
+-- A loop through veins and herbs tracks the items and the skills of both.
+Session.Begin({
+	name = "Mixed",
+	order = { { name = "Copper Vein", kind = "Mining" }, { name = "Peacebloom", kind = "Herb Gathering" } },
+}, 1000)
+assert(#Session.Rows() == 2 and Session.Rows()[1].item == "Copper Ore" and Session.Rows()[2].item == "Peacebloom")
+local skills = Session.Skills()
+assert(#skills == 2 and skills[1].kind == "Mining" and skills[2].kind == "Herb Gathering", "in profession order")
+ranks[186], ranks[182] = 104, 62
+assert(Session.SkillUps(1600) == 3, "points of both professions add up")
+Session.End()
 
 -- Per hour, vendor source: every item must be priced, and nothing is shown until then.
 bags["Copper Ore"], bags["Tin Ore"] = 1, 0

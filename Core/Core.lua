@@ -36,9 +36,8 @@ ns.SECONDS_PER_NODE = 5
 -- publishes no respawn time for Classic or Forever gathering nodes and players report anything from 5 to 30 minutes,
 -- so ten minutes stands in until a source says otherwise (listed under Known limitations).
 ns.NODE_RESPAWN_SECONDS = 600
--- The overview offers this many of the best zones for a skill, plus the player's own: enough to choose between at a
--- glance without a long list to scroll.
-ns.TOP_ZONES = 3
+-- The overview shows this many of the best zones; the rest are a click away.
+ns.TOP_ZONES = 2
 
 ---@type table<string, fun(...)[]>
 local handlers = {}
@@ -113,6 +112,22 @@ end
 ---@param fn fun()
 function ns.Defer(fn)
 	C_Timer.After(0, fn)
+end
+
+-- An icon at its own shape, inline in a line of text with a space after it: an item's square file icon without its
+-- border, or an atlas sized to its own aspect. Nothing for an atlas the client cannot describe.
+---@param icon number|string
+---@param size number the height in the text
+---@return string
+function ns.Markup(icon, size)
+	if type(icon) == "number" then
+		return ("|T%d:%d:%d:0:0:64:64:5:59:5:59|t "):format(icon, size, size)
+	end
+	local info = C_Texture.GetAtlasInfo(icon)
+	if not info or info.height <= 0 then
+		return ""
+	end
+	return ("|A:%s:%d:%d|a "):format(icon, size, math.floor(size * info.width / info.height + 0.5))
 end
 
 -- An atlas at its own aspect inside a box, never stretched. The caller anchors it by one point.

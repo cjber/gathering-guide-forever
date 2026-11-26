@@ -35,4 +35,16 @@ onEvent(nil, "ADDON_LOADED", "GatheringGuideForever")
 
 assert(ns.DB.onlyGatheringPins == true, "defaults are filled in")
 assert(#ns.Char.list == 1 and ns.Char.list[1].item == "Copper Ore", "an unknown saved item is dropped")
+
+-- Inline icons keep their own shape: an item's file icon is square without its border, an atlas takes its width from
+-- its native size, and an atlas the client cannot describe draws nothing.
+_G.C_Texture = {
+	GetAtlasInfo = function(atlas)
+		return atlas == "wide" and { width = 26, height = 13 } or nil
+	end,
+}
+assert(ns.Markup(134566, 13) == "|T134566:13:13:0:0:64:64:5:59:5:59|t ", ns.Markup(134566, 13))
+assert(ns.Markup("wide", 13) == "|A:wide:13:26|a ", ns.Markup("wide", 13))
+assert(ns.Markup("missing", 13) == "")
+
 print("core_spec ok")

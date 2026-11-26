@@ -1,4 +1,4 @@
-Gathering Guide Forever plans a mining or herbalism skill-up tour in WoW: Forever. It reads the nodes in your GatherMate2 database, finds the zones that raise your skill fastest, and has Shortest Path Forever walk you through a loop of them.
+Gathering Guide Forever plans a mining and herbalism skill-up tour in WoW: Forever. It reads the nodes in your GatherMate2 database, finds the zones that raise your skill fastest, and has Shortest Path Forever walk you through a loop of them. With both professions, one loop takes in veins and herbs together.
 
 It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for node locations and [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) to walk a tour.
 
@@ -6,13 +6,13 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 
 [![Join me on Discord](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/discord-button.png)](https://discord.gg/FpHugGxRJY) [![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
 
-![The best mining zones for your skill](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-overview.png)
+![The best zones for your skills](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-overview.png)
 
-The Gathering page lists the best zones for your mining and herbalism skill with their skill range, travel time and rate.
+The Gathering page ranks the best zones for your skills, with their skill ranges, travel time and rate.
 
 ![A zone with its nodes and the next zones to move on to](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-zone.png)
 
-A zone lists its nodes by their chance to raise your skill, with the next zones to move on to.
+A zone shows the time to your trained maximum, the chance each node has to raise your skill and the next zones to move on to.
 
 ![A tour running in Dun Morogh](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tour.png)
 
@@ -24,7 +24,7 @@ Only the nodes still to visit get a pin on the world map, showing the herb or or
 
 ![The Gathering Tour section of the objective tracker](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tracker.png)
 
-The objective tracker shows the next node and its distance, your place in the loop, your skill and skill-ups, what you gathered and your gold per hour.
+The objective tracker shows the next node and its distance, your place in the loop, each skill and your skill-ups, what you gathered, your gold per hour and the zone to move on to.
 
 ![A farming list and the best zone to farm it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
 
@@ -34,8 +34,8 @@ These images are captures from the game client.
 
 ## Features
 
-- **Best zones for you.** Mining and Herbalism each list the zones that give the most skill-ups per ten minutes at your skill, with the skill range, travel time and rate.
-- **Zone view.** Every node is coloured by its chance to raise your skill, with Next zones for when it rises.
+- **Best zones for you.** One ranking for your gathering professions by skill-ups per ten minutes, with a click for more zones and a zone search by name.
+- **Zone view.** The time to your trained maximum, every node coloured by its chance to raise your skill, and Next zones for when it rises.
 - **Gathering tours.** The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map and a Gathering Tour section in the objective tracker.
 - **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
 - **A calm world map.** While the Gathering page is up or a tour runs, other map markers are cleared so the route and the node pins stand out. Other addons need versions that allow it, and one setting turns this off.
@@ -46,7 +46,7 @@ Skill-up chances follow Classic's rule: certain while your skill is under 25 abo
 
 Node and item names are in English in every client language. Heavy Thorium Veins, Demonsage and Marefoil are left out: the skill they need is not known yet.
 
-A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned.
+A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned. The time to a skill is left off when a loop's nodes cannot take you that far.
 
 ## Usage
 

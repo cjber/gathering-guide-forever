@@ -28,19 +28,30 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 			end
 		end
 	end
-	local function row(text)
+	-- A row by the string in one of its named lines: a card's title, a result's name, a list item's text.
+	local function row(field, text)
 		return find(panel, function(frame)
-			-- Templates also name textures Left.
-			return frame.Left and frame.Left.GetText and frame.Left:GetText() == text
+			local line = frame[field]
+			return type(line) == "table" and line.GetText and line:GetText() == text
 		end)
 	end
-	sim:click(assert(row("Open my farming list"), "the way to the list"))
-	local search = assert(
-		find(panel, function(frame)
+	local tab = G.GatheringGuideForeverTab
+	sim:input(function()
+		tab:OnMouseDown("LeftButton")
+		tab:OnMouseUp("LeftButton", true)
+	end)
+	local _, _, _, iconX, iconY = tab.Icon:GetPoint()
+	assert(iconX == 0 and iconY == 0, "the native press cycle must keep the icon centred")
+	local function box()
+		return find(panel, function(frame)
 			return frame.Instructions ~= nil
-		end),
-		"the search box"
-	)
+		end)
+	end
+	assert(not box(), "with no profession there are no zones to search")
+	sim:click(assert(row("Title", "Farm for a list"), "the home page offers the list"))
+	sim:advance(0.1)
+	local search = assert(box(), "the list's search box")
+	assert(search:IsShown() and search.Instructions:GetText() == "Add an item", "the list's box finds items")
 
 	sim:input(function()
 		search:SetFocus()
@@ -49,24 +60,25 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 		search:GetScript("OnTextChanged")(search, true)
 	end)
 	sim:advance(0.1)
-	assert(row("Tin Ore"), "a result for what is typed")
+	assert(row("Name", "Tin Ore"), "typing shows the matching items")
+	assert(search:IsShown() and search:HasFocus(), "the box keeps the cursor as the page is redrawn")
 	-- The clear button empties the box from code.
 	sim:input(function()
 		search:SetText("")
 	end)
 	sim:advance(0.1)
-	assert(not row("Tin Ore"), "the result goes with the text")
+	assert(not row("Name", "Tin Ore"), "the result goes with the text")
 
 	sim:input(function()
 		search:SetText("copper ore")
 	end)
 	sim:advance(0.1)
-	sim:click(assert(row("Copper Ore"), "the result to add"))
+	sim:click(assert(row("Name", "Copper Ore"), "the result to add"))
 	sim:advance(0.1)
 	local list = G.GatheringGuideForeverCharDB.list
 	assert(#list == 1 and list[1].need == 20, "added for 20")
 	-- No profession here, so the list row also names the skill it needs.
-	local count = assert(row("Copper Ore (needs 1)"), "the list row").Count
+	local count = assert(row("Name", "Copper Ore (needs 1)"), "the list row").Wanted
 	assert(count:IsShown() and count:GetNumber() == 20, "its count is shown in a box")
 
 	sim:input(function()
@@ -90,8 +102,21 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 		search:SetText("copper ore")
 	end)
 	sim:advance(0.1)
-	sim:click(assert(row("Copper Ore"), "the result row comes first"))
+	sim:click(assert(row("Name", "Copper Ore"), "the result row"))
 	sim:advance(0.1)
 	assert(#list == 1 and list[1].need == 45, "an item already listed keeps its count")
+
+	-- Back on the home page the list shows as a card to continue.
+	local back = assert(
+		find(panel, function(frame)
+			-- Scroll bars also name a button Back.
+			return frame.Back ~= nil and frame.Ring ~= nil
+		end),
+		"the list's heading"
+	).Back
+	sim:click(back)
+	sim:advance(0.1)
+	local card = assert(row("Title", "Farm for a list"), "the list's card")
+	assert(card.Corner:GetText() == "0 of 45", "how much of the list is carried")
 	sim:expectNoErrors(ADDON)
 end)

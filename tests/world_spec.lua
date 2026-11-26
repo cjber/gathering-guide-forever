@@ -28,3 +28,14 @@ end
 local start = ns.Order.Nearest(order, player)
 assert(start == 2, "the node nearest the player starts the tour")
 assert(ns.Order.Rotate(order, start)[1] == order[2])
+
+-- A zone's level range reads as the client's map label does, and is left off where the client gives none.
+local ranges = { [1] = { 20, 30 }, [2] = { 60, 60 }, [3] = { 0, 0 } }
+C_Map.GetMapLevels = function(uiMapID)
+	local range = ranges[uiMapID]
+	if range then
+		return range[1], range[2]
+	end
+end
+assert(ns.World.Levels(1) == "20-30" and ns.World.Levels(2) == "60")
+assert(ns.World.Levels(3) == nil and ns.World.Levels(4) == nil)

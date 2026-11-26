@@ -53,6 +53,18 @@ function World.Distance(a, b)
 	return math.sqrt(dx * dx + dy * dy)
 end
 
+-- A zone's level range as the client's own map label shows it ("20-30", one number when both ends match), or nil for
+-- a map the client gives no levels.
+---@param uiMapID number
+---@return string?
+function World.Levels(uiMapID)
+	local low, high = C_Map.GetMapLevels(uiMapID)
+	if not low or not high or low <= 0 or high <= 0 then
+		return nil
+	end
+	return low == high and tostring(high) or ("%d-%d"):format(low, high)
+end
+
 -- The map the player stands on, for the zone views.
 ---@return number?
 function World.PlayerMap()
