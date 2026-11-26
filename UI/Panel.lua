@@ -99,7 +99,8 @@ local function Range(range)
 	return string.format("%d-%d", range.lowest, range.highest)
 end
 
--- A zone card's skill ranges: with two professions one line for each the loop has nodes of, behind its tracking icon.
+-- A zone card's skill ranges: one line for each profession the loop has nodes of, behind its tracking icon, so a lone
+-- number reads as a skill.
 ---@param zone table
 ---@param learned GGSkill[]
 ---@return string[]
@@ -108,8 +109,7 @@ local function Ranges(zone, learned)
 	for _, skill in ipairs(learned) do
 		local range = zone.ranges[skill.kind]
 		if range then
-			local icon = #learned > 1 and ns.Markup(ns.KIND_ATLAS[skill.kind], 12) or ""
-			lines[#lines + 1] = icon .. Range(range)
+			lines[#lines + 1] = ns.Markup(ns.KIND_ATLAS[skill.kind], 12) .. Range(range)
 		end
 	end
 	return lines
