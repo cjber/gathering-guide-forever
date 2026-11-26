@@ -30,7 +30,7 @@ The objective tracker shows the stop, the loop size, what you gathered and your 
 
 Farm for a list: how many of each herb or ore you carry, and the best zone for all of it.
 
-These images are generated previews of the Gathering Guide Forever UI.
+These images are captures from the game client.
 
 ## Features
 
