@@ -19,7 +19,15 @@ ns.On = function() end
 ns.Defer = function(fn)
 	fn()
 end
-ns.Session = { Begin = function() end, End = function() end }
+local began, ended = 0, 0
+ns.Session = {
+	Begin = function()
+		began = began + 1
+	end,
+	End = function()
+		ended = ended + 1
+	end,
+}
 GetServerTime = function()
 	return 0
 end
@@ -87,6 +95,7 @@ assert(started, why)
 assert(routes[1][1].x == 0.3, "the tour starts at the node nearest the player")
 assert(#routes[1] == 6, "every node in one batch")
 assert(Tour.Active() and Tour.Progress().visited == 0)
+assert(began == 1, "a started tour begins a session")
 
 observer("arrived", 1, routes[1][1])
 assert(Tour.Progress().visited == 1, "an arrival advances the tour")
@@ -101,8 +110,19 @@ assert(Tour.Progress().laps == 1, "the last stop closes a lap")
 assert(#routes == 2, "the loop repeats after the last arrival")
 assert(routes[2][1].x == routes[1][1].x, "and begins again where it began")
 
+-- A start the journey refuses leaves the running tour and its session alone.
+local navigate = ShortestPathForever.API.NavigateRoute
+ShortestPathForever.API.NavigateRoute = function()
+	return false
+end
+started, why = Tour.Start({ kind = "Mining", uiMapID = 1, name = "Other", order = loop })
+assert(not started and why == "refused", why)
+assert(Tour.Progress().name == "Zone" and observer and began == 1 and ended == 0, "the old tour and session stay")
+ShortestPathForever.API.NavigateRoute = navigate
+
 Tour.Stop()
 assert(not Tour.Active() and observer == nil, "stop ends the tour and unsubscribes")
+assert(ended == 1, "stop ends the session")
 
 -- A blocked journey and a missing API refuse the start with a reason.
 ShortestPathForever.API.JourneyState = function()

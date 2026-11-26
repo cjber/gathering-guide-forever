@@ -139,7 +139,7 @@ function Tour.Start(plan)
 		end
 	end
 	local k = ns.KindByName[plan.kind]
-	Tour.Stop(true)
+	local previous = state
 	state = {
 		kind = plan.kind,
 		line = k and k.line or 0,
@@ -152,20 +152,25 @@ function Tour.Start(plan)
 		laps = 0,
 		status = "starting",
 	}
-	unobserve = ns.Navigation.Observe(Observed)
 	if not Submit() then
 		local why = state.status
-		Tour.Stop(true)
+		state = previous
 		return false, why
 	end
+	-- The new journey replaced the old one; only now does the old tour let go of its observer and its session.
+	if unobserve then
+		unobserve()
+	end
+	unobserve = ns.Navigation.Observe(Observed)
 	ns.Char.last = { kind = plan.kind, uiMapID = plan.uiMapID, name = plan.name }
 	ns.Session.Begin(plan, GetServerTime())
 	Notify()
 	return true
 end
 
--- Lets go of the running tour and the journey it started, leaving the session for a reload to keep.
-local function Release()
+-- Ends the tour, its journey and its session.
+---@param quiet boolean?
+function Tour.Stop(quiet)
 	if unobserve then
 		unobserve()
 		unobserve = nil
@@ -174,12 +179,6 @@ local function Release()
 		ns.Navigation.Cancel()
 		state = nil
 	end
-end
-
--- Ends the tour, its journey and its session.
----@param quiet boolean?
-function Tour.Stop(quiet)
-	Release()
 	ns.Session.End()
 	if not quiet then
 		Notify()
@@ -247,5 +246,5 @@ end
 -- A new skill level or a leaving player can end a stale tour. A player who dies or enters combat keeps the tour; the
 -- journey itself pauses.
 ns.On("PLAYER_LOGOUT", function()
-	Release()
+	Tour.Stop(true)
 end)

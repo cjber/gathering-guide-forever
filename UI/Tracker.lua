@@ -6,8 +6,7 @@ end
 local L = ns.L
 
 -- The Gathering Tour section in ForeverCore's shared tracker column: the zone, how far round the loop the player is and
--- the next node, then the session's tally of what was gathered and its gold per hour. It draws while a tour runs and
--- while a session survives a reload.
+-- the next node, then the session's tally of what was gathered and its gold per hour. It draws only while a tour runs.
 local Tracker = {}
 ns.Tracker = Tracker
 
@@ -63,28 +62,28 @@ end
 
 function ModuleMixin:LayoutContents()
 	local progress = ns.DB.showTracker and ns.Tour.Progress()
-	local session = ns.DB.showTracker and ns.Session.Active()
-	if not (progress or session) then
+	if not progress then
 		return
 	end
 	local block = self:GetBlock(1)
-	block:SetHeader(progress and progress.name or ns.Session.Name())
+	block:SetHeader(progress.name)
 	local key = 0
-	for _, text in ipairs(progress and Tracker.Lines(progress) or {}) do
+	for _, text in ipairs(Tracker.Lines(progress)) do
 		key = key + 1
 		block:AddObjective(key, text)
 	end
-	for _, row in ipairs(ns.Session.Rows()) do
+	local rows = ns.Session.Rows()
+	for _, row in ipairs(rows) do
 		key = key + 1
 		block:AddObjective(key, Tracker.TallyLine(row))
 		if row.need then
 			local bar = block:AddProgressBar(key)
 			if bar then
-				bar:SetPercent(math.floor(math.min(row.have, row.need) / math.max(row.need, 1) * 100))
+				bar:SetPercent(math.floor(math.min(row.have, row.need) / row.need * 100))
 			end
 		end
 	end
-	if session then
+	if #rows > 0 then
 		key = key + 1
 		block:AddObjective(key, Tracker.RateLine(ns.Session.PerHour(GetServerTime())))
 	end
@@ -114,7 +113,4 @@ ns.OnLoaded(function()
 	Tracker.Refresh()
 end)
 ns.Tour.Listen(Tracker.Refresh)
-ns.On("BAG_UPDATE_DELAYED", function()
-	ns.Session.Refresh()
-	Tracker.Refresh()
-end)
+ns.Session.Listen(Tracker.Refresh)
