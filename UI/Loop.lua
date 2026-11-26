@@ -31,6 +31,8 @@ end
 
 function NodePin:OnLoad()
 	self:SetScalingLimits(1, 1, 1.2)
+	-- Without a level type the pin sits under the map's explored-area art and shows only over unexplored ground.
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
 	Setup(self)
 	self.Texture:SetPoint("CENTER")
 end

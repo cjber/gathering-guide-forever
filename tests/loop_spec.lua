@@ -21,6 +21,9 @@ local function Pin()
 		self.x, self.y = x, y
 	end
 	function pin.SetScalingLimits() end
+	function pin:UseFrameLevelType(levelType)
+		self.levelType = levelType
+	end
 	function pin.CreateTexture()
 		local t = {}
 		function t.SetPoint() end
@@ -110,6 +113,7 @@ assert(
 	"ore wears the ore art and herbs the herb art"
 )
 assert(pins[1].Texture.desaturated ~= true and pins[2].Texture.desaturated ~= true, "no pin is grey")
+assert(pins[1].levelType == "PIN_FRAME_LEVEL_AREA_POI", "pins draw above the map's explored-area art")
 assert(pins[1].alpha < pins[2].alpha, "the next pin is the clearest")
 assert(pins[2].alpha < 1, "no pin is fully opaque")
 for _, drawn in ipairs(fitted) do

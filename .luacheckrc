@@ -20,7 +20,7 @@ globals = {
 	"SLASH_GATHERINGGUIDEFOREVER2",
 	"SlashCmdList",
 }
-files["tests/**"] = { globals = { "C_AddOns", "GetRealmName", "AdventureGuideForever", "LegacyForever", "UnitPosition", "CreateVector2D", "C_Map", "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "C_CurrencyInfo", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore", "InCombatLockdown", "wipe", "WorldMapFrame" } }
+files["tests/**"] = { globals = { "C_AddOns", "GetRealmName", "AdventureGuideForever", "LegacyForever", "UnitPosition", "CreateVector2D", "C_Map", "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "C_CurrencyInfo", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore", "InCombatLockdown", "wipe", "WorldMapFrame", "Lerp", "Saturate" } }
 read_globals = {
 	"NORMAL_FONT_COLOR",
 	"GetRealmName",
@@ -40,6 +40,8 @@ read_globals = {
 	"CreateFrame",
 	"InCombatLockdown",
 	"wipe",
+	"Lerp",
+	"Saturate",
 	"C_AddOns",
 	"C_Item",
 	"C_Map",
