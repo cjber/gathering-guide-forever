@@ -206,9 +206,13 @@ end
 ---@return {item: string, gathered: number, have: number, need: number?, left: number?}[]
 function Session.Rows()
 	local rows = {}
-	for _, entry in ipairs(session and session.entries or {}) do
-		local need = session.list and ListedNeed(entry.item) or nil
-		if need or not session.list then
+	local current = session
+	if not current then
+		return rows
+	end
+	for _, entry in ipairs(current.entries) do
+		local need = current.list and ListedNeed(entry.item) or nil
+		if need or not current.list then
 			rows[#rows + 1] = {
 				item = entry.item,
 				gathered = entry.gathered,
@@ -249,6 +253,7 @@ function Session.PerHour(now)
 		return nil
 	end
 	for _, price in ipairs({ AuctionPrice, VendorPrice }) do
+		---@type number?
 		local total = 0
 		for _, entry in ipairs(session.entries) do
 			local unit = price(entry.item)

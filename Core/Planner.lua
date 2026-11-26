@@ -723,6 +723,7 @@ function Planner.Ranking(ranks, skip, refresh, all)
 	end
 	asked = key
 	local professions = Professions(ranks)
+	---@type GGRanking?
 	local saved = ns.Char.ranking
 	if saved and saved.professions ~= professions then
 		saved = nil

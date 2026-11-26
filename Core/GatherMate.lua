@@ -127,7 +127,7 @@ end
 local function Profile()
 	local gm = Addon()
 	local profile = gm and type(gm.db) == "table" and gm.db.profile
-	if type(profile) ~= "table" or type(gm.SendMessage) ~= "function" then
+	if not gm or type(profile) ~= "table" or type(gm.SendMessage) ~= "function" then
 		return nil
 	end
 	return profile

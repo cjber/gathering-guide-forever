@@ -1066,7 +1066,7 @@ local function ListArt(row)
 end
 
 -- A zone's name with its level range after it, the name cut short where the room ends.
----@param row Button
+---@param row table a zone row button
 local function NewZoneTitle(row)
 	row.Title = Line(row, "GameFontNormalMed3")
 	row.Title:SetPoint("TOPLEFT", 12, -7)
@@ -1075,7 +1075,7 @@ local function NewZoneTitle(row)
 	Tint(row.Levels, MUTED)
 end
 
----@param row Button
+---@param row table a zone row button
 ---@param spec table
 ---@param width number the room for both
 local function SetZoneTitle(row, spec, width)
@@ -1285,7 +1285,7 @@ local function PlaceSearch(searchRow)
 	local zones = home and ns.GatherMate.Available() and next(ns.Skills.Ranks()) ~= nil
 	local typing = box:HasFocus()
 	box:SetShown(zones or searchRow ~= nil)
-	box.Instructions:SetText(home and L["Search zones"] or L["Add an item"])
+	assert(box.Instructions):SetText(home and L["Search zones"] or L["Add an item"])
 	cog:SetShown(home)
 	if searchRow then
 		box:SetParent(content)
