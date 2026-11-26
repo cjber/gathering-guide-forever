@@ -82,7 +82,7 @@ local function Submit()
 	end
 	local ok, why = ns.Navigation.Route(stops, db.onlyGatheringPins)
 	if not ok then
-		tour.status = why or "refused"
+		tour.status = ns.Navigation.State().blocked and "blocked" or why or "refused"
 		return false
 	end
 	tour.batch = batch
@@ -262,8 +262,20 @@ function Tour.Reason(reason)
 	return text[reason or ""] or L["The journey could not start."]
 end
 
--- A new skill level or a leaving player can end a stale tour. A player who dies or enters combat keeps the tour; the
--- journey itself pauses.
+-- A player who dies or enters combat keeps the tour; the journey itself pauses. A batch sent while it is paused is
+-- refused, so it goes again once combat ends or the player is alive.
+local function Retry()
+	ns.Defer(function()
+		if state and state.status ~= "running" then
+			Submit()
+			Notify()
+		end
+	end)
+end
+ns.On("PLAYER_REGEN_ENABLED", Retry)
+ns.On("PLAYER_ALIVE", Retry)
+ns.On("PLAYER_UNGHOST", Retry)
+
 ns.On("PLAYER_LOGOUT", function()
 	Tour.Stop(true)
 end)

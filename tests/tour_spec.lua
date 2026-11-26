@@ -15,7 +15,10 @@ C_SkillInfo = {
 		return { skillLevel = 60, maxSkillLevel = 75 }
 	end,
 }
-ns.On = function() end
+local events = {}
+ns.On = function(event, fn)
+	events[event] = fn
+end
 ns.Defer = function(fn)
 	fn()
 end
@@ -129,7 +132,23 @@ end
 started, why = Tour.Start({ kind = "Mining", uiMapID = 1, name = "Other", order = loop })
 assert(not started and why == "refused", why)
 assert(Tour.Progress().name == "Zone" and observer and began == 1 and ended == 0, "the old tour and session stay")
+
+-- A batch refused in combat goes again once combat ends.
+ShortestPathForever.API.JourneyState = function()
+	return { blocked = "combat" }
+end
+for i = 1, 6 do
+	observer("arrived", i, routes[2][i])
+end
+assert(Tour.Progress().status == "blocked", "the tour waits out combat")
 ShortestPathForever.API.NavigateRoute = navigate
+ShortestPathForever.API.JourneyState = function()
+	return {}
+end
+events.PLAYER_REGEN_ENABLED()
+assert(Tour.Progress().status == "running" and #routes == 3, "the next lap is sent after combat")
+events.PLAYER_REGEN_ENABLED()
+assert(#routes == 3, "a running tour is not sent again")
 
 Tour.Stop()
 assert(hidden == false, "stopping brings the guide's pins back")

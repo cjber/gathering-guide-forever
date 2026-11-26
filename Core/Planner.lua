@@ -214,7 +214,7 @@ function Planner.Best(kind, rank, skipNoSkillUp, limit, yield)
 	table.sort(plans, Better)
 	local zones = {}
 	for _, zone in ipairs(plans) do
-		if #zones >= limit and zone.rate <= zones[limit].rate then
+		if #zones >= limit and zone.rate < zones[limit].rate then
 			break
 		end
 		zones[#zones + 1] = Planner.Reach(zone)
@@ -443,6 +443,7 @@ end
 ---@return boolean? stale
 function Planner.Ranking(kind, rank, skip, refresh)
 	local here = ns.World.PlayerMap()
+	-- The key holds the player's map, not the spot on it: walking about a zone does not plan every zone again.
 	local key = ("best:%s:%s:%d:%s:%s:%s"):format(
 		C_AddOns.GetAddOnMetadata(addonName, "Version"),
 		kind,
