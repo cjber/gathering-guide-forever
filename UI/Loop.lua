@@ -10,11 +10,6 @@ end
 local Loop = {}
 ns.Loop = Loop
 
--- The client's profession atlases (UiTextureAtlasElement: Mobile-Mining, Mobile-Herbalism) by GatherMate2's kind.
-local KIND_ATLAS = {
-	["Mining"] = "Mobile-Mining",
-	["Herb Gathering"] = "Mobile-Herbalism",
-}
 local DOT_SIZE = 8
 local DOT_ALPHA = 0.45
 local PIN_SIZE = 14
@@ -56,7 +51,7 @@ function NodePin:OnAcquired(node, state)
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
 	self.Texture:SetDesaturated(state == "visited")
-	ns.Fit(self.Texture, KIND_ATLAS[node.kind], size, size)
+	ns.Fit(self.Texture, ns.KIND_ATLAS[node.kind], size, size)
 	self:SetPosition(node.x, node.y)
 end
 

@@ -8,6 +8,7 @@ ns.Fit = function(texture, atlas, w, h)
 	fitted[#fitted + 1] = { atlas = atlas, w = w, h = h }
 	texture.atlas = atlas
 end
+ns.KIND_ATLAS = { ["Mining"] = "Mobile-Mining", ["Herb Gathering"] = "Mobile-Herbalism" }
 ns.OnLoaded = function() end
 ns.On = function() end
 local function Pin()

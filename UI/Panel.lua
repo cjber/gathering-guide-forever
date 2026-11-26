@@ -14,8 +14,9 @@ local Panel = {}
 ns.Panel = Panel
 
 local PAD = 8
-local HEIGHTS =
-	{ header = 24, card = 50, node = 18, toggle = 24, button = 28, text = 34, item = 30, back = 24, search = 28 }
+local HEIGHTS = { title = 44, header = 22, card = 42, node = 30, toggle = 24, text = 34, item = 42, search = 28 }
+local ICON = 32
+local NODE_ICON = 22
 local ROW_GAP = 2
 local FOOTER = 40
 local TOP_BAR = 29
@@ -27,12 +28,21 @@ local panel
 local view = { name = "overview" }
 local rows = {}
 local specs = {}
----@type Frame?, Button?, EditBox?, FontString?
+---@type Frame?, Button?, (EditBox|{Instructions: FontString})?, FontString?
 local content, footerButton, search, footerText
 local pickedZone
 
 local function Rank(kind)
 	return (ns.Skills.Rank(ns.KindByName[kind].line))
+end
+
+-- A herb's or ore's own item icon (a file id) when the client knows the item by name, else its profession's atlas.
+---@param name string
+---@param kind string?
+---@return string|number?
+local function NodeIcon(name, kind)
+	local icon = C_Item.GetItemInfoInstant and select(5, C_Item.GetItemInfoInstant(name)) -- multi-value: the icon is fifth
+	return icon or ns.KIND_ATLAS[kind or ""]
 end
 
 local function Minutes(seconds)
@@ -62,14 +72,41 @@ local function ZoneSub(zone)
 	if zone.travel then
 		parts[#parts + 1] = string.format(L["travel %d min"], Minutes(zone.travel))
 	end
-	parts[#parts + 1] = string.format(L["%.1f per 10 min"], zone.rate)
 	return table.concat(parts, ", ")
+end
+
+---@param zone table
+---@return string
+local function RateText(zone)
+	return string.format(L["%.1f per 10 min"], zone.rate)
+end
+
+-- A card for a zone: its kind's art, the zone's name and skill range, and the rate at the right.
+---@param zone table
+---@param onClick fun()
+---@return table
+local function ZoneCard(zone, onClick)
+	return {
+		type = "card",
+		icon = ns.KIND_ATLAS[zone.kind],
+		text = zone.name,
+		sub = ZoneSub(zone),
+		right = RateText(zone),
+		onClick = onClick,
+	}
 end
 
 ---@param refresh fun()
 ---@return table[]
 function Panel.OverviewSpecs(refresh)
 	local out = {}
+	local here = ns.World.PlayerMap()
+	out[#out + 1] = {
+		type = "title",
+		icon = ns.KIND_ATLAS["Mining"],
+		text = L["Gathering Guide"],
+		sub = here and ns.Planner.ZoneName(here) or L["Best zones for your skill"],
+	}
 	if not ns.GatherMate.Available() then
 		out[#out + 1] =
 			{ type = "text", text = L["GatherMate2 supplies the node locations. Install it to plan a tour."] }
@@ -84,15 +121,13 @@ function Panel.OverviewSpecs(refresh)
 	end
 	local last = ns.Char.last
 	if last then
-		out[#out + 1] = { type = "header", text = L["Continue"] }
+		out[#out + 1] = { type = "header", key = "continue", text = L["Continue"] }
 		out[#out + 1] = {
 			type = "card",
-			text = string.format(
-				L["%s: %s"],
-				ns.KindByName[last.kind] and ns.KindByName[last.kind].label or last.kind,
-				last.name
-			),
+			icon = ns.KIND_ATLAS[last.kind],
+			text = last.name,
 			sub = L["Start again from the node nearest you"],
+			right = ns.KindByName[last.kind] and ns.KindByName[last.kind].label or last.kind,
 			onClick = function()
 				view = { name = "zone", kind = last.kind, uiMapID = last.uiMapID }
 				refresh()
@@ -104,8 +139,10 @@ function Panel.OverviewSpecs(refresh)
 		local rank = Rank(k.kind)
 		if rank > 0 then
 			learned = true
-			out[#out + 1] = { type = "header", text = string.format(L["%s, skill %d"], k.label, rank) }
+			local header = { type = "header", key = k.kind, text = string.format(L["%s, skill %d"], k.label, rank) }
+			out[#out + 1] = header
 			local zones, failed = ns.Planner.Ranking(k.kind, rank, ns.DB.skipNoSkillUp, refresh)
+			header.count = zones and #zones or nil
 			if failed or not zones then
 				out[#out + 1] = { type = "text", text = PlanText(failed, L["Planning loops..."]) }
 			elseif #zones == 0 then
@@ -113,24 +150,20 @@ function Panel.OverviewSpecs(refresh)
 					{ type = "text", text = L["No zone in your GatherMate2 data has nodes for this skill."] }
 			end
 			for _, zone in ipairs(zones or {}) do
-				out[#out + 1] = {
-					type = "card",
-					text = zone.name,
-					sub = ZoneSub(zone),
-					onClick = function()
-						view = { name = "zone", kind = k.kind, uiMapID = zone.uiMapID }
-						refresh()
-					end,
-				}
+				out[#out + 1] = ZoneCard(zone, function()
+					view = { name = "zone", kind = k.kind, uiMapID = zone.uiMapID }
+					refresh()
+				end)
 			end
 		end
 	end
 	if not learned then
 		out[#out + 1] = { type = "text", text = L["Learn Mining or Herbalism to see the best zones for your skill."] }
 	end
-	out[#out + 1] = { type = "header", text = L["Farm for a list"] }
+	out[#out + 1] = { type = "header", key = "list", text = L["Farm for a list"] }
 	out[#out + 1] = {
-		type = "button",
+		type = "card",
+		icon = ns.KIND_ATLAS["Herb Gathering"],
 		text = L["Open my farming list"],
 		onClick = function()
 			view = { name = "list" }
@@ -143,17 +176,8 @@ end
 ---@param refresh fun()
 ---@return table[]
 function Panel.ZoneSpecs(refresh)
-	local out = {
-		{
-			type = "back",
-			text = L["Back"],
-			onClick = function()
-				view = { name = "overview" }
-				refresh()
-			end,
-		},
-	}
 	local k = ns.KindByName[view.kind]
+	local out = {}
 	local rank = Rank(view.kind)
 	local skip = ns.DB.skipNoSkillUp
 	local key = ("zone:%s:%d:%d:%s:%s"):format(
@@ -166,7 +190,16 @@ function Panel.ZoneSpecs(refresh)
 	local zone, zoneFailed = Result(key, function(yield)
 		return ns.Planner.Zone(view.kind, view.uiMapID, rank, skip, yield) or false
 	end, refresh)
-	out[#out + 1] = { type = "header", text = ns.Planner.ZoneName(view.uiMapID) }
+	out[#out + 1] = {
+		type = "title",
+		icon = ns.KIND_ATLAS[view.kind],
+		text = ns.Planner.ZoneName(view.uiMapID),
+		sub = string.format(L["%s, skill %d"], k and k.label or view.kind, rank),
+		onBack = function()
+			view = { name = "overview" }
+			refresh()
+		end,
+	}
 	out[#out + 1] = {
 		type = "toggle",
 		text = L["Skip nodes with no skill-up"],
@@ -192,7 +225,7 @@ function Panel.ZoneSpecs(refresh)
 		end
 		return a < b
 	end)
-	out[#out + 1] = { type = "header", text = k and k.label or view.kind }
+	out[#out + 1] = { type = "header", key = "nodes", text = L["Nodes here"], count = #nodeOrder }
 	for _, name in ipairs(nodeOrder) do
 		local c = counts[name]
 		local chance, color = ns.Skills.Chance(rank, c.required)
@@ -202,6 +235,7 @@ function Panel.ZoneSpecs(refresh)
 			right = color == "red" and string.format(L["needs %d"], c.required)
 				or string.format("%d%%", math.floor(chance * 100 + 0.5)),
 			sub = string.format("x%d", c.count),
+			icon = NodeIcon(name, view.kind),
 			color = color,
 		}
 	end
@@ -211,25 +245,22 @@ function Panel.ZoneSpecs(refresh)
 		out[#out + 1] = { type = "text", text = L["Nothing here can raise your skill yet."] }
 	else
 		pickedZone = zone
-		out[#out + 1] = { type = "text", text = ZoneSub(zone), color = "grey" }
+		out[#out + 1] = { type = "text", text = ZoneSub(zone) .. ", " .. RateText(zone), color = "grey" }
 		local nextKey = key .. ":next"
 		local later, laterFailed = Result(nextKey, function(yield)
 			return ns.Planner.Next(zone, rank, skip, yield)
 		end, refresh)
-		out[#out + 1] = { type = "header", text = L["Next zones"] }
+		local nextHeader = { type = "header", key = "next", text = L["Next zones"] }
+		out[#out + 1] = nextHeader
+		nextHeader.count = later and #later or nil
 		if not later then
 			out[#out + 1] = { type = "text", text = PlanText(laterFailed, L["Planning loops..."]) }
 		end
 		for _, z in ipairs(later or {}) do
-			out[#out + 1] = {
-				type = "card",
-				text = z.name,
-				sub = ZoneSub(z),
-				onClick = function()
-					view = { name = "zone", kind = z.kind, uiMapID = z.uiMapID }
-					refresh()
-				end,
-			}
+			out[#out + 1] = ZoneCard(z, function()
+				view = { name = "zone", kind = z.kind, uiMapID = z.uiMapID }
+				refresh()
+			end)
 		end
 	end
 	return out
@@ -261,19 +292,21 @@ end
 function Panel.ListSpecs(refresh)
 	local out = {
 		{
-			type = "back",
-			text = L["Back"],
-			onClick = function()
+			type = "title",
+			icon = ns.KIND_ATLAS["Herb Gathering"],
+			text = L["Farm for a list"],
+			sub = string.format(L["%d on your list"], #ns.Char.list),
+			onBack = function()
 				view = { name = "overview" }
 				refresh()
 			end,
 		},
-		{ type = "header", text = L["Farm for a list"] },
 		{ type = "search", text = L["Add an item"] },
 	}
 	for _, item in ipairs(Panel.Matches(view.query)) do
 		out[#out + 1] = {
 			type = "node",
+			icon = NodeIcon(item, ns.Planner.Items()[item].kind),
 			text = item,
 			right = L["Add"],
 			color = "green",
@@ -289,6 +322,7 @@ function Panel.ListSpecs(refresh)
 	for _, row in ipairs(listRows) do
 		out[#out + 1] = {
 			type = "item",
+			icon = NodeIcon(row.item, (ns.Planner.Items()[row.item] or {}).kind),
 			text = row.item,
 			right = string.format("%d / %d", row.have, row.need),
 			bar = { have = row.have, need = row.need },
@@ -320,7 +354,8 @@ function Panel.ListSpecs(refresh)
 	local zones, listFailed = Result(key, function(yield)
 		return ns.Planner.ListZones(4, yield)
 	end, refresh)
-	out[#out + 1] = { type = "header", text = L["Best zone for the whole list"] }
+	local best = { type = "header", key = "best", text = L["Best zone for the whole list"] }
+	out[#out + 1] = best
 	if not zones then
 		out[#out + 1] = { type = "text", text = PlanText(listFailed, L["Planning loops..."]) }
 		return out
@@ -330,12 +365,14 @@ function Panel.ListSpecs(refresh)
 		return out
 	end
 	pickedZone = zones[view.pick or 1] or zones[1]
+	best.count = 1
 	for i, zone in ipairs(zones) do
 		if i == 2 then
-			out[#out + 1] = { type = "header", text = L["Other places"] }
+			out[#out + 1] = { type = "header", key = "others", text = L["Other places"], count = #zones - 1 }
 		end
 		out[#out + 1] = {
 			type = "card",
+			icon = ns.KIND_ATLAS[zone.kind],
 			text = zone.name,
 			sub = string.format(L["%d nodes, %d min a loop"], zone.count, Minutes(zone.seconds)),
 			selected = zone == pickedZone,
@@ -359,18 +396,56 @@ local function ColorOf(color)
 	return COLORS[color] or ns.Skills.Color(color)
 end
 
+-- The quest log's own art, drawn as Shortest Path Forever's Nearby panel draws it (UI/ServicesPanel.lua, UI/Art.lua):
+-- the Who list's row at its native 69 height scaled evenly to the row, and the list header's band stretched across.
+local ROW_ART = 69
+
+---@param row Button
+---@param atlas string
+---@param layer DrawLayer
+---@return Texture
+local function RowTexture(row, atlas, layer)
+	local texture = row:CreateTexture(nil, layer)
+	texture:SetAtlas(atlas) -- art-ok: at the atlas's native height, scaled uniformly to the row below
+	row:HookScript("OnSizeChanged", function(_, width, height)
+		if height <= 0 then
+			return
+		end
+		local scale = height / ROW_ART
+		texture:SetScale(scale)
+		texture:SetSize(width / scale, ROW_ART)
+		texture:ClearAllPoints()
+		texture:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
+	end)
+	return texture
+end
+
 local function NewRow(index)
 	local row = CreateFrame("Button", nil, content)
+	row.Plate = RowTexture(row, "common-button-list-large", "BACKGROUND")
+	row.Hover = RowTexture(row, "common-button-list-large-hover", "HIGHLIGHT")
+	row.Hover:SetBlendMode("ADD")
+	row.Band = row:CreateTexture(nil, "BACKGROUND")
+	-- art-ok: the stock list header, stretched across its row as the client does
+	row.Band:SetAtlas("common-button-list-collapseExpand")
+	row.Band:SetAllPoints()
+	row.Fold = CreateFrame("Button", nil, row, "CollapseButtonTemplate")
+	row.Fold:SetPoint("RIGHT", -6, 0)
+	row.Fold:EnableMouse(false)
+	row.Icon = row:CreateTexture(nil, "ARTWORK")
 	row.Left = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	row.Left:SetJustifyH("LEFT")
-	row.Right = row:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	row.Right = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	row.Right:SetJustifyH("RIGHT")
-	row.Sub = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	row.Sub = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	row.Sub:SetJustifyH("LEFT")
-	row.Back = row:CreateTexture(nil, "BACKGROUND")
-	row.Back:SetAllPoints()
-	row.Back:SetColorTexture(1, 1, 1, 0)
 	row.Check = row:CreateTexture(nil, "ARTWORK")
+	row.BackButton = CreateFrame("Button", nil, row)
+	row.BackButton:SetSize(24, 24)
+	row.BackButton:SetPoint("LEFT", 0, 0)
+	row.BackArt = row.BackButton:CreateTexture(nil, "ARTWORK")
+	row.BackArt:SetPoint("CENTER")
+	ns.Fit(row.BackArt, "common-icon-backarrow", 16, 16)
 	row.Bar = CreateFrame("StatusBar", nil, row)
 	row.Bar:SetStatusBarTexture("common-stat-bar-white")
 	row.Bar:SetHeight(4)
@@ -382,53 +457,124 @@ local function NewRow(index)
 	return row
 end
 
+-- Header sections folded away, per session as the stock quest log's group folds are.
+---@type table<string, boolean>
+local collapsed = {}
+
+-- A spec's icon: an atlas name at its own aspect, or a file id whole.
+---@param row table
+---@param icon string|number
+---@param size number
+local function SetIcon(row, icon, size)
+	if type(icon) == "number" then
+		row.Icon:SetTexCoord(0, 1, 0, 1)
+		row.Icon:SetTexture(icon)
+		row.Icon:SetSize(size, size)
+	else
+		ns.Fit(row.Icon, icon, size, size)
+	end
+end
+
 local function Layout(row, spec, width, y)
 	local h = HEIGHTS[spec.type] or 24
+	local kind = spec.type
+	local plated = kind == "card" or kind == "item" or kind == "node"
 	row:ClearAllPoints()
 	row:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
 	row:SetSize(width - 2 * PAD, h)
-	row.Left:ClearAllPoints()
-	row.Right:ClearAllPoints()
-	row.Sub:ClearAllPoints()
+	for _, part in ipairs({ row.Left, row.Right, row.Sub, row.Icon }) do
+		part:ClearAllPoints()
+	end
+	row.Plate:SetShown(plated)
+	row.Hover:SetShown(plated and spec.onClick ~= nil)
+	row.Band:SetShown(kind == "header")
+	row.Fold:SetShown(kind == "header" and spec.key ~= nil)
+	row.Icon:SetShown(spec.icon ~= nil)
+	row.BackButton:SetShown(spec.onBack ~= nil)
+	row.BackButton:SetScript("OnClick", spec.onBack)
 	row.Check:Hide()
 	row.Bar:Hide()
 	row.Sub:SetText("")
 	row.Right:SetText(spec.right or "")
-	row.Back:SetColorTexture(1, 1, 1, spec.selected and 0.12 or 0)
-	local font = spec.type == "header" and "GameFontNormal" or "GameFontHighlight"
-	row.Left:SetFontObject(font)
-	local rgb = ColorOf(spec.color)
-	if rgb then
-		row.Left:SetTextColor(rgb[1], rgb[2], rgb[3])
-	else
-		row.Left:SetTextColor(1, 1, 1)
-	end
 	row.Left:SetText(spec.text or "")
-	local left = 4
-	if spec.type == "toggle" then
-		ns.Fit(row.Check, spec.checked and "common-icon-checkmark" or "common-icon-redx", 14, 14)
-		row.Check:SetPoint("LEFT", 4, 0)
-		row.Check:Show()
-		left = 24
-	elseif spec.type == "back" then
-		ns.Fit(row.Check, "common-icon-backarrow", 14, 14)
-		row.Check:SetPoint("LEFT", 4, 0)
-		row.Check:Show()
-		left = 24
+	local rgb = ColorOf(spec.color)
+	local gold = NORMAL_FONT_COLOR
+	local function Tint(r, g, b)
+		row.Left:SetTextColor(r, g, b)
 	end
-	row.Right:SetPoint("RIGHT", -4, 0)
-	if spec.type == "card" or spec.type == "item" then
-		row.Left:SetPoint("TOPLEFT", left, -6)
-		row.Left:SetPoint("RIGHT", row.Right, "LEFT", -4, 0)
-		row.Right:ClearAllPoints()
-		row.Right:SetPoint("TOPRIGHT", -4, -6)
+	row.Left:SetWordWrap(false)
+	row.Left:SetJustifyH("LEFT")
+	row.Right:SetTextColor(1, 1, 1)
+	if kind == "title" then
+		local left = 2
+		if spec.onBack then
+			left = 26
+		end
+		if spec.icon then
+			SetIcon(row, spec.icon, 30)
+			row.Icon:SetPoint("LEFT", left, 0)
+		end
+		row.Left:SetFontObject("GameFontNormalLarge2")
+		Tint(gold.r, gold.g, gold.b)
+		row.Left:SetJustifyH("CENTER")
+		row.Left:SetPoint("TOPLEFT", left + 34, -2)
+		row.Left:SetPoint("TOPRIGHT", -left - 34, -2)
+		row.Sub:SetFontObject("GameFontHighlight")
+		row.Sub:SetJustifyH("CENTER")
 		row.Sub:SetPoint("TOPLEFT", row.Left, "BOTTOMLEFT", 0, -2)
-		row.Sub:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+		row.Sub:SetPoint("TOPRIGHT", row.Left, "BOTTOMRIGHT", 0, -2)
 		row.Sub:SetText(spec.sub or "")
+	elseif kind == "header" then
+		row.Left:SetFontObject("Game15Font_Shadow")
+		Tint(gold.r, gold.g, gold.b)
+		row.Right:SetFontObject("Game15Font_Shadow")
+		row.Right:SetTextColor(gold.r, gold.g, gold.b)
+		local right = spec.key and -28 or -8
+		row.Right:SetText(spec.count and tostring(spec.count) or "")
+		row.Right:SetPoint("RIGHT", right, 0)
+		row.Left:SetPoint("LEFT", 8, 0)
+		row.Left:SetPoint("RIGHT", row.Right, "LEFT", -4, 0)
+		if spec.key then
+			row.Fold:UpdateCollapsedState(collapsed[spec.key] == true)
+		end
+	elseif plated then
+		local size = kind == "node" and NODE_ICON or ICON
+		local left = 8
+		if spec.icon then
+			SetIcon(row, spec.icon, size)
+			row.Icon:SetPoint("LEFT", 8, 0)
+			left = 8 + size + 8
+		end
+		row.Right:SetFontObject("GameFontHighlight")
+		row.Left:SetFontObject(kind == "node" and "GameFontHighlight" or "GameFontNormalMed3")
+		if rgb then
+			Tint(rgb[1], rgb[2], rgb[3])
+		elseif kind == "node" then
+			Tint(1, 1, 1)
+		else
+			Tint(gold.r, gold.g, gold.b)
+		end
+		if kind == "node" then
+			row.Right:SetPoint("RIGHT", -8, 0)
+			row.Left:SetPoint("LEFT", left, 0)
+			row.Sub:SetFontObject("GameFontHighlightSmall")
+			row.Sub:SetPoint("RIGHT", row.Right, "LEFT", -8, 0)
+			row.Sub:SetText(spec.sub or "")
+			row.Left:SetPoint("RIGHT", row.Sub, "LEFT", -4, 0)
+		else
+			row.Right:SetPoint("TOPRIGHT", -8, -9)
+			row.Left:SetPoint("TOPLEFT", left, -6)
+			row.Left:SetPoint("RIGHT", row.Right, "LEFT", -6, 0)
+			row.Sub:SetFontObject("GameFontHighlightSmall")
+			row.Sub:SetTextColor(0.75, 0.75, 0.75)
+			row.Sub:SetPoint("TOPLEFT", row.Left, "BOTTOMLEFT", 0, -3)
+			row.Sub:SetPoint("RIGHT", row, "RIGHT", -8, 0)
+			row.Sub:SetText(spec.sub or "")
+		end
 		if spec.bar then
 			row.Bar:ClearAllPoints()
-			row.Bar:SetPoint("BOTTOMLEFT", 4, 3)
-			row.Bar:SetPoint("BOTTOMRIGHT", -4, 3)
+			row.Bar:SetPoint("BOTTOMLEFT", left, 5)
+			row.Bar:SetPoint("BOTTOMRIGHT", -8, 5)
 			row.Bar:SetMinMaxValues(0, math.max(spec.bar.need, 1))
 			row.Bar:SetValue(math.min(spec.bar.have, spec.bar.need))
 			local done = spec.bar.have >= spec.bar.need
@@ -436,31 +582,41 @@ local function Layout(row, spec, width, y)
 			row.Bar:Show()
 		end
 	else
+		row.Left:SetFontObject("GameFontHighlight")
+		Tint(rgb and rgb[1] or 1, rgb and rgb[2] or 1, rgb and rgb[3] or 1)
+		local left = 4
+		if kind == "toggle" then
+			ns.Fit(row.Check, spec.checked and "common-icon-checkmark" or "common-icon-redx", 14, 14)
+			row.Check:ClearAllPoints()
+			row.Check:SetPoint("LEFT", 4, 0)
+			row.Check:Show()
+			left = 24
+		end
+		row.Right:SetFontObject("GameFontNormalSmall")
+		row.Right:SetPoint("RIGHT", -4, 0)
 		row.Left:SetPoint("LEFT", left, 0)
 		row.Left:SetPoint("RIGHT", row.Right, "LEFT", -4, 0)
-		if spec.type == "node" and spec.sub then
-			row.Sub:SetPoint("RIGHT", row.Right, "LEFT", -6, 0)
-			row.Sub:SetText(spec.sub)
-			row.Left:SetPoint("RIGHT", row.Sub, "LEFT", -4, 0)
+		if kind == "text" then
+			row.Left:SetWordWrap(true)
+			row.Left:SetPoint("TOPLEFT", left, -2)
+			row.Left:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+			row.Left:SetFontObject("GameFontHighlightSmall")
+			if not rgb then
+				Tint(0.8, 0.8, 0.8)
+			end
 		end
 	end
-	if spec.type == "text" then
-		row.Left:SetWordWrap(true)
-		row.Left:SetPoint("TOPLEFT", left, -2)
-		row.Left:SetPoint("RIGHT", row, "RIGHT", -4, 0)
-		row.Left:SetFontObject("GameFontDisableSmall")
-		if not rgb then
-			row.Left:SetTextColor(0.8, 0.8, 0.8)
+	local action = spec.onClick
+	if kind == "header" and spec.key then
+		action = function()
+			collapsed[spec.key] = not collapsed[spec.key]
+			Panel.Refresh()
 		end
-	else
-		row.Left:SetWordWrap(false)
 	end
-	row:EnableMouse(spec.onClick ~= nil)
-	row:SetScript("OnClick", spec.onClick)
+	row:EnableMouse(action ~= nil)
+	row:SetScript("OnClick", action)
+	row.Plate:SetAlpha(spec.selected and 1 or 0.85)
 	row:SetScript("OnEnter", function()
-		if spec.onClick then
-			row.Back:SetColorTexture(1, 1, 1, 0.15)
-		end
 		if spec.tooltip then
 			GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
 			GameTooltip:SetText(spec.tooltip)
@@ -468,7 +624,6 @@ local function Layout(row, spec, width, y)
 		end
 	end)
 	row:SetScript("OnLeave", function()
-		row.Back:SetColorTexture(1, 1, 1, spec.selected and 0.12 or 0)
 		GameTooltip:Hide()
 	end)
 	row:Show()
@@ -516,6 +671,17 @@ function Panel.Refresh()
 	else
 		specs = Panel.OverviewSpecs(Panel.Refresh)
 	end
+	-- A folded header hides the rows under it, up to the next header or title.
+	local shown, hidden = {}, false
+	for _, spec in ipairs(specs) do
+		if spec.type == "header" or spec.type == "title" then
+			hidden = spec.key ~= nil and collapsed[spec.key] == true
+			shown[#shown + 1] = spec
+		elseif not hidden then
+			shown[#shown + 1] = spec
+		end
+	end
+	specs = shown
 	local width = math.max(2 * PAD + 1, panel:GetWidth() - 4)
 	local y = PAD
 	local searchSpec
@@ -538,12 +704,8 @@ function Panel.Refresh()
 				search:ClearAllPoints()
 				search:SetPoint("TOPLEFT", rows[i], "TOPLEFT", 6, -2)
 				search:SetPoint("BOTTOMRIGHT", rows[i], "BOTTOMRIGHT", -6, 2)
-				if (view.query or "") == "" then
-					rows[i].Left:SetText(spec.text)
-					rows[i].Left:SetTextColor(0.5, 0.5, 0.5)
-				else
-					rows[i].Left:SetText("")
-				end
+				rows[i].Left:SetText("")
+				search.Instructions:SetText(spec.text)
 				if search:GetText() ~= (view.query or "") then
 					search:SetText(view.query or "")
 				end
@@ -613,7 +775,7 @@ local function Build()
 	content = CreateFrame("Frame", nil, scroll)
 	content:SetSize(MIN_WIDTH, 10)
 	scroll:SetScrollChild(content)
-	search = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+	search = CreateFrame("EditBox", nil, content, "SearchBoxTemplate")
 	search:SetAutoFocus(false)
 	search:SetScript("OnTextChanged", function(self, user)
 		if user then

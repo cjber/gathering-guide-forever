@@ -41,6 +41,16 @@ scenario("Gathering shopping list mock", { addons = { { core, "ForeverCore" } } 
 	end
 	local viewport = panel:GetChildren()
 	local content = viewport:GetScrollChild()
+	local titled = false
+	for _, row in ipairs({ content:GetChildren() }) do
+		if row.Left and row.Left.GetText and row.Left:GetText() == "Gathering Guide" and row:IsShown() then
+			titled = true
+			assert(not row.Plate:IsShown() and not row.Band:IsShown(), "the title block wears no row art")
+		elseif row.Left and row.Left.GetText and row.Left:GetText() == "Open my farming list" then
+			assert(row.Plate:IsShown() and row.Icon:IsShown(), "the list action is a dark row with an icon")
+		end
+	end
+	assert(titled, "the overview opens with the title block")
 	local opened = false
 	for _, row in ipairs({ content:GetChildren() }) do
 		if row.Left and row.Left.GetText and row.Left:GetText() == "Open my farming list" then

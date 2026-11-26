@@ -22,6 +22,7 @@ globals = {
 }
 files["tests/**"] = { globals = { "GetRealmName", "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "GetCoinTextureString", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore" } }
 read_globals = {
+	"NORMAL_FONT_COLOR",
 	"GetRealmName",
 	"ForeverCore",
 	"GatherMate2",
