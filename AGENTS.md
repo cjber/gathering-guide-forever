@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Gathering Guide Forever is a WoW: Forever addon (Interface 16001) for Mining and Herbalism. It picks the best zones for
-the player's skills, tours a zone's gathering nodes along a loop and farms for a shopping list. It requires
+the player's skills, tours a zone's gathering nodes along a loop and farms for a shopping list. It runs on
 ForeverCore and Shortest Path Forever (the pathing engine it drives through the public API), and reads GatherMate2's
 node database when installed. Shortest Path Forever is the only addon this one asks for walking directions.
 

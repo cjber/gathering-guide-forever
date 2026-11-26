@@ -19,8 +19,9 @@ ignore:
 
 # CurseForge relations: the CurseForge slug of every OptionalDeps folder in the root .toc (WFA-28).
 optional-dependencies:
-  - shortest-path-forever
+  - adventure-guide-forever
   - gathermate2
+  - shortest-path-forever
 
 # ForeverCore is embedded under Libs/ForeverCore, so it is listed as an embedded library: the CurseForge app links
 # it on the project page but never installs it as a required dependency.
