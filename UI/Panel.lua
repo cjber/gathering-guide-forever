@@ -14,6 +14,9 @@ local Panel = {}
 ns.Panel = Panel
 
 local PAD = 8
+local HIDE_TIP = "Turns GatherMate2's world map icons off, so the map shows only this addon's pins for the zone "
+	.. "you are viewing or touring. Your own GatherMate2 setting is put back when you turn this off, log out or "
+	.. "disable the addon. Minimap icons are not changed."
 local HEIGHTS = { title = 44, header = 22, card = 42, node = 30, toggle = 24, text = 34, item = 42, search = 28 }
 local ICON = 32
 local NODE_ICON = 22
@@ -167,6 +170,16 @@ function Panel.OverviewSpecs(refresh)
 		text = L["Open my farming list"],
 		onClick = function()
 			view = { name = "list" }
+			refresh()
+		end,
+	}
+	out[#out + 1] = {
+		type = "toggle",
+		text = L["Hide GatherMate2 map icons"],
+		checked = ns.DB.hideGatherMate,
+		tooltip = L[HIDE_TIP],
+		onClick = function()
+			ns.SettingsModule.Set("hideGatherMate", not ns.DB.hideGatherMate)
 			refresh()
 		end,
 	}
@@ -619,7 +632,7 @@ local function Layout(row, spec, width, y)
 	row:SetScript("OnEnter", function()
 		if spec.tooltip then
 			GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-			GameTooltip:SetText(spec.tooltip)
+			GameTooltip:SetText(spec.tooltip, nil, nil, nil, nil, true)
 			GameTooltip:Show()
 		end
 	end)

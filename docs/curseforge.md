@@ -24,7 +24,7 @@ These images are generated previews of the Gathering Guide Forever UI.
 
 - **Best zones for you.** Mining and Herbalism each list the zones that give the most skill-ups per ten minutes at your skill, with the skill range, travel time and rate.
 - **Zone view.** Every node is coloured by its chance to raise your skill, with Next zones for when it rises.
-- **Gathering tours.** The loop starts at the node nearest you, with a breadcrumb trail on the world map and a Gathering Tour section in the objective tracker.
+- **Gathering tours.** The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map and a Gathering Tour section in the objective tracker.
 - **Farm for a list.** A shopping list with how many you carry and need, and the best zone for all of it.
 
 ## Known limitations

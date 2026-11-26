@@ -59,7 +59,7 @@ function ns.On(event, fn)
 	table.insert(handlers[event], fn)
 end
 
-ns.defaults = { skipNoSkillUp = true, loopOnMap = true, showTracker = true }
+ns.defaults = { skipNoSkillUp = true, loopOnMap = true, showTracker = true, hideGatherMate = true }
 
 ns.On("ADDON_LOADED", function(name)
 	if name ~= addonName then

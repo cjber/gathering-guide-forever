@@ -4,23 +4,21 @@ if ns.broken then
 	return
 end
 
--- Draws a loop on the world map: calm pins for the nodes on it, one atlas per GatherMate2 node kind, and breadcrumb
--- dots along each leg. Visited nodes are dimmed and the next one is slightly clearer. GatherMate2's own pins stay.
+-- Draws a loop on the world map: calm pins for the nodes on it, one atlas per GatherMate2 node kind. Visited nodes are
+-- dimmed and the next one is slightly clearer. The way between them is Shortest Path Forever's own journey line.
+-- GatherMate2's own world map pins are switched off by the Hide GatherMate2 map icons setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
 local Loop = {}
 ns.Loop = Loop
 
-local DOT_SIZE = 8
-local DOT_ALPHA = 0.45
-local PIN_SIZE = 14
-local NEXT_SIZE = 18
+-- A calm size that still reads at map scale. A visited node shrinks as well as dims, so it reads as done.
+local PIN_SIZE = 12
+local NEXT_SIZE = 16
+local VISITED_SIZE = 9
 local ALPHA = { ahead = 0.6, visited = 0.25, next = 0.95 }
--- Breadcrumbs sit this far apart, as a fraction of the map.
-local SPACING = 0.012
-local MAX_DOTS = 400
 
-local NodePin, DotPin = {}, {}
-local pool, dots
+local NodePin = {}
+local pool
 ---@type table?
 local plan
 local nextIndex
@@ -29,25 +27,13 @@ local function Setup(self)
 	self.Texture = self:CreateTexture(nil, "ARTWORK")
 end
 
-function DotPin:OnLoad()
-	self:SetSize(DOT_SIZE, DOT_SIZE)
-	self:SetScalingLimits(1, 0.8, 1.2)
-	Setup(self)
-	self.Texture:SetAllPoints()
-	self:SetAlpha(DOT_ALPHA)
-	ns.Fit(self.Texture, "Waypoint-MapPin-Untracked", DOT_SIZE, DOT_SIZE)
-end
-function DotPin:OnAcquired(x, y)
-	self:SetPosition(x, y)
-end
-
 function NodePin:OnLoad()
 	self:SetScalingLimits(1, 1, 1.2)
 	Setup(self)
 	self.Texture:SetPoint("CENTER")
 end
 function NodePin:OnAcquired(node, state)
-	local size = state == "next" and NEXT_SIZE or PIN_SIZE
+	local size = ({ next = NEXT_SIZE, visited = VISITED_SIZE })[state] or PIN_SIZE
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
 	self.Texture:SetDesaturated(state == "visited")
@@ -78,38 +64,19 @@ local function Build()
 	end
 	local canvas = ns.core.MapCanvas
 	local mixinNode = Mixin({}, canvas.PinMixin, NodePin)
-	local mixinDot = Mixin({}, canvas.PinMixin, DotPin)
 	pool = canvas.Pool(Map(), mixinNode)
-	dots = canvas.Pool(Map(), mixinDot)
 	canvas.Watch(Map(), function()
 		Loop.Draw()
 	end)
 end
 
--- The dots between two nodes of a loop on one map, nearest first, spaced by SPACING.
----@param a GGNode
----@param b GGNode
----@return number[][]
-function Loop.Crumbs(a, b)
-	local out = {}
-	local dx, dy = b.x - a.x, b.y - a.y
-	local length = math.sqrt(dx * dx + dy * dy)
-	local count = math.floor(length / SPACING)
-	for i = 1, count - 1 do
-		local t = i / count
-		out[#out + 1] = { a.x + dx * t, a.y + dy * t }
-	end
-	return out
-end
-
 -- Redraws the loop for the map now showing.
 function Loop.Draw()
 	Build()
-	if not pool or not dots then
+	if not pool then
 		return
 	end
 	pool:ReleaseAll()
-	dots:ReleaseAll()
 	local shown = plan
 	if not ns.DB or not ns.DB.loopOnMap or not shown then
 		return
@@ -118,19 +85,7 @@ function Loop.Draw()
 	if not map or not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
 		return
 	end
-	local order, total = shown.order, 0
-	for i, node in ipairs(order) do
-		local following = order[i % #order + 1]
-		if #order > 1 then
-			for _, c in ipairs(Loop.Crumbs(node, following)) do
-				total = total + 1
-				if total > MAX_DOTS then
-					break
-				end
-				dots:Acquire(c[1], c[2])
-			end
-		end
-	end
+	local order = shown.order
 	for i, node in ipairs(order) do
 		pool:Acquire(node, Loop.State(i, nextIndex))
 	end

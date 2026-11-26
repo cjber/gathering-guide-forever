@@ -13,6 +13,7 @@ ns.SettingsModule = Settings
 Settings.options = {
 	{ key = "skipNoSkillUp", label = L["Skip nodes with no skill-up"] },
 	{ key = "loopOnMap", label = L["Draw the loop on the world map"] },
+	{ key = "hideGatherMate", label = L["Hide GatherMate2 map icons"] },
 	{ key = "showTracker", label = L["Show the Gathering Tour in the objective tracker"] },
 }
 
@@ -33,10 +34,22 @@ function Settings.ImportFromSPF()
 	return true
 end
 
+-- GatherMate2's world map icons follow the setting.
+function Settings.SyncGatherMate()
+	if ns.DB.hideGatherMate then
+		ns.GatherMate.HideWorldMap()
+	else
+		ns.GatherMate.RestoreWorldMap()
+	end
+end
+
 ---@param key string
 ---@param value boolean
 function Settings.Set(key, value)
 	ns.DB[key] = value and true or false
+	if key == "hideGatherMate" then
+		Settings.SyncGatherMate()
+	end
 	if ns.Tour then
 		ns.Tour.OnSettingChanged(key)
 	end
@@ -45,3 +58,7 @@ end
 ns.OnLoaded(function()
 	Settings.ImportFromSPF()
 end)
+-- GatherMate2 sets its profile up before PLAYER_LOGIN. Its switch is put back at logout, so a disabled addon leaves
+-- it as the player had it; a crash leaves the saved original for the next restore.
+ns.On("PLAYER_LOGIN", Settings.SyncGatherMate)
+ns.On("PLAYER_LOGOUT", ns.GatherMate.RestoreWorldMap)

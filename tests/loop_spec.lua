@@ -97,6 +97,9 @@ assert(
 )
 assert(pins[1].alpha < pins[3].alpha and pins[3].alpha < pins[2].alpha, "visited dimmest, next clearest")
 assert(pins[2].alpha < 1, "no pin is fully opaque")
+for _, drawn in ipairs(fitted) do
+	assert(drawn.w <= 16 and drawn.w == drawn.h, "pins stay calm in size and keep their aspect")
+end
 
 -- A zone on another map, or the setting off, draws nothing.
 acquired = {}

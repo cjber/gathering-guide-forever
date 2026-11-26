@@ -4,7 +4,9 @@ if ns.broken then
 	return
 end
 
--- Reads the player's GatherMate2 database. Nothing is written back and the profile's display filters are kept.
+-- Reads the player's GatherMate2 database. Its nodes are never written; the one setting touched is the profile's
+-- world map switch, while the Hide GatherMate2 map icons setting is on (HideWorldMap), and the player's value is put
+-- back after it. The minimap keeps its own switch (showMinimap) untouched: our pins are for the world map.
 -- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (BSD-2-Clause; see THIRD_PARTY.md).
 local GM = {}
 ns.GatherMate = GM
@@ -118,4 +120,56 @@ function GM.NodeNames(kind)
 	end
 	table.sort(names)
 	return names
+end
+
+---@return table? profile GatherMate2's active profile
+---@return table? display its Display module
+local function Profile()
+	local gm = Addon()
+	local db = gm and type(gm.db) == "table" and gm.db
+	local profile = db and db.profile
+	local display = gm and type(gm.GetModule) == "function" and gm:GetModule("Display", true)
+	if type(profile) ~= "table" or not display or type(display.UpdateWorldMap) ~= "function" then
+		return nil
+	end
+	return profile, display
+end
+
+---@return string?
+local function ProfileName()
+	local gm = Addon()
+	return gm and gm.db and type(gm.db.GetCurrentProfile) == "function" and gm.db:GetCurrentProfile() or nil
+end
+
+-- Turns GatherMate2's world map pins off through its own profile switch and refresh. The player's value and profile are
+-- saved first (ns.DB.gm2WorldMap) and kept across a crash, so a later restore still has the original.
+function GM.HideWorldMap()
+	local profile, display = Profile()
+	if not profile or not ns.DB then
+		return
+	end
+	if ns.DB.gm2WorldMap == nil then
+		ns.DB.gm2WorldMap = { shown = profile.showWorldMap, profile = ProfileName() }
+	end
+	if profile.showWorldMap then
+		profile.showWorldMap = false
+		display:UpdateWorldMap()
+	end
+end
+
+-- Puts back the world map switch HideWorldMap saved, unless the player has since moved to another profile.
+function GM.RestoreWorldMap()
+	local saved = ns.DB and ns.DB.gm2WorldMap
+	if saved == nil then
+		return
+	end
+	local profile, display = Profile()
+	if not profile then
+		return
+	end
+	ns.DB.gm2WorldMap = nil
+	if saved.profile == ProfileName() and profile.showWorldMap ~= saved.shown then
+		profile.showWorldMap = saved.shown
+		display:UpdateWorldMap()
+	end
 end
