@@ -54,8 +54,9 @@ Nav.FADE_MINOR = 10
 
 ---@param api table
 ---@param bare boolean?
----@return table
+---@return table<string, string|boolean>
 local function Options(api, bare)
+	---@type table<string, string|boolean>
 	local options = { policy = "walking" }
 	if type(api.minor) == "number" and api.minor >= Nav.FADE_MINOR then
 		options[Nav.FADE_OPTION] = false
