@@ -26,7 +26,8 @@ local ModuleMixin = { headerText = L["Gathering Tour"] }
 ---@return string[]
 function Tracker.Lines(progress)
 	local lines = {
-		string.format(L["Node %d of %d"], progress.pos, progress.total),
+		string.format(L["Stop %d of %d"], progress.stop, progress.stops),
+		string.format(L["Loop of %d nodes"], progress.total),
 	}
 	if progress.next then
 		lines[#lines + 1] = string.format(L["Next: %s"], progress.next.name)

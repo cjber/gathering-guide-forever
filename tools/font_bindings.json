@@ -305,7 +305,7 @@
         {
           "font": "ObjectiveTrackerLineFont",
           "widget": "ObjectiveTracker default objective line Text",
-          "phrase": "Node %d of %d"
+          "phrase": "Stop %d of %d"
         },
         {
           "font": "ObjectiveTrackerLineFont",

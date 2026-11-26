@@ -16,7 +16,16 @@ ns.core = {
 ns.Tour = {
 	Listen = function() end,
 	Progress = function()
-		return { name = "Zone", pos = 2, total = 5, laps = 0, status = "running", next = { name = "Copper Vein" } }
+		return {
+			name = "Zone",
+			pos = 2,
+			stop = 2,
+			stops = 4,
+			total = 5,
+			laps = 0,
+			status = "running",
+			next = { name = "Copper Vein" },
+		}
 	end,
 }
 ns.Planner = {

@@ -80,6 +80,7 @@ local function Submit()
 		return false
 	end
 	tour.batch = batch
+	tour.stop = 1
 	tour.status = "running"
 	return true
 end
@@ -96,6 +97,7 @@ local function Observed(phase, index)
 		return
 	end
 	state.visited = state.visited + 1
+	state.stop = index + 1
 	state.pos = orderIndex % #state.order + 1
 	if orderIndex == #state.order then
 		state.laps = state.laps + 1
@@ -202,6 +204,8 @@ function Tour.Progress()
 		uiMapID = state.uiMapID,
 		visited = state.visited,
 		total = #state.order,
+		stop = state.stop or 1,
+		stops = state.batch and #state.batch or 0,
 		laps = state.laps,
 		status = state.status,
 		next = state.order[state.pos],
@@ -215,7 +219,13 @@ function Tour.Describe()
 	if not state then
 		return "idle"
 	end
-	return ("%s, node %d of %d, status %s"):format(state.name, state.pos, #state.order, state.status)
+	return ("%s, stop %d of %d, loop of %d, status %s"):format(
+		state.name,
+		state.stop or 1,
+		state.batch and #state.batch or 0,
+		#state.order,
+		state.status
+	)
 end
 
 -- A changed setting that affects the batch in flight sends it again from the current stop.

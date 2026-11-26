@@ -96,9 +96,12 @@ assert(routes[1][1].x == 0.3, "the tour starts at the node nearest the player")
 assert(#routes[1] == 6, "every node in one batch")
 assert(Tour.Active() and Tour.Progress().visited == 0)
 assert(began == 1, "a started tour begins a session")
+local progress = Tour.Progress()
+assert(progress.stop == 1 and progress.stops == 6 and progress.total == 6, "the count is the batch SPF shows")
 
 observer("arrived", 1, routes[1][1])
 assert(Tour.Progress().visited == 1, "an arrival advances the tour")
+assert(Tour.Progress().stop == 2, "the stop number follows the journey's own")
 observer("settled", 6, routes[1][6])
 assert(#routes == 1, "a settled plan for the last stop is not an arrival")
 for i = 2, 5 do

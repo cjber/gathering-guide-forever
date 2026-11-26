@@ -34,8 +34,9 @@ function World.Player()
 	if not UnitPosition then
 		return nil
 	end
-	local y, x, _, instance = UnitPosition("player")
-	if y == nil or (canaccessvalue and not canaccessvalue(y)) then
+	-- UnitPosition answers in the frame C_Map.GetWorldPosFromMapPos uses, its first value the x of a node's wx.
+	local x, y, _, instance = UnitPosition("player")
+	if x == nil or (canaccessvalue and not canaccessvalue(x)) then
 		return nil
 	end
 	if not Finite(x) or not Finite(y) then
