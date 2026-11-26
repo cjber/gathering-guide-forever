@@ -135,15 +135,17 @@ local function ProfileName()
 	return gm and gm.db and type(gm.db.GetCurrentProfile) == "function" and gm.db:GetCurrentProfile() or nil
 end
 
--- Turns GatherMate2's world map pins off through its own profile switch. The player's value and profile are saved
--- first (ns.DB.gm2WorldMap) and kept across a crash, so a later restore still has the original.
+-- Turns GatherMate2's world map pins off through its own profile switch. The player's value is saved per profile
+-- (ns.DB.gm2WorldMap[profile name]) first and kept across a crash, so a later restore still has every original
+-- whichever profile is active by then.
 function GM.HideWorldMap()
-	local profile = Profile()
-	if not profile or not ns.DB then
+	local profile, name = Profile(), ProfileName()
+	if not profile or not name or not ns.DB then
 		return
 	end
-	if ns.DB.gm2WorldMap == nil then
-		ns.DB.gm2WorldMap = { shown = profile.showWorldMap, profile = ProfileName() }
+	ns.DB.gm2WorldMap = ns.DB.gm2WorldMap or {}
+	if ns.DB.gm2WorldMap[name] == nil then
+		ns.DB.gm2WorldMap[name] = profile.showWorldMap == true
 	end
 	if profile.showWorldMap then
 		profile.showWorldMap = false
@@ -151,19 +153,22 @@ function GM.HideWorldMap()
 	end
 end
 
--- Puts back the world map switch HideWorldMap saved, unless the player has since moved to another profile.
+-- Puts back every world map switch HideWorldMap saved, in the profile it came from. Only the active profile is redrawn.
 function GM.RestoreWorldMap()
 	local saved = ns.DB and ns.DB.gm2WorldMap
-	if saved == nil then
-		return
-	end
-	local profile = Profile()
-	if not profile then
+	local active, name = Profile(), ProfileName()
+	if saved == nil or not active then
 		return
 	end
 	ns.DB.gm2WorldMap = nil
-	if saved.profile == ProfileName() and profile.showWorldMap ~= saved.shown then
-		profile.showWorldMap = saved.shown
-		Refresh(profile)
+	local profiles = Addon().db.profiles
+	for profileName, shown in pairs(saved) do
+		local target = profileName == name and active or type(profiles) == "table" and profiles[profileName]
+		if type(target) == "table" and target.showWorldMap ~= shown then
+			target.showWorldMap = shown
+			if target == active then
+				Refresh(active)
+			end
+		end
 	end
 end

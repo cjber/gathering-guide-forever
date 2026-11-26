@@ -34,11 +34,11 @@ assert(
 	"the world map icons are hidden through GatherMate2's own switch"
 )
 assert(profile.showMinimap == true, "the minimap keeps the player's setting")
-assert(ns.DB.gm2WorldMap.shown == true, "the player's value is saved first")
+assert(ns.DB.gm2WorldMap.Default == true, "the player's value is saved first")
 
 Settings.SyncGatherMate()
 assert(
-	refreshes == 1 and ns.DB.gm2WorldMap.shown == true,
+	refreshes == 1 and ns.DB.gm2WorldMap.Default == true,
 	"hiding twice neither refreshes again nor saves the hidden value"
 )
 
@@ -57,7 +57,7 @@ assert(profile.showWorldMap == false, "login hides it again")
 
 -- A crash: the switch was left off and the saved original survives in our SavedVariables.
 profile.showWorldMap = false
-ns.DB.gm2WorldMap = { shown = true, profile = "Default" }
+ns.DB.gm2WorldMap = { Default = true }
 Settings.Set("onlyGatheringPins", false)
 assert(profile.showWorldMap == true and ns.DB.gm2WorldMap == nil, "the saved original is put back after a crash")
 
@@ -68,13 +68,20 @@ Settings.Set("onlyGatheringPins", true)
 Settings.Set("onlyGatheringPins", false)
 assert(profile.showWorldMap == false, "a value the player chose is the value restored")
 
--- Another profile is left alone.
+-- Switching profiles while hidden: each profile gets its own original back, and an untouched one is left alone.
+local other = { showWorldMap = true, show = {} }
+GatherMate2.db.profiles = { Default = profile, Other = other }
 profile.showWorldMap = true
 Settings.Set("onlyGatheringPins", true)
 profileName = "Other"
-profile.showWorldMap = true
+GatherMate2.db.profile = other
+Settings.SyncGatherMate()
+assert(profile.showWorldMap == false and other.showWorldMap == false, "both profiles were hidden")
 Settings.Set("onlyGatheringPins", false)
-assert(profile.showWorldMap == true and ns.DB.gm2WorldMap == nil, "a profile switched to meanwhile is not rewritten")
+assert(profile.showWorldMap == true and other.showWorldMap == true, "each profile gets its own value back")
+assert(ns.DB.gm2WorldMap == nil, "nothing left saved")
+profileName = "Default"
+GatherMate2.db.profile = profile
 
 -- Without GatherMate2 nothing happens.
 GatherMate2 = nil
