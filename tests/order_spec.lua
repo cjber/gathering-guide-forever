@@ -70,4 +70,23 @@ for i = 1, #order do
 end
 assert(Order.Nearest({}, { x = 0, y = 0 }) == nil, "an empty loop has no nearest node")
 
+-- A solve is one bounded slice per node, never one per comparison: the slices a zone takes grow with its node count,
+-- not with its square, so a zone with hundreds of nodes cannot take thousands of frames.
+local function Slices(count)
+	local spread = {}
+	for i = 1, count do
+		spread[i] = { uiMapID = 1, kind = "Mining", coord = i, nodeID = 1, wx = (i * 7919) % 1000 }
+		spread[i].wy = (i * 104729) % 1000
+	end
+	local solve, slices = Order.Begin(spread), 0
+	repeat
+		slices = slices + 1
+	until solve.Step() ~= "working"
+	assert(#solve.order == count, "every node is in the loop")
+	return slices
+end
+local small, large = Slices(200), Slices(400)
+assert(small <= 2 * 200 and large <= 2 * 400, "no more than a couple of slices per node")
+assert(large < 3 * small, "doubling the nodes less than triples the slices")
+
 print("order_spec ok")

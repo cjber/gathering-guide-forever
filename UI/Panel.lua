@@ -40,20 +40,26 @@ local function Minutes(seconds)
 end
 
 -- Planned numbers for each view, filled in over frames by the planner and kept until the skill or setting changes.
-local results = {}
+-- The second value is what the work has found so far, for a view that shows its cards as each zone finishes.
+local results, partials = {}, {}
 local function Result(key, work, done)
 	if results[key] ~= nil then
 		return results[key]
 	end
-	ns.Planner.Async(key, work, function(value)
+	ns.Planner.Async(key, function(yield)
+		return work(yield, function(found)
+			partials[key] = found
+			done()
+		end)
+	end, function(value)
 		results[key] = value
 		done()
 	end)
-	return results[key]
+	return results[key], partials[key]
 end
 
 function Panel.ClearResults()
-	results = {}
+	results, partials = {}, {}
 end
 
 --[[ View specs ]]
@@ -112,8 +118,8 @@ function Panel.OverviewSpecs(refresh)
 			learned = true
 			out[#out + 1] = { type = "header", text = string.format(L["%s, skill %d"], k.label, rank) }
 			local key = ("best:%s:%d:%s"):format(k.kind, rank, tostring(ns.DB.skipNoSkillUp))
-			local zones = Result(key, function(yield)
-				return ns.Planner.Best(k.kind, rank, ns.DB.skipNoSkillUp, 3, yield)
+			local zones, soFar = Result(key, function(yield, progress)
+				return ns.Planner.Best(k.kind, rank, ns.DB.skipNoSkillUp, 3, yield, progress)
 			end, refresh)
 			if not zones then
 				out[#out + 1] = { type = "text", text = L["Planning loops..."] }
@@ -121,7 +127,7 @@ function Panel.OverviewSpecs(refresh)
 				out[#out + 1] =
 					{ type = "text", text = L["No zone in your GatherMate2 data has nodes for this skill."] }
 			end
-			for _, zone in ipairs(zones or {}) do
+			for _, zone in ipairs(zones or soFar or {}) do
 				out[#out + 1] = {
 					type = "card",
 					text = zone.name,

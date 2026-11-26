@@ -11,8 +11,6 @@ end
 local Order = {}
 ns.Order = Order
 
-local WORK_PER_STEP = 128
-
 local function Identity(a, b)
 	for _, key in ipairs({ "uiMapID", "kind", "coord", "nodeID" }) do
 		if a[key] ~= b[key] then
@@ -27,8 +25,9 @@ local function Distance(a, b)
 	return math.sqrt(dx * dx + dy * dy)
 end
 
--- Starts a loop job over nodes that carry world coordinates wx and wy. Call Step until it is no longer "working";
--- each call does a bounded slice, so the caller defers the next one a frame.
+-- Starts a loop job over nodes that carry world coordinates wx and wy. Call Step until it is no longer "working"; each
+-- call does one bounded slice, a single pass over the nodes, so a solve is as many slices as there are nodes and the
+-- caller defers the next one to spread the work over frames.
 ---@param nodes GGNode[]
 ---@return table job {status, order, yards, Step}
 function Order.Begin(nodes)
@@ -62,7 +61,6 @@ function Order.Begin(nodes)
 				then
 					pick = i
 				end
-				coroutine.yield()
 			end
 			used[pick] = true
 			for i = 1, count do
@@ -72,24 +70,30 @@ function Order.Begin(nodes)
 						best[i], parent[i] = d, pick
 					end
 				end
-				coroutine.yield()
+			end
+			coroutine.yield()
+		end
+		-- Preorder over the tree, each node's children taken in identity order.
+		local children = {}
+		for i = 1, count do
+			if parent[i] then
+				children[parent[i]] = children[parent[i]] or {}
+				table.insert(children[parent[i]], i)
 			end
 		end
-		local result, stack, visited = {}, { root }, {}
+		for _, list in pairs(children) do
+			table.sort(list, function(a, b)
+				return Identity(nodes[a], nodes[b])
+			end)
+		end
+		local result, stack, nextChild = {}, { root }, {}
+		result[1] = nodes[root]
 		while #stack > 0 do
 			local current = stack[#stack]
-			if not visited[current] then
-				visited[current] = true
-				result[#result + 1] = nodes[current]
-			end
-			local child
-			for i = 1, count do
-				if parent[i] == current and not visited[i] and (not child or Identity(nodes[i], nodes[child])) then
-					child = i
-				end
-				coroutine.yield()
-			end
+			nextChild[current] = (nextChild[current] or 0) + 1
+			local child = children[current] and children[current][nextChild[current]]
 			if child then
+				result[#result + 1] = nodes[child]
 				stack[#stack + 1] = child
 			else
 				stack[#stack] = nil
@@ -101,18 +105,13 @@ function Order.Begin(nodes)
 		if job.status ~= "working" then
 			return job.status
 		end
-		for _ = 1, WORK_PER_STEP do
-			local ok, status, result = coroutine.resume(co)
-			if not ok then
-				job.status = "error"
-				return job.status
-			end
-			if coroutine.status(co) == "dead" then
-				job.status = status
-				job.order = result or {}
-				job.yards = Order.Length(job.order)
-				return job.status
-			end
+		local ok, status, result = coroutine.resume(co)
+		if not ok then
+			job.status = "error"
+		elseif coroutine.status(co) == "dead" then
+			job.status = status
+			job.order = result or {}
+			job.yards = Order.Length(job.order)
 		end
 		return job.status
 	end

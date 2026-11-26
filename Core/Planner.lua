@@ -148,8 +148,9 @@ end
 ---@param skipNoSkillUp boolean
 ---@param limit number
 ---@param yield fun()?
+---@param progress fun(best: table[])? called after each zone joins the list, with the best so far
 ---@return table[]
-function Planner.Best(kind, rank, skipNoSkillUp, limit, yield)
+function Planner.Best(kind, rank, skipNoSkillUp, limit, yield, progress)
 	local zones = {}
 	for _, uiMapID in ipairs(ns.GatherMate.Zones(kind)) do
 		local zone = Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
@@ -158,16 +159,23 @@ function Planner.Best(kind, rank, skipNoSkillUp, limit, yield)
 		end
 		if zone and zone.rate > 0 then
 			zones[#zones + 1] = zone
+			table.sort(zones, function(a, b)
+				if a.rate ~= b.rate then
+					return a.rate > b.rate
+				end
+				return a.uiMapID < b.uiMapID
+			end)
+			while #zones > limit do
+				zones[#zones] = nil
+			end
+			if progress then
+				local snapshot = {}
+				for i, z in ipairs(zones) do
+					snapshot[i] = z
+				end
+				progress(snapshot)
+			end
 		end
-	end
-	table.sort(zones, function(a, b)
-		if a.rate ~= b.rate then
-			return a.rate > b.rate
-		end
-		return a.uiMapID < b.uiMapID
-	end)
-	while #zones > limit do
-		zones[#zones] = nil
 	end
 	return zones
 end
