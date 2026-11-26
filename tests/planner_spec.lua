@@ -73,4 +73,40 @@ assert(
 	"a far zone loses to a near one of similar yield"
 )
 
+-- The ranking is planned once: reopening reads memory, a fresh session reads the saved variables, and a changed
+-- skill or GatherMate2 data plans again while the saved ranking stands in.
+GetRealmName = function()
+	return "Realm"
+end
+ns.DB = {}
+local plans, planned = 0, 0
+ns.Planner.Best = function(kind)
+	plans = plans + 1
+	return { { kind = kind, uiMapID = 1411, lowest = 1, highest = 2, travel = 60, rate = 9, seconds = 600, count = 3 } }
+end
+local function Open(rank)
+	local ranked, _, stale = ns.Planner.Ranking("Mining", rank, true, function()
+		planned = planned + 1
+	end)
+	return ranked, stale
+end
+local ranked = Open(38)
+assert(plans == 1 and #ranked == 1, "the first open plans")
+assert(Open(38) and plans == 1, "reopening does no planning")
+ns.Planner.ClearResults()
+ranked = Open(38)
+assert(plans == 1 and ranked[1].rate == 9 and ranked[1].name, "a fresh session loads the saved ranking")
+local cached, stale = Open(39)
+assert(plans == 2 and cached[1].uiMapID == 1411 and stale == false, "a new skill plans again")
+ns.Planner.ClearResults()
+GatherMate2.gmdbs.Mining.__gm2_base_storage[1411][9999999] = 202
+local before = plans
+ns.Planner.ClearResults()
+cached = Open(39)
+assert(plans == before + 1, "changed GatherMate2 data plans again")
+ns.DB.plans = nil
+ns.Planner.ClearResults()
+Open(39)
+assert(plans == before + 2, "no saved ranking plans")
+
 print("planner_spec ok")

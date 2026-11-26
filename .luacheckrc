@@ -20,8 +20,9 @@ globals = {
 	"SLASH_GATHERINGGUIDEFOREVER2",
 	"SlashCmdList",
 }
-files["tests/**"] = { globals = { "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "GetCoinTextureString", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore" } }
+files["tests/**"] = { globals = { "GetRealmName", "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "GetCoinTextureString", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore" } }
 read_globals = {
+	"GetRealmName",
 	"ForeverCore",
 	"GatherMate2",
 	"ShortestPathForeverDB",

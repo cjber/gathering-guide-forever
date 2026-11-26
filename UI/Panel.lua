@@ -39,25 +39,7 @@ local function Minutes(seconds)
 	return math.max(1, math.floor(seconds / 60 + 0.5))
 end
 
--- Planned numbers for each view, filled in over frames by the planner and kept until the skill or setting changes.
--- The second value is true once the plan raised an error, so the view says so instead of planning for ever.
-local results, failures = {}, {}
-local function Result(key, work, done)
-	if results[key] ~= nil then
-		return results[key]
-	end
-	if failures[key] then
-		return nil, true
-	end
-	ns.Planner.Async(key, work, function(value)
-		results[key] = value
-		done()
-	end, function()
-		failures[key] = true
-		done()
-	end)
-	return results[key]
-end
+local Result = ns.Planner.Result
 
 -- What a view with no result yet says: that it is planning, or that the plan failed.
 ---@param failed boolean?
@@ -67,9 +49,7 @@ local function PlanText(failed, planning)
 	return failed and L["The plan failed. The report window (/ggf report) shows why."] or planning
 end
 
-function Panel.ClearResults()
-	results, failures = {}, {}
-end
+Panel.ClearResults = ns.Planner.ClearResults
 
 --[[ View specs ]]
 
@@ -125,11 +105,8 @@ function Panel.OverviewSpecs(refresh)
 		if rank > 0 then
 			learned = true
 			out[#out + 1] = { type = "header", text = string.format(L["%s, skill %d"], k.label, rank) }
-			local key = ("best:%s:%d:%s"):format(k.kind, rank, tostring(ns.DB.skipNoSkillUp))
-			local zones, failed = Result(key, function(yield)
-				return ns.Planner.Best(k.kind, rank, ns.DB.skipNoSkillUp, 3, yield)
-			end, refresh)
-			if not zones then
+			local zones, failed = ns.Planner.Ranking(k.kind, rank, ns.DB.skipNoSkillUp, refresh)
+			if failed or not zones then
 				out[#out + 1] = { type = "text", text = PlanText(failed, L["Planning loops..."]) }
 			elseif #zones == 0 then
 				out[#out + 1] =

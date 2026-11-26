@@ -20,20 +20,19 @@ function GM.Available()
 	return gm ~= nil and type(gm.GetNodesForZone) == "function"
 end
 
--- Every uiMapID GatherMate2 holds nodes of this kind for. GatherMate2 has no iterator over zones: gmdbs[kind] is a
--- proxy whose only real keys are metadata, and a zone's nodes come through its __index. The zones are keys of the
--- base storage and of each storage-map table, the two places GatherMate2's own UpgradeNodeIDs walks, so they are read
--- from there.
+-- Calls fn(uiMapID, nodes) for every zone GatherMate2 holds nodes of this kind for, nodes being its coord -> nodeID
+-- table. GatherMate2 has no iterator over zones: gmdbs[kind] is a proxy whose only real keys are metadata, and a zone's
+-- nodes come through its __index. The zones are keys of the base storage and of each storage-map table, the two places
+-- GatherMate2's own UpgradeNodeIDs walks, so they are read from there.
 ---@param kind string
----@return number[]
-function GM.Zones(kind)
+---@param fn fun(uiMapID: number, nodes: table<number, number>)
+local function Walk(kind, fn)
 	local gm = Addon()
-	local zones, seen = {}, {}
 	local proxy = gm and type(gm.gmdbs) == "table" and gm.gmdbs[kind]
 	if type(proxy) ~= "table" then
-		return zones
+		return
 	end
-	local stores = { proxy.__gm2_base_storage }
+	local stores, seen = { proxy.__gm2_base_storage }, {}
 	for _, store in pairs(proxy.__gm2_storage_map or {}) do
 		stores[#stores + 1] = store
 	end
@@ -41,12 +40,37 @@ function GM.Zones(kind)
 		for uiMapID, nodes in pairs(store) do
 			if not seen[uiMapID] and type(nodes) == "table" and next(nodes) ~= nil then
 				seen[uiMapID] = true
-				zones[#zones + 1] = uiMapID
+				fn(uiMapID, nodes)
 			end
 		end
 	end
+end
+
+---@param kind string
+---@return number[]
+function GM.Zones(kind)
+	local zones = {}
+	Walk(kind, function(uiMapID)
+		zones[#zones + 1] = uiMapID
+	end)
 	table.sort(zones)
 	return zones
+end
+
+-- A number that changes when the player's nodes of this kind change, so a saved plan knows its data moved. The sum
+-- does not depend on the order the tables are walked in.
+---@param kind string
+---@return string
+function GM.Fingerprint(kind)
+	local count, sum = 0, 0
+	Walk(kind, function(uiMapID, nodes)
+		sum = (sum + uiMapID * 7919) % 1000000007
+		for coord, nodeID in pairs(nodes) do
+			count = count + 1
+			sum = (sum + coord % 1000003 * 31 + nodeID) % 1000000007
+		end
+	end)
+	return count .. ":" .. sum
 end
 
 -- The nodes of one kind in one zone that this addon knows a skill requirement for.

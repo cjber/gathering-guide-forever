@@ -308,6 +308,106 @@ function Planner.ListZones(limit, yield)
 	return zones
 end
 
+-- Planned numbers, filled in over frames and kept until the skill or a setting changes. The second value is true once
+-- the plan raised an error, so the view says so instead of planning for ever.
+local results, failures = {}, {}
+
+---@param key string
+---@param work fun(yield: fun()): any
+---@param done fun()
+---@return any
+---@return boolean? failed
+function Planner.Result(key, work, done)
+	if results[key] ~= nil then
+		return results[key]
+	end
+	if failures[key] then
+		return nil, true
+	end
+	Planner.Async(key, work, function(value)
+		results[key] = value
+		done()
+	end, function()
+		failures[key] = true
+		done()
+	end)
+	return results[key]
+end
+
+function Planner.ClearResults()
+	results, failures = {}, {}
+end
+
+-- The three best zones are saved per realm and kind in the account's saved variables, so a new login shows them at
+-- once. A saved ranking is current when its key (kind, skill, setting and the fingerprint of the GatherMate2 data)
+-- matches; otherwise it is shown while a new one is planned. The trip to a zone is measured from where the player
+-- stood when it was planned.
+local SUMMARY = { "uiMapID", "lowest", "highest", "travel", "rate", "seconds", "count" }
+
+---@param zones table[]
+---@return table[]
+local function Freeze(zones)
+	local out = {}
+	for i, zone in ipairs(zones) do
+		out[i] = { kind = zone.kind }
+		for _, field in ipairs(SUMMARY) do
+			out[i][field] = zone[field]
+		end
+	end
+	return out
+end
+
+---@param saved table[]
+---@return table[]
+local function Thaw(saved)
+	local out = {}
+	for i, zone in ipairs(saved) do
+		out[i] = {}
+		for key, value in pairs(zone) do
+			out[i][key] = value
+		end
+		out[i].name = Planner.ZoneName(zone.uiMapID)
+	end
+	return out
+end
+
+---@param kind string
+---@return table?
+local function Saved(kind)
+	local plans = ns.DB and ns.DB.plans
+	local realm = plans and plans[GetRealmName()]
+	return realm and realm[kind]
+end
+
+-- The best zones for a kind at a skill, from memory or the saved variables when they are current, else planned over
+-- frames. While that runs the last saved ranking stands in, third value true.
+---@param kind string
+---@param rank number
+---@param skip boolean
+---@param refresh fun()
+---@return table[]?
+---@return boolean? failed
+---@return boolean? stale
+function Planner.Ranking(kind, rank, skip, refresh)
+	local key = ("best:%s:%d:%s:%s"):format(kind, rank, tostring(skip), ns.GatherMate.Fingerprint(kind))
+	local saved = Saved(kind)
+	if results[key] == nil and saved and saved.key == key then
+		results[key] = Thaw(saved.zones)
+	end
+	local zones, failed = Planner.Result(key, function(yield)
+		local best = Planner.Best(kind, rank, skip, 3, yield)
+		ns.DB.plans = ns.DB.plans or {}
+		local realm = GetRealmName()
+		ns.DB.plans[realm] = ns.DB.plans[realm] or {}
+		ns.DB.plans[realm][kind] = { key = key, zones = Freeze(best) }
+		return best
+	end, refresh)
+	if not zones and saved then
+		return Thaw(saved.zones), failed, true
+	end
+	return zones, failed, false
+end
+
 -- Runs work(yield) as a coroutine across frames, a few milliseconds at a time, then calls done with its results, or
 -- failed when the work raises. Work already running for the same key is not started twice.
 ---@type table<string, boolean>
