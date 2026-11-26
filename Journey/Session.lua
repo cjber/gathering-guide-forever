@@ -12,11 +12,15 @@ local Session = {}
 ns.Session = Session
 
 local SECONDS_PER_HOUR = 3600
+-- How often the gold per hour is drawn again while the session runs, since it changes with the clock.
+local RATE_REFRESH_SECONDS = 60
 local CALLER = "GatheringGuideForever"
 
 ---@type {startedAt: number, list: boolean, entries: {item: string, last: number, gathered: number}[]}?
 local session
 local looting = false
+---@type {Cancel: fun(self)}?
+local ticker
 ---@type fun()[]
 local listeners = {}
 
@@ -77,10 +81,20 @@ function Session.Begin(plan, now)
 		entries[i] = { item = want.item, last = Count(want.item), gathered = 0 }
 	end
 	session = { startedAt = now, list = plan.list == true, entries = entries }
+	if ticker then
+		ticker:Cancel()
+	end
+	ticker = C_Timer.NewTicker(RATE_REFRESH_SECONDS, Notify)
 end
 
+-- Ends the session and the loot window it was watching, so loot still open does not reach the next tour.
 function Session.End()
 	session = nil
+	looting = false
+	if ticker then
+		ticker:Cancel()
+		ticker = nil
+	end
 end
 
 -- Moves each item's baseline to what the bags hold; a gain counts as gathered only when credit is set.
@@ -107,7 +121,7 @@ function Session.LootOpened()
 end
 
 function Session.LootClosed()
-	Sync(true)
+	Sync(looting)
 	looting = false
 	Notify()
 end
@@ -195,3 +209,9 @@ end
 ns.On("BAG_UPDATE_DELAYED", Session.BagsChanged)
 ns.On("LOOT_OPENED", Session.LootOpened)
 ns.On("LOOT_CLOSED", Session.LootClosed)
+-- A price the client had not cached arrives as item data; the rate can be drawn then.
+ns.On("GET_ITEM_INFO_RECEIVED", function()
+	if session then
+		Notify()
+	end
+end)

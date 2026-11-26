@@ -1,7 +1,21 @@
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local H = dofile(here .. "/harness.lua")
 local ns = H.Namespace()
-ns.On = function() end
+local handlers = {}
+ns.On = function(event, fn)
+	handlers[event] = fn
+end
+local tickers = {}
+C_Timer = {
+	NewTicker = function(seconds, fn)
+		local ticker = { seconds = seconds, fn = fn }
+		function ticker:Cancel()
+			self.cancelled = true
+		end
+		tickers[#tickers + 1] = ticker
+		return ticker
+	end,
+}
 ns.core = {
 	SafeCall = function(_, fn, ...)
 		return fn(...)
@@ -48,6 +62,19 @@ local rows = Session.Rows()
 assert(#rows == 2 and rows[1].item == "Copper Ore" and rows[2].item == "Tin Ore", "the zone's items, sorted")
 assert(rows[1].gathered == 0 and rows[1].need == nil and rows[1].left == nil, "no need on a plain tour")
 
+-- A ticker redraws the rate as time passes while the session runs, and stops when it ends; item data redraws it too.
+local notified = 0
+Session.Listen(function()
+	notified = notified + 1
+end)
+assert(#tickers == 1 and not tickers[1].cancelled and tickers[1].seconds > 0, "a ticker runs with the session")
+tickers[1].fn()
+assert(notified == 1, "the tick redraws")
+handlers.GET_ITEM_INFO_RECEIVED()
+assert(notified == 2, "arriving item data redraws")
+Session.Begin(zone, 1000)
+assert(tickers[1].cancelled and #tickers == 2, "a new session replaces the ticker")
+
 -- Only gains while the loot window is open count; mail, bank or crafting gains and spending move the baseline.
 loot("Copper Ore", 3)
 assert(Session.Rows()[1].gathered == 3, "looted gains are counted")
@@ -80,6 +107,20 @@ assert(Session.Rows()[1].left == 0 and Session.Rows()[1].gathered == 30, "left n
 table.remove(ns.Char.list, 1)
 rows = Session.Rows()
 assert(#rows == 1 and rows[1].item == "Tin Ore", "an item taken off the list has no row")
+
+-- Ending the session ends the loot window it watched: the old window's loot never reaches the next tour.
+Session.LootOpened()
+Session.End()
+assert(tickers[#tickers].cancelled, "ending cancels the ticker")
+local before = notified
+handlers.GET_ITEM_INFO_RECEIVED()
+assert(notified == before, "no session, no redraw")
+bags["Copper Ore"], bags["Tin Ore"] = 4, 0
+Session.Begin(zone, 1000)
+bags["Copper Ore"] = 9
+handlers.BAG_UPDATE_DELAYED()
+handlers.LOOT_CLOSED()
+assert(Session.Rows()[1].gathered == 0, "loot from before the session is not credited to it")
 
 -- A new tour resets the tally; ending it clears the session.
 Session.Begin(zone, 2000)
