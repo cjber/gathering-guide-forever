@@ -108,6 +108,12 @@ _G.WorldMapFrame = {
 	end,
 }
 ns.DB.loopOnMap = true
+local tour
+ns.Tour = {
+	Progress = function()
+		return tour
+	end,
+}
 H.Load(ns, "UI/Loop.lua")
 local Loop = ns.Loop
 
@@ -121,7 +127,8 @@ local order = {
 	{ x = 0.3, y = 0.1, name = "Peacebloom" },
 	{ x = 0.5, y = 0.1, name = "Tin Vein" },
 }
-Loop.Show({ uiMapID = 7, order = order }, 2)
+tour = { uiMapID = 7, order = order, pos = 2 }
+Loop.Draw()
 local pins = acquired
 assert(#pins == 2, "visited nodes are not drawn, every later node gets a pin")
 assert(Art(pins[1], "Tin Vein") and Art(pins[2], "Peacebloom"), "each node wears its own art")
@@ -134,9 +141,24 @@ for _, pin in ipairs(pins) do
 end
 
 -- A preview with no next node draws every pin.
+acquired, tour = {}, nil
+Loop.Preview({ uiMapID = 7, order = order })
+assert(#acquired == 3, "a preview draws the whole loop")
+
+-- A running tour keeps its pins on its own map, whatever zone is previewed.
+tour = { uiMapID = 7, order = order, pos = 2 }
 acquired = {}
-Loop.Show({ uiMapID = 7, order = order }, nil)
-assert(#acquired >= 3, "a preview draws the whole loop")
+Loop.Draw()
+assert(#acquired == 2, "the tour's pins, not the preview of its zone")
+acquired = {}
+Loop.Preview({ uiMapID = 8, order = order })
+assert(#acquired == 2, "previewing another zone leaves the tour's map its pins")
+tour = { uiMapID = 9, order = order, pos = 2 }
+Loop.Draw()
+acquired = {}
+Loop.Preview({ uiMapID = 7, order = order })
+assert(#acquired == 3, "a preview shows on a map the tour is not on")
+tour = nil
 
 -- Overlapping nodes share a pin at their middle, in the first node's art, sized as the pins are at this zoom.
 local crowd = {
@@ -145,8 +167,9 @@ local crowd = {
 	{ x = 0.8, y = 0.5, name = "Copper Vein" },
 }
 local function Draw(index)
+	tour = index and { uiMapID = 7, order = crowd, pos = index }
 	acquired = {}
-	Loop.Show({ uiMapID = 7, order = crowd }, index)
+	Loop.Preview({ uiMapID = 7, order = crowd })
 	return acquired
 end
 reach, zoom = 0.05, 1
@@ -165,11 +188,11 @@ reach = 0
 assert(#Draw(nil) == 3, "nodes apart keep their own pins")
 
 -- A zone on another map, or the setting off, draws nothing.
-acquired = {}
-Loop.Show({ uiMapID = 8, order = order }, 1)
+acquired, tour = {}, nil
+Loop.Preview({ uiMapID = 8, order = order })
 assert(#acquired == 0, "a loop on another map is not drawn")
 ns.DB.loopOnMap = false
-Loop.Show({ uiMapID = 7, order = order }, 1)
+Loop.Preview({ uiMapID = 7, order = order })
 assert(#acquired == 0, "the setting turns the loop off")
 
 print("loop_spec ok")

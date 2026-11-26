@@ -1365,13 +1365,7 @@ function Panel.Refresh()
 	end
 	content:SetSize(width, y + PAD)
 	PlaceSearch(searchRow)
-	-- The picked zone's loop is previewed; a running tour on that map keeps its own pins.
-	local progress = ns.Tour.Progress()
-	if pickedZone and not (progress and progress.uiMapID == pickedZone.uiMapID) then
-		ns.Loop.Show(pickedZone)
-	else
-		ns.Loop.Refresh()
-	end
+	ns.Loop.Preview(pickedZone)
 	Footer()
 end
 
@@ -1477,6 +1471,8 @@ local function Build()
 			ns.MapFocus.SetPanelShown(visible)
 			if visible then
 				Panel.Refresh()
+			else
+				ns.Loop.Preview(nil)
 			end
 		end,
 	})

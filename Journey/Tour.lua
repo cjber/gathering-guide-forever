@@ -40,7 +40,7 @@ local function Notify()
 		ns.core.SafeCall("tour listener", fn)
 	end
 	if ns.Loop then
-		ns.Loop.Refresh()
+		ns.Loop.Draw()
 	end
 end
 

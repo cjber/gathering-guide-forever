@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "fdb65bf0a2e8504c12f90c41a95ca88bb9dc384ba256cf720ef433adfbc62454",
+      "sha256": "b732e59d8e3d0f093e4fa6e18e17bbe0540bb5e6b8291adcc7706e80473792b6",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
@@ -402,7 +402,7 @@
     },
     {
       "source": "Journey/Tour.lua",
-      "sha256": "3dcdb07786b37ebabd6ddb586fc068023309075307ed79e8a978fef9b593981a",
+      "sha256": "5caa418b46087794279f285110c357f63f4350cf531db047348984ad1288b129",
       "review": "Tour.Reason feeds the GameFontDisableSmall footerText on a failed tour start (UI/Panel.lua) and the status objective line Tracker.Blocks adds while a tour is not running, in ObjectiveTrackerLineFont. Neither caller changes the font after setting the text. Tour.Describe goes only to the report text.",
       "bindings": [
         {

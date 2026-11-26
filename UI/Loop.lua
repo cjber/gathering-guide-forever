@@ -22,8 +22,7 @@ local ALPHA = { ahead = 0.8, next = 0.95 }
 local NodePin = {}
 local pool
 ---@type table?
-local plan
-local nextIndex
+local preview
 
 function NodePin:OnLoad()
 	self:SetScalingLimits(1, 1, 1.2)
@@ -68,6 +67,20 @@ local function Middle(group)
 	return { x = x / #group, y = y / #group, name = group[1].name }
 end
 
+-- The loop for a map: the running tour's when the tour is there, else the zone the panel is previewing.
+---@param uiMapID number
+---@return table? shown
+---@return number? index the tour's next node
+local function For(uiMapID)
+	local progress = ns.Tour and ns.Tour.Progress()
+	if progress and progress.uiMapID == uiMapID then
+		return progress, progress.pos
+	end
+	if preview and preview.uiMapID == uiMapID then
+		return preview
+	end
+end
+
 -- Redraws the loop for the map now showing.
 function Loop.Draw()
 	Build()
@@ -75,12 +88,12 @@ function Loop.Draw()
 		return
 	end
 	pool:ReleaseAll()
-	local shown = plan
-	if not ns.DB or not ns.DB.loopOnMap or not shown then
+	local map = Map()
+	if not ns.DB or not ns.DB.loopOnMap or not map or not map:IsVisible() then
 		return
 	end
-	local map = Map()
-	if not map or not map:IsVisible() or map:GetMapID() ~= shown.uiMapID then
+	local shown, nextIndex = For(map:GetMapID())
+	if not shown then
 		return
 	end
 	local order = shown.order
@@ -104,22 +117,11 @@ function Loop.Draw()
 	end
 end
 
--- Shows a plan's loop on its map: a running tour's, or the zone the panel is previewing. Nil clears it.
----@param shown table?
----@param index number? the next node
-function Loop.Show(shown, index)
-	plan, nextIndex = shown, index
+-- The zone the panel is previewing. Nil clears it.
+---@param zone table?
+function Loop.Preview(zone)
+	preview = zone
 	Loop.Draw()
-end
-
--- Follows the running tour.
-function Loop.Refresh()
-	local progress = ns.Tour and ns.Tour.Progress()
-	if progress then
-		Loop.Show({ uiMapID = progress.uiMapID, order = progress.order }, progress.pos)
-	else
-		Loop.Show(nil)
-	end
 end
 
 ns.OnLoaded(function()
