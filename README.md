@@ -19,7 +19,7 @@ Each zone card shows the skill range of the nodes on its loop, the travel time a
 
 A zone shows how long it takes to reach your trained maximum, the chance each node has to raise your skill and the next zones to move on to.
 
-<p align="center"><img src="docs/screenshots/gathering-tour.png" width="960" alt="A tour running in Dun Morogh, with the Gathering Tour section in the objective tracker"></p>
+<p align="center"><img src="docs/screenshots/gathering-tour.png" width="960" alt="A tour running in Dun Morogh, with its route drawn on the world map"></p>
 
 A tour starts at the node nearest you. Shortest Path Forever draws the way through the stops.
 
@@ -27,7 +27,7 @@ A tour starts at the node nearest you. Shortest Path Forever draws the way throu
 
 Only the nodes still to visit get a pin, showing the herb or ore, and the next one is clearer. Nearby nodes share one pin until you zoom in.
 
-<p align="center"><img src="docs/screenshots/gathering-tracker.png" width="420" alt="The Gathering Tour section of the objective tracker"></p>
+<p align="center"><img src="docs/screenshots/gathering-tracker.png" width="300" alt="The Gathering Tour section of the objective tracker"></p>
 
 The objective tracker shows the next node and its distance, your place in the loop, each skill and your skill-ups, what you gathered, your gold per hour and the zone to move on to.
 
