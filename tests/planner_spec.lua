@@ -226,4 +226,14 @@ do
 	assert(math.abs(list[1].rate - 2 / part * 600) < 1e-6, "two wanted veins, walked without a respawn wait")
 end
 
+-- Adding keeps a listed item's count; setting changes only a listed item.
+do
+	ns.Char.list = {}
+	ns.Planner.AddItem("Copper Ore", 20)
+	ns.Planner.SetNeed("Copper Ore", 45)
+	ns.Planner.AddItem("Copper Ore", 20)
+	ns.Planner.SetNeed("Tin Ore", 3)
+	assert(#ns.Char.list == 1 and ns.Char.list[1].need == 45)
+end
+
 print("planner_spec ok")

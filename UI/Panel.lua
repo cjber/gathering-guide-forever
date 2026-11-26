@@ -356,8 +356,17 @@ function Panel.ListSpecs(refresh)
 			icon = NodeIcon(row.item, def.kind),
 			text = locked and string.format(L["%s (needs %d)"], row.item, required) or row.item,
 			color = locked and "red" or nil,
-			right = string.format("%d / %d", row.have, row.need),
+			right = string.format("%d /", row.have),
 			bar = { have = row.have, need = row.need },
+			wanted = {
+				item = row.item,
+				need = row.need,
+				set = function(need)
+					ns.Planner.SetNeed(row.item, need)
+					-- Next frame: losing focus can happen while the page is being laid out.
+					ns.Defer(refresh)
+				end,
+			},
 			tooltip = L["Click to remove from the list"],
 			onClick = function()
 				ns.Planner.RemoveItem(row.item)
@@ -495,6 +504,50 @@ local function NewRow(index)
 	return row
 end
 
+-- The box a list item's wanted count is typed into. Enter or clicking away keeps it, Escape puts the old one back.
+local function NewCount(row)
+	local box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+	box:SetAutoFocus(false)
+	box:SetNumeric(true)
+	box:SetMaxLetters(4)
+	box:SetJustifyH("CENTER")
+	box:SetSize(38, 18)
+	box:SetPoint("TOPRIGHT", -8, -5)
+	box:SetScript("OnEnterPressed", box.ClearFocus)
+	box:SetScript("OnEscapePressed", function(self)
+		self:SetNumber(self.wanted.need)
+		self:ClearFocus()
+	end)
+	box:HookScript("OnEditFocusLost", function(self)
+		local need = self:GetNumber()
+		if need > 0 and need ~= self.wanted.need then
+			self.wanted.set(need)
+		else
+			self:SetNumber(self.wanted.need)
+		end
+	end)
+	row.Count = box
+	return box
+end
+
+-- A pooled row's box keeps what is being typed only while it still shows the same item.
+local function LayoutCount(row, wanted)
+	if not wanted then
+		if row.Count then
+			row.Count:Hide()
+		end
+		return
+	end
+	local box = row.Count or NewCount(row)
+	local typing = box:HasFocus() and box.wanted.item == wanted.item
+	box.wanted = wanted
+	if not typing then
+		box:SetNumber(wanted.need)
+		box:ClearFocus()
+	end
+	box:Show()
+end
+
 -- Header sections folded away, per session as the stock quest log's group folds are.
 ---@type table<string, boolean>
 local collapsed = {}
@@ -532,6 +585,7 @@ local function Layout(row, spec, width, y)
 	row.BackButton:SetScript("OnClick", spec.onBack)
 	row.Check:Hide()
 	row.Bar:Hide()
+	LayoutCount(row, spec.wanted)
 	row.Sub:SetText("")
 	row.Right:SetText(spec.right or "")
 	row.Left:SetText(spec.text or "")
@@ -600,7 +654,11 @@ local function Layout(row, spec, width, y)
 			row.Sub:SetText(spec.sub or "")
 			row.Left:SetPoint("RIGHT", row.Sub, "LEFT", -4, 0)
 		else
-			row.Right:SetPoint("TOPRIGHT", -8, -9)
+			if spec.wanted then
+				row.Right:SetPoint("RIGHT", row.Count, "LEFT", -8, 0)
+			else
+				row.Right:SetPoint("TOPRIGHT", -8, -9)
+			end
 			row.Left:SetPoint("TOPLEFT", left, -6)
 			row.Left:SetPoint("RIGHT", row.Right, "LEFT", -6, 0)
 			row.Sub:SetFontObject("GameFontHighlightSmall")
@@ -808,8 +866,9 @@ local function Build()
 	search = CreateFrame("EditBox", nil, content, "SearchBoxTemplate")
 	search:SetAutoFocus(false)
 	-- Hooked: the template's own handler hides the hint over typed text.
-	search:HookScript("OnTextChanged", function(self, user)
-		if user then
+	-- Compared, not filtered by user input: the box's clear button empties it from code.
+	search:HookScript("OnTextChanged", function(self)
+		if self:GetText() ~= (view.query or "") then
 			view.query = self:GetText()
 			Panel.Refresh()
 		end

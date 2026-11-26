@@ -45,7 +45,7 @@ Stopping the tour clears the pins and the tracker section.
 
 <p align="center"><img src="docs/screenshots/gathering-list.png" width="960" alt="A farming list with how many of each item you carry and the best zone to farm it"></p>
 
-Farm for a list instead: add herbs and ores with how many you need, and the page finds the zone that gets you what is still missing and gatherable at your skill soonest, the trip there included. Items above your skill show the skill they need.
+Farm for a list instead: add herbs and ores, type how many you need of each, and the page finds the zone that gets you what is still missing and gatherable at your skill soonest, the trip there included. Items above your skill show the skill they need.
 
 ## Install
 

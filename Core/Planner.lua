@@ -258,15 +258,31 @@ function Planner.ListRows()
 end
 
 ---@param item string
----@param need number
-function Planner.AddItem(item, need)
+---@return {item: string, need: number}?
+local function Listed(item)
 	for _, entry in ipairs(ns.Char.list) do
 		if entry.item == item then
-			entry.need = need
-			return
+			return entry
 		end
 	end
-	table.insert(ns.Char.list, { item = item, need = need })
+end
+
+-- An item already on the list keeps its count.
+---@param item string
+---@param need number
+function Planner.AddItem(item, need)
+	if not Listed(item) then
+		table.insert(ns.Char.list, { item = item, need = need })
+	end
+end
+
+---@param item string
+---@param need number
+function Planner.SetNeed(item, need)
+	local entry = Listed(item)
+	if entry then
+		entry.need = need
+	end
 end
 
 ---@param item string
