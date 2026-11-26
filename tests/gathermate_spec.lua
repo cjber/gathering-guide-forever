@@ -149,4 +149,39 @@ do
 	assert(sent == 1, "a complete profile is redrawn")
 end
 
+-- GatherMate2 names its nodes in the client's language, so a node is identified by its ID: a German client's zone has
+-- the same nodes as an English one's.
+H.Load(ns, "Data/NodeNames.lua", "Data/NodeSkills.lua", "Data/Items.lua")
+GatherMate2 = {
+	GetNodesForZone = function()
+		return next, { [1] = 201, [2] = 99999 }
+	end,
+	DecodeLoc = function()
+		return 0.5, 0.5
+	end,
+	GetNameForNode = function()
+		return "Kupfervorkommen"
+	end,
+}
+local nodes = ns.GatherMate.Nodes(1426, "Mining")
+assert(#nodes == 1, "a node with no known skill is left out, the rest stay")
+assert(nodes[1].name == "Copper Vein" and nodes[1].required == 1 and nodes[1].line == 186, nodes[1].name)
+
+-- Every node can be placed on a skill, and everything the farming list holds has an item ID and findable nodes.
+local findable = {}
+for _, name in pairs(ns.NodeNames) do
+	local skill = assert(ns.NodeSkills[name], name .. " has no skill")
+	findable[name] = true
+	assert(skill[1] ~= 182 or ns.ItemIDs[name], name .. " has no item ID")
+end
+for item, list in pairs(ns.OreNodes) do
+	assert(ns.ItemIDs[item], item .. " has no item ID")
+	for _, name in ipairs(list) do
+		assert(findable[name], name .. " is not a GatherMate2 node")
+	end
+end
+for item in pairs(ns.ItemIDs) do
+	assert(ns.OreNodes[item] or findable[item], item .. " has no node")
+end
+
 print("gathermate_spec ok")

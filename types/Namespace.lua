@@ -18,4 +18,6 @@
 ---@field L table<string, string>
 ---@field core table
 ---@field Credits table
+---@field NodeNames table<number, string>
+---@field ItemIDs table<string, number>
 ---@field NodeSkills table<string, number[]>

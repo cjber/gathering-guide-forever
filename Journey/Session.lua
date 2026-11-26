@@ -38,7 +38,7 @@ end
 ---@param item string
 ---@return number
 local function Count(item)
-	return C_Item.GetItemCount(item) or 0
+	return C_Item.GetItemCount(ns.ItemIDs[item]) or 0
 end
 -- The items a tour is after: the shopping list for a list tour, otherwise every item the zone's nodes give.
 ---@param plan table a Planner zone
@@ -162,22 +162,17 @@ end
 local function AuctionPrice(item)
 	local auctionator = rawget(_G, "Auctionator")
 	local api = type(auctionator) == "table" and auctionator.API and auctionator.API.v1
-	local id = C_Item.GetItemIDForItemInfo(item)
-	if not (api and id and id > 0) then
+	if not api then
 		return nil
 	end
-	local ok, price = pcall(api.GetAuctionPriceByItemID, CALLER, id)
+	local ok, price = pcall(api.GetAuctionPriceByItemID, CALLER, ns.ItemIDs[item])
 	return ok and type(price) == "number" and price > 0 and price or nil
 end
 
 ---@param item string
 ---@return number?
 local function VendorPrice(item)
-	local id = C_Item.GetItemIDForItemInfo(item)
-	if not (id and id > 0) then
-		return nil
-	end
-	local price = select(11, C_Item.GetItemInfo(id))
+	local price = select(11, C_Item.GetItemInfo(ns.ItemIDs[item]))
 	return type(price) == "number" and price > 0 and price or nil
 end
 

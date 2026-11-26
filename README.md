@@ -43,9 +43,9 @@ Turned on again, the map shows only this addon's pins.
 
 Stopping the tour clears the pins and the tracker section.
 
-<p align="center"><img src="docs/screenshots/gathering-list.png" width="960" alt="A farming list with how many of each item you carry and the best zone for all of it"></p>
+<p align="center"><img src="docs/screenshots/gathering-list.png" width="960" alt="A farming list with how many of each item you carry and the best zone to farm it"></p>
 
-Farm for a list instead: add herbs and ores with how many you need, and the page finds the zone that gets you everything still missing soonest, the trip there included.
+Farm for a list instead: add herbs and ores with how many you need, and the page finds the zone that gets you what is still missing and gatherable at your skill soonest, the trip there included. Items above your skill show the skill they need.
 
 ## Install
 
@@ -65,7 +65,7 @@ It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for no
 - **Zone view.** Every node in the zone is coloured by its chance to raise your skill. "Skip nodes with no skill-up" leaves out nodes that can no longer help, and Next zones shows where to go as your skill rises.
 - **Gathering tours.** The loop starts at the node nearest you. The nodes on the loop get small muted pins on the world map (a visited node is dropped, the next one clearer) and a Gathering Tour section in the objective tracker follows your progress. The way between the stops is Shortest Path Forever's own journey line, drawn for the batch it is walking (up to 64 stops, then the next batch); the loop itself is a straight-line hop list, and the walking route between stops is Shortest Path Forever's.
 - **A calm world map.** "Only show Gathering pins on the map" (on by default, at the bottom of the overview) hides GatherMate2's world map icons while the addon is loaded, so the map shows only this addon's small pins: the loop's nodes on a tour, or the zone you are viewing in the panel. During a tour it also leaves out Shortest Path Forever's numbered stop markers (the route line stays) and sets Adventure Guide Forever's map pins aside; both need their newer versions and keep showing on older ones. Stopping the tour brings the markers and pins back; GatherMate2's icons come back when you turn the option off, log out or disable the addon. Minimap icons are not changed.
-- **Farm for a list.** A shopping list with how many you carry and need, and the best zone for all of it.
+- **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
 - **Live tally and gold per hour.** The tracker counts what you loot on a tour, shows what a list item still needs with a progress bar and your gold per hour from Auctionator or the vendor price. It lasts as long as the tour.
 
 | Command | What it does |
@@ -81,6 +81,8 @@ Saved farming settings from Shortest Path Forever are read once and never change
 - The rate assumes a walking pace of 7 yards a second and 5 seconds at each node. The loop is a close approximation of the shortest one, not the exact shortest.
 - A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned.
 - Nodes are whatever your GatherMate2 database holds.
+- Node and item names are in English in every client language.
+- Heavy Thorium Veins, Demonsage and Marefoil are left out: the skill they need is not known yet.
 
 ## Credits
 

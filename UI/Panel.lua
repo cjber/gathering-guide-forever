@@ -40,13 +40,13 @@ local function Rank(kind)
 	return (ns.Skills.Rank(ns.KindByName[kind].line))
 end
 
--- A herb's or ore's own item icon (a file id) when the client knows the item by name, else its profession's atlas.
+-- A herb's or ore's own item icon (a file id), else, for a vein, its profession's atlas.
 ---@param name string
 ---@param kind string?
 ---@return string|number?
 local function NodeIcon(name, kind)
-	local icon = C_Item.GetItemInfoInstant and select(5, C_Item.GetItemInfoInstant(name)) -- multi-value: the icon is fifth
-	return icon or ns.KIND_ATLAS[kind or ""]
+	local id = ns.ItemIDs[name]
+	return id and C_Item.GetItemIconByID(id) or ns.KIND_ATLAS[kind or ""]
 end
 
 local function Minutes(seconds)
@@ -282,6 +282,17 @@ function Panel.ZoneSpecs(refresh)
 	return out
 end
 
+-- The lowest skill at which any of an item's nodes can be gathered.
+---@param nodes string[]
+---@return number
+local function LowestSkill(nodes)
+	local lowest = math.huge
+	for _, node in ipairs(nodes) do
+		lowest = math.min(lowest, ns.NodeSkills[node][2])
+	end
+	return lowest
+end
+
 -- The item names matching what the player typed, at most six.
 ---@param text string
 ---@return string[]
@@ -335,11 +346,16 @@ function Panel.ListSpecs(refresh)
 		}
 	end
 	local listRows = ns.Planner.ListRows()
+	local items = ns.Planner.Items()
 	for _, row in ipairs(listRows) do
+		local def = items[row.item]
+		local required = LowestSkill(def.nodes)
+		local locked = Rank(def.kind) < required
 		out[#out + 1] = {
 			type = "item",
-			icon = NodeIcon(row.item, (ns.Planner.Items()[row.item] or {}).kind),
-			text = row.item,
+			icon = NodeIcon(row.item, def.kind),
+			text = locked and string.format(L["%s (needs %d)"], row.item, required) or row.item,
+			color = locked and "red" or nil,
 			right = string.format("%d / %d", row.have, row.need),
 			bar = { have = row.have, need = row.need },
 			tooltip = L["Click to remove from the list"],
@@ -376,7 +392,7 @@ function Panel.ListSpecs(refresh)
 	local zones, listFailed = Result(key, function(yield)
 		return ns.Planner.ListZones(4, yield)
 	end, refresh)
-	local best = { type = "header", key = "best", text = L["Best zone for the whole list"] }
+	local best = { type = "header", key = "best", text = L["Best zone for your list"] }
 	out[#out + 1] = best
 	if not zones then
 		out[#out + 1] = { type = "text", text = PlanText(listFailed, L["Planning loops..."]) }
@@ -791,7 +807,8 @@ local function Build()
 	scroll:SetScrollChild(content)
 	search = CreateFrame("EditBox", nil, content, "SearchBoxTemplate")
 	search:SetAutoFocus(false)
-	search:SetScript("OnTextChanged", function(self, user)
+	-- Hooked: the template's own handler hides the hint over typed text.
+	search:HookScript("OnTextChanged", function(self, user)
 		if user then
 			view.query = self:GetText()
 			Panel.Refresh()

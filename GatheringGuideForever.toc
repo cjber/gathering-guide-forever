@@ -18,6 +18,7 @@
 Core\ForeverRequire.lua
 Core\Require.lua
 Locales\enUS.lua
+Data\NodeNames.lua
 Data\NodeSkills.lua
 Data\Items.lua
 Data\Credits.lua

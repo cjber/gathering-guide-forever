@@ -9,14 +9,15 @@ whether any of it reaches the zip players install. The addon itself is GPL-3.0-o
 |---|---|---|---|
 | [Shortest Path Forever](https://github.com/cjber/shortest-path-forever) | The loop order (`Journey/Order.lua`) and the stop batching (`Journey/Tour.lua`) are ported from its farming tour, `Journey/FarmingOrder.lua` and `Journey/FarmingCursor.lua` | Its `main` branch when ported | GPL-3.0-or-later |
 | [SkillUp Forever](https://github.com/cjber/skillup-forever) `Data/Sources.lua`, from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) and wago.tools | The skill each herb and ore node needs, in `Data/NodeSkills.lua` | classic-db `22b51464f1625f6ef6275771de1f5466c6f5d19e`; wago.tools Lock, `wow_classic_beta 1.60.1.70959` | GPL-3.0 |
-| [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) by Kagaro, Xinhuan, Nevcairiel and Ammo | The node locations, read from the player's own database at runtime; `Core/GatherMate.lua` is a reader written for this addon | None: read in game | BSD-2-Clause; nothing is copied |
+| [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) by Kagaro, Xinhuan, Nevcairiel and Ammo | The node ID numbers and English names in `Data/NodeNames.lua`, from its `Constants.lua`. Node locations are read from the player's own database at runtime; `Core/GatherMate.lua` is a reader written for this addon | GatherMate2 1.52.7 | GPL-2.0-or-later |
+| [wago.tools](https://wago.tools/db2/ItemSparse) ItemSparse | The item ID of each herb and ore, in `Data/Items.lua` | `1.60.1.71091` | Game data |
 
 ## Read in game, never bundled
 
 | Input | Used for | Licence |
 |---|---|---|
 | Shortest Path Forever | Walking the tour, through its public `ShortestPathForever.API` only | GPL-3.0-or-later |
-| GatherMate2 | Node locations | BSD-2-Clause |
+| GatherMate2 | Node locations | GPL-2.0-or-later |
 
 ## Build and test only
 

@@ -34,13 +34,11 @@ ns.Planner = {
 	end,
 }
 ns.DB.showTracker = true
-local bags = { ["Copper Ore"] = 5 }
+ns.ItemIDs = { ["Copper Ore"] = 2770 }
+local bags = { [2770] = 5 }
 C_Item = {
 	GetItemCount = function(item)
 		return bags[item]
-	end,
-	GetItemIDForItemInfo = function()
-		return 2770
 	end,
 	GetItemInfo = function()
 		return "n", "l", nil, nil, nil, nil, nil, nil, nil, nil, 100
@@ -124,7 +122,7 @@ ns.Char.list = { { item = "Copper Ore", need = 20 } }
 ns.Session.Begin({ list = true, name = "Zone", order = {} }, 0)
 local before = dirty
 handlers.LOOT_OPENED()
-bags["Copper Ore"] = 10
+bags[2770] = 10
 handlers.BAG_UPDATE_DELAYED()
 handlers.LOOT_CLOSED()
 assert(dirty > before, "a loot marks the section dirty")

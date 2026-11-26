@@ -26,9 +26,9 @@ Only the nodes still to visit get a pin on the world map.
 
 The objective tracker shows the stop, the loop size, what you gathered and your gold per hour.
 
-![A farming list and the best zone for all of it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
+![A farming list and the best zone to farm it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
 
-Farm for a list: how many of each herb or ore you carry, and the best zone for all of it.
+Farm for a list: how many of each herb or ore you carry, and the best zone for what you can gather now.
 
 These images are captures from the game client.
 
@@ -37,11 +37,13 @@ These images are captures from the game client.
 - **Best zones for you.** Mining and Herbalism each list the zones that give the most skill-ups per ten minutes at your skill, with the skill range, travel time and rate.
 - **Zone view.** Every node is coloured by its chance to raise your skill, with Next zones for when it rises.
 - **Gathering tours.** The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map and a Gathering Tour section in the objective tracker.
-- **Farm for a list.** A shopping list with how many you carry and need, and the best zone for all of it.
+- **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
 
 ## Known limitations
 
 Skill-up chances follow Classic's rule: certain while your skill is under 25 above a node's requirement, then 75%, 25% and never from 100 above. WoW: Forever may differ.
+
+Node and item names are in English in every client language. Heavy Thorium Veins, Demonsage and Marefoil are left out: the skill they need is not known yet.
 
 A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned.
 

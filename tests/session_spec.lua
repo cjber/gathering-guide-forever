@@ -24,14 +24,13 @@ ns.core = {
 H.Load(ns, "Locales/enUS.lua", "Journey/Session.lua")
 
 local bags = { ["Copper Ore"] = 5, ["Tin Ore"] = 0 }
-local ids = { ["Copper Ore"] = 2770, ["Tin Ore"] = 2771 }
+ns.ItemIDs = { ["Copper Ore"] = 2770, ["Tin Ore"] = 2771, Peacebloom = 2447 }
+local names = { [2770] = "Copper Ore", [2771] = "Tin Ore", [2447] = "Peacebloom" }
 local vendor = { [2770] = 100, [2771] = 40 }
 C_Item = {
-	GetItemCount = function(item)
-		return bags[item]
-	end,
-	GetItemIDForItemInfo = function(item)
-		return ids[item] or 0
+	-- By item ID: a name finds only items the client has cached.
+	GetItemCount = function(id)
+		return bags[names[id]]
 	end,
 	GetItemInfo = function(id)
 		return "name", "link", nil, nil, nil, nil, nil, nil, nil, nil, vendor[id]
@@ -138,9 +137,6 @@ assert(Session.PerHour(0) == nil, "no time has passed")
 vendor[2771] = 0
 assert(Session.PerHour(1800) == nil, "an unpriced item hides the rate rather than showing a part")
 vendor[2771] = 40
-ids["Tin Ore"] = nil
-assert(Session.PerHour(1800) == nil, "an item with no id is unpriced")
-ids["Tin Ore"] = 2771
 
 -- Auctionator is one source for all items: used when it prices them all, else the vendor prices all of them.
 local auction = { [2770] = 250, [2771] = 90 }

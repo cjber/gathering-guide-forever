@@ -7,7 +7,7 @@ end
 -- Reads the player's GatherMate2 database. Its nodes are never written; the one setting touched is the profile's
 -- world map switch, while the Hide GatherMate2 map icons setting is on (HideWorldMap), and the player's value is put
 -- back after it. The minimap keeps its own switch (showMinimap) untouched: our pins are for the world map.
--- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (BSD-2-Clause; see THIRD_PARTY.md).
+-- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (GPL-2.0-or-later; see THIRD_PARTY.md).
 local GM = {}
 ns.GatherMate = GM
 
@@ -87,7 +87,7 @@ function GM.Nodes(uiMapID, kind)
 	end
 	for coord, nodeID in gm:GetNodesForZone(uiMapID, kind, false) do
 		local x, y = gm:DecodeLoc(coord)
-		local name = gm:GetNameForNode(kind, nodeID)
+		local name = ns.NodeNames[nodeID]
 		local skill = name and ns.NodeSkills[name]
 		if skill and x and y then
 			nodes[#nodes + 1] = {

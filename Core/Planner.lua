@@ -16,13 +16,9 @@ local loops = {}
 ---@return table<string, {kind: string, nodes: string[]}>
 function Planner.Items()
 	local items = {}
-	for name, skill in pairs(ns.NodeSkills) do
-		if skill[1] == 182 then
-			items[name] = { kind = "Herb Gathering", nodes = { name } }
-		end
-	end
-	for item, nodes in pairs(ns.OreNodes) do
-		items[item] = { kind = "Mining", nodes = nodes }
+	for item in pairs(ns.ItemIDs) do
+		local nodes = ns.OreNodes[item]
+		items[item] = { kind = nodes and "Mining" or "Herb Gathering", nodes = nodes or { item } }
 	end
 	return items
 end
@@ -255,7 +251,7 @@ function Planner.ListRows()
 		rows[#rows + 1] = {
 			item = entry.item,
 			need = entry.need,
-			have = C_Item.GetItemCount(entry.item) or 0,
+			have = C_Item.GetItemCount(ns.ItemIDs[entry.item]) or 0,
 		}
 	end
 	return rows
