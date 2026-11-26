@@ -121,16 +121,11 @@ function Nav.Estimate(map, x, y)
 		return nil
 	end
 	local here = ns.World.PlayerMap()
-	local px, py = 0, 0
-	if C_Map and C_Map.GetPlayerMapPosition and here then
-		local pos = C_Map.GetPlayerMapPosition(here, "player")
-		if pos then
-			px, py = pos:GetXY()
-		end
-	end
-	if not here then
+	local pos = here and C_Map and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(here, "player")
+	if not pos then
 		return nil
 	end
-	local seconds = api.Estimate(here, px, py, map, x, y)
-	return type(seconds) == "number" and seconds or nil
+	local px, py = pos:GetXY()
+	local ok, seconds = pcall(api.Estimate, here, px, py, map, x, y)
+	return ok and type(seconds) == "number" and seconds or nil
 end

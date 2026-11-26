@@ -16,8 +16,8 @@ ns.Panel = Panel
 local PAD = 8
 local HIDE_TIP = "Shows only this addon's pins on the world map. It hides GatherMate2's world map icons, and during a "
 	.. "tour Shortest Path Forever's numbered stop markers and Adventure Guide Forever's map pins (these two need "
-	.. "their newer versions). Everything is put back when you turn this off, stop the tour, log out or disable the "
-	.. "addon. Minimap icons are not changed."
+	.. "their newer versions). The tour's markers come back when it stops. GatherMate2's icons come back when you turn "
+	.. "this off, log out or disable the addon. Minimap icons are not changed."
 local HEIGHTS = { title = 44, header = 22, card = 42, node = 30, toggle = 24, text = 34, item = 42, search = 28 }
 local ICON = 32
 local NODE_ICON = 22
@@ -353,6 +353,8 @@ function Panel.ListSpecs(refresh)
 		return out
 	end
 	local key = "list:"
+		.. tostring(ns.World.PlayerMap())
+		.. ":"
 		.. #listRows
 		.. ":"
 		.. table.concat(

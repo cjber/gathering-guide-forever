@@ -103,7 +103,7 @@ local function Observed(phase, index)
 		return
 	end
 	state.visited = state.visited + 1
-	state.stop = index + 1
+	state.stop = math.min(index + 1, #state.batch)
 	state.pos = orderIndex % #state.order + 1
 	if orderIndex == #state.order then
 		state.laps = state.laps + 1
