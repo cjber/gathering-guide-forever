@@ -6,7 +6,8 @@ end
 
 -- The only file that talks to Shortest Path Forever, and only through its published ShortestPathForever.API. Everything
 -- else asks this module, so a change in that API lands here.
---   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order.
+--   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order. Its
+--   stopMarkers = false and fadeLaterLegs = false options draw the whole line at full strength with no numbered stops.
 --   API.ObserveStops(owner, callback) calls callback(phase, index, stop) with phase "arrived" or "settled" and returns
 --   a function that unsubscribes.
 --   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
@@ -46,6 +47,25 @@ end
 -- so a tour asks once with it and once without.
 Nav.MARKERS_OPTION = "stopMarkers"
 
+-- The option that draws the legs past the next stop at full strength, so a tour shows its whole loop. Shortest Path
+-- Forever publishes it from API minor 10, and an older one refuses the whole call for it.
+Nav.FADE_OPTION = "fadeLaterLegs"
+Nav.FADE_MINOR = 10
+
+---@param api table
+---@param bare boolean?
+---@return table
+local function Options(api, bare)
+	local options = { policy = "walking" }
+	if type(api.minor) == "number" and api.minor >= Nav.FADE_MINOR then
+		options[Nav.FADE_OPTION] = false
+	end
+	if bare then
+		options[Nav.MARKERS_OPTION] = false
+	end
+	return options
+end
+
 -- Starts a walking journey through the stops. Returns whether it started, and why not. With bare set, Shortest Path
 -- Forever draws the route line without its numbered markers when this version can; an older one keeps them.
 ---@param stops {map: number, x: number, y: number, title: string?, tooltip: string?}[]
@@ -62,10 +82,10 @@ function Nav.Route(stops, bare)
 	end
 	local ok, result
 	if bare then
-		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking", [Nav.MARKERS_OPTION] = false })
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api, true))
 	end
 	if not (ok and result == true) then
-		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking" })
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api))
 	end
 	if not ok or result ~= true then
 		return false, ok and "refused" or "error"

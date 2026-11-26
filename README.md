@@ -3,7 +3,7 @@
 <p align="center">
 Plan a mining and herbalism skill-up tour in WoW: Forever: the best zones for your skills, one walking loop through their nodes, and a farming list.<br>
 <a href="https://github.com/cjber/gathering-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/gathering-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-<a href="https://github.com/cjber/gathering-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/gathering-guide-forever" alt="Latest release"></a>
+<a href="https://github.com/cjber/gathering-guide-forever/releases"><img src="https://img.shields.io/github/v/release/cjber/gathering-guide-forever?include_prereleases" alt="Latest release"></a>
 <br><br><a href="https://github.com/sponsors/cjber"><img src="docs/github-sponsors-button.png" alt="Sponsor me on GitHub"></a> <a href="https://ko-fi.com/cjber"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
 </p>
 
@@ -13,7 +13,7 @@ All images are real captures from the game client.
 
 <p align="center"><img src="docs/screenshots/gathering-overview.png" width="960" alt="The Gathering page with the best zones for your skills"></p>
 
-Each zone card shows the skill range of its nodes, the travel time and the skill-ups you can expect per ten minutes.
+Each zone card shows the skill range of the nodes on its loop, the travel time and the skill-ups you can expect per ten minutes.
 
 <p align="center"><img src="docs/screenshots/gathering-zone.png" width="960" alt="A zone with its nodes and the next zones to move on to"></p>
 
@@ -21,7 +21,7 @@ A zone shows how long it takes to reach your trained maximum, the chance each no
 
 <p align="center"><img src="docs/screenshots/gathering-tour.png" width="960" alt="A tour running in Dun Morogh, with the Gathering Tour section in the objective tracker"></p>
 
-A tour starts at the node nearest you. Shortest Path Forever draws the way to the next stop.
+A tour starts at the node nearest you. Shortest Path Forever draws the way through the stops.
 
 <p align="center"><img src="docs/screenshots/gathering-map-pins.png" width="640" alt="The world map during a tour: small pins for the nodes still to visit and the journey line"></p>
 
@@ -62,8 +62,8 @@ It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for no
 ## Features
 
 - **Best zones for you.** One ranking for your gathering professions: the zones whose loop gives the most skill-ups per ten minutes at your skill, with each skill range, travel time and rate. The top two show and a click brings up the rest. Search zones finds a zone by name.
-- **Zone view.** Picking a zone turns the world map to it and pins its loop. The page shows the time to your trained maximum, every node coloured by its chance to raise its profession's skill, and Next zones for when your skill rises, with level ranges where the game gives them. "Skip nodes with no skill-up" leaves out nodes that can no longer help.
-- **Gathering tours.** The loop starts at the node nearest you. The nodes on the loop get small pins on the world map, each herb and ore in its own picture (nearby nodes share one until you zoom in, a visited node is dropped, the next one clearer) and a Gathering Tour section in the objective tracker follows your progress. The way between the stops is Shortest Path Forever's own journey line, drawn for the batch it is walking (up to 64 stops, then the next batch); the loop itself is a straight-line hop list, and the walking route between stops is Shortest Path Forever's.
+- **Zone view.** Picking a zone turns the world map to it and pins its loop. The page shows the time to your trained maximum, every node coloured by its chance to raise its profession's skill, and Next zones for when your skill rises. "Skip nodes with no skill-up" leaves out nodes that can no longer help.
+- **Gathering tours.** The loop starts at the node nearest you. The nodes on the loop get small pins on the world map, each herb and ore in its own picture (nearby nodes share one until you zoom in, a visited node is dropped, the next one clearer) and a Gathering Tour section in the objective tracker follows your progress. The way between the stops is Shortest Path Forever's own journey line, drawn for the batch it is walking (up to 64 stops, then the next batch); the loop itself is a straight-line hop list, and the walking route between stops is Shortest Path Forever's. From Shortest Path Forever 1.47.0 the whole batch draws at full strength; older versions draw the legs past the next stop faintly.
 - **A calm world map.** "Only show Gathering pins on the map" (on by default, in the settings menu at the top of the Gathering page) hides GatherMate2's world map icons while the addon is loaded, so the map shows only this addon's small pins: the loop's nodes on a tour, or the zone you are viewing in the panel. While the Gathering page is up or a tour runs it also hides the game's quest markers and sets aside the map pins of Shortest Path Forever, Adventure Guide Forever and Legacy Forever, and a tour's route leaves out numbered stop markers (the route line stays). These three addons need versions that allow it; older ones keep showing their pins. The markers come back when you leave the page and no tour is running; GatherMate2's icons come back when you turn the option off, log out or disable the addon. Minimap icons are not changed.
 - **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
 - **Live tally and gold per hour.** The tracker counts what you loot on a tour, shows what a list item still needs with a progress bar and your gold per hour from Auctionator or the vendor price. It lasts as long as the tour.

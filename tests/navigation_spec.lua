@@ -64,6 +64,19 @@ assert(Nav.Route(stops, true) == true, "an older Shortest Path still starts the 
 assert(calls[1].options[Nav.MARKERS_OPTION] == false and calls[2].options[Nav.MARKERS_OPTION] == nil)
 ShortestPathForever.API.NavigateRoute = accept
 
+-- The full-strength loop is asked only of a Shortest Path that publishes it: an older one refuses the whole call.
+calls = {}
+ShortestPathForever.API.minor = 9
+assert(Nav.Route(stops, true) == true)
+assert(calls[1].options[Nav.FADE_OPTION] == nil and calls[1].options[Nav.MARKERS_OPTION] == false)
+ShortestPathForever.API.minor = 10
+calls = {}
+assert(Nav.Route(stops, true) == true)
+assert(calls[1].options[Nav.FADE_OPTION] == false and calls[1].options[Nav.MARKERS_OPTION] == false)
+Nav.Route(stops)
+assert(calls[2].options[Nav.FADE_OPTION] == false and calls[2].options[Nav.MARKERS_OPTION] == nil)
+ShortestPathForever.API.minor = nil
+
 ok, why = Nav.Route({})
 assert(ok == false and why == "invalid", "no stops")
 local many = {}
