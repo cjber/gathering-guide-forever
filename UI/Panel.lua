@@ -194,12 +194,13 @@ function Panel.ZoneSpecs(refresh)
 	local out = {}
 	local rank = Rank(view.kind)
 	local skip = ns.DB.skipNoSkillUp
-	local key = ("zone:%s:%d:%d:%s:%s"):format(
+	local key = ("zone:%s:%d:%d:%s:%s:%s"):format(
 		view.kind,
 		view.uiMapID,
 		rank,
 		tostring(skip),
-		tostring(ns.World.PlayerMap())
+		tostring(ns.World.PlayerMap()),
+		ns.GatherMate.Fingerprint(view.kind)
 	)
 	local zone, zoneFailed = Result(key, function(yield)
 		return ns.Planner.Zone(view.kind, view.uiMapID, rank, skip, yield) or false
@@ -353,6 +354,10 @@ function Panel.ListSpecs(refresh)
 		return out
 	end
 	local key = "list:"
+		.. ns.GatherMate.Fingerprint("Mining")
+		.. ":"
+		.. ns.GatherMate.Fingerprint("Herb Gathering")
+		.. ":"
 		.. tostring(ns.World.PlayerMap())
 		.. ":"
 		.. #listRows

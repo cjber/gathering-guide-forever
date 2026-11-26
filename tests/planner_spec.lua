@@ -96,6 +96,12 @@ assert(top[1].rate == 20 and reached == 3, "zones that cannot beat the list are 
 GetRealmName = function()
 	return "Realm"
 end
+local version = "1.0.0"
+C_AddOns = {
+	GetAddOnMetadata = function()
+		return version
+	end,
+}
 ns.DB = {}
 ns.TOP_ZONES = 3
 local spot = 1426
@@ -143,13 +149,17 @@ assert(#ranked == 2 and ranked[2].uiMapID == 1426, "the current zone joins the b
 spot = 1411
 ranked = Open(39)
 assert(plans == before + 3 and #ranked == 1, "the current zone is not offered twice")
+version = "1.0.1"
+ns.Planner.ClearResults()
+Open(39)
+assert(plans == before + 4, "a new addon version plans again")
 
 -- A list needs a finite number of nodes, so a far zone's trip is weighed against what is needed, not against its whole
 -- lap: with 12 ore missing the near, smaller zone wins; with a whole lap or more missing the bigger zone's rate does.
 do
 	local loops = {
-		[1426] = { count = 183, seconds = 4660, travel = 217 },
-		[2521] = { count = 294, seconds = 5412, travel = 1475 },
+		[1426] = { count = 183, yards = 26215, travel = 217 },
+		[2521] = { count = 294, yards = 27594, travel = 1475 },
 	}
 	local missing
 	ns.Planner.Items = function()
@@ -177,25 +187,17 @@ do
 	ns.Planner.Place = function(nodes)
 		return nodes
 	end
+	local planning
 	ns.Planner.Loop = function(nodes)
-		return nodes, 0
-	end
-	ns.Planner.Seconds = function()
-		return loops[ns.listMap].seconds
+		planning = nodes[1].uiMapID
+		return nodes, loops[planning].yards
 	end
 	ns.Planner.ZoneName = tostring
 	ns.Navigation = {
-		Estimate = function(uiMapID)
-			ns.listMap = uiMapID
-			return loops[uiMapID].travel
+		Estimate = function()
+			return loops[planning].travel
 		end,
 	}
-	-- Seconds is called after Loop, so Loop records the map being planned.
-	local loopFn = ns.Planner.Loop
-	ns.Planner.Loop = function(nodes)
-		ns.listMap = nodes[1].uiMapID
-		return loopFn(nodes)
-	end
 
 	missing = 12
 	local list = ns.Planner.ListZones(4)
@@ -204,6 +206,24 @@ do
 	list = ns.Planner.ListZones(4)
 	assert(list[1].uiMapID == 2521, "more than a lap missing: the denser zone wins on its full-lap rate")
 	assert(math.abs(list[1].rate - 294 / (5412 + 1475) * 600) < 1e-6, "a whole lap is the full-lap rate")
+
+	-- A zone is credited only with what its own nodes give, and a part lap has no respawn wait.
+	loops = { [1426] = { count = 5, yards = 70, travel = 0 } }
+	ns.GatherMate.Zones = function()
+		return { 1426 }
+	end
+	ns.Planner.Items = function()
+		return {
+			ore = { kind = "Mining", nodes = { "Vein" } },
+			herb = { kind = "Mining", nodes = { "Flower" } },
+		}
+	end
+	ns.Planner.ListRows = function()
+		return { { item = "ore", need = 2, have = 0 }, { item = "herb", need = 50, have = 0 } }
+	end
+	list = ns.Planner.ListZones(4)
+	local part = 70 * 2 / 5 / 7 + 2 * 5
+	assert(math.abs(list[1].rate - 2 / part * 600) < 1e-6, "two wanted veins, walked without a respawn wait")
 end
 
 print("planner_spec ok")

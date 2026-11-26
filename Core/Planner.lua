@@ -1,5 +1,5 @@
 ---@type string, GGNamespace
-local _, ns = ...
+local addonName, ns = ...
 if ns.broken then
 	return
 end
@@ -284,22 +284,22 @@ function Planner.RemoveItem(item)
 end
 
 -- Best places to farm everything still needed on the list, by wanted nodes per ten minutes, best first. The list is
--- finite: only as many nodes as the items still missing (one item per node) are walked, from the loop's start, so the
--- trip there is weighed against that and not spread over a lap the player will not finish. When the list needs a whole
--- lap or more this is the full lap's rate.
+-- finite: a zone is credited with at most the items still missing that its own nodes give (one item per node), and
+-- only that many nodes are walked, so the trip there is weighed against them and not spread over a lap the player will
+-- not finish. A first pass meets only fresh nodes, so the respawn floor applies to a full lap alone.
 ---@param limit number
 ---@param yield fun()?
 ---@return table[]
 function Planner.ListZones(limit, yield)
 	local items = Planner.Items()
-	local wanted, kinds, missing = {}, {}, 0
+	local wanted, kinds, missing = {}, {}, {}
 	for _, row in ipairs(Planner.ListRows()) do
 		local def = items[row.item]
 		if def and row.have < row.need then
-			missing = missing + row.need - row.have
+			missing[row.item] = row.need - row.have
 			kinds[def.kind] = true
 			for _, node in ipairs(def.nodes) do
-				wanted[node] = true
+				wanted[node] = row.item
 			end
 		end
 	end
@@ -325,7 +325,17 @@ function Planner.ListZones(limit, yield)
 		local order, yards = Planner.Loop(entry.nodes, yield)
 		local seconds = Planner.Seconds(yards, #order)
 		local travel = Travel(uiMapID, order)
-		local walked = math.min(#order, missing)
+		local found, walked = {}, 0
+		for _, node in ipairs(order) do
+			local item = wanted[node.name]
+			found[item] = (found[item] or 0) + 1
+			if found[item] <= missing[item] then
+				walked = walked + 1
+			end
+		end
+		local passing = walked < #order
+				and yards * walked / #order / ns.WALK_YARDS_PER_SECOND + walked * ns.SECONDS_PER_NODE
+			or seconds
 		zones[#zones + 1] = {
 			kind = entry.kind,
 			list = true,
@@ -336,7 +346,7 @@ function Planner.ListZones(limit, yield)
 			yards = yards,
 			seconds = seconds,
 			travel = travel,
-			rate = Planner.Rate(walked, seconds * walked / #order, travel),
+			rate = Planner.Rate(walked, passing, travel),
 		}
 	end
 	table.sort(zones, function(a, b)
@@ -382,9 +392,9 @@ function Planner.ClearResults()
 end
 
 -- The best zones are saved per realm and kind in the account's saved variables, so a new login shows them at
--- once. A saved ranking is current when its key (kind, skill, setting and the fingerprint of the GatherMate2 data)
--- matches; otherwise it is shown while a new one is planned. The key holds the map the player stands in, because the
--- trip to a zone depends on it.
+-- once. A saved ranking is current when its key (addon version, kind, skill, setting, GatherMate2 data fingerprint
+-- and the map the player stands in, because the trip to a zone depends on it) matches; otherwise it is shown while
+-- a new one is planned.
 local SUMMARY = { "uiMapID", "lowest", "highest", "travel", "rate", "seconds", "count" }
 
 ---@param zones table[]
@@ -433,7 +443,8 @@ end
 ---@return boolean? stale
 function Planner.Ranking(kind, rank, skip, refresh)
 	local here = ns.World.PlayerMap()
-	local key = ("best:%s:%d:%s:%s:%s"):format(
+	local key = ("best:%s:%s:%d:%s:%s:%s"):format(
+		C_AddOns.GetAddOnMetadata(addonName, "Version"),
 		kind,
 		rank,
 		tostring(skip),
