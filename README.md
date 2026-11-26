@@ -49,7 +49,7 @@ Farm for a list instead: add herbs and ores with how many you need, and the page
 
 ## Install
 
-Install it with the [CurseForge app](https://www.curseforge.com/wow/addons/gathering-guide-forever), or download the zip from [Releases](https://github.com/cjber/gathering-guide-forever/releases) and extract it into the WoW: Forever client's `Interface/AddOns/` folder so you end up with `AddOns/GatheringGuideForever/GatheringGuideForever.toc`.
+Download the zip from [Releases](https://github.com/cjber/gathering-guide-forever/releases) and extract it into the WoW: Forever client's `Interface/AddOns/` folder (`_forever_` on the live client), so you end up with `AddOns/GatheringGuideForever/GatheringGuideForever.toc`. The zip also carries ForeverCore, in its own folder beside it.
 
 It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for node locations and [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) to walk a tour. Without Shortest Path Forever you can still plan.
 
