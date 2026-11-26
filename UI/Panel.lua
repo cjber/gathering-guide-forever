@@ -70,8 +70,9 @@ Panel.ClearResults = ns.Planner.ClearResults
 ---@param zone table
 ---@return string
 local function ZoneSub(zone)
+	local low, high = zone.lowest or 0, zone.highest or 0
 	local parts = {
-		string.format(L["Skill %d to %d"], zone.lowest or 0, zone.highest or 0),
+		low == high and string.format(L["Skill %d"], low) or string.format(L["Skill %d to %d"], low, high),
 	}
 	if zone.travel then
 		parts[#parts + 1] = string.format(L["travel %d min"], Minutes(zone.travel))
