@@ -127,16 +127,21 @@ local function NodeNames(types, ranks)
 	return table.concat(names, "  ")
 end
 
--- A zone's art: its node that needs the most skill.
+-- A zone's art: the node needing the most skill among those the player can gather, else among all of them.
 ---@param types GGNodeType[]
+---@param ranks table<string, number>
 ---@return number|string
-local function ZoneIcon(types)
-	local best = types[1]
+local function ZoneIcon(types, ranks)
+	local hardest, open = types[1], nil
 	for _, node in ipairs(types) do
-		if node.required > best.required then
-			best = node
+		if node.required > hardest.required then
+			hardest = node
+		end
+		if node.required <= (ranks[node.kind] or 0) and (not open or node.required > open.required) then
+			open = node
 		end
 	end
+	local best = open or hardest
 	return ns.Planner.Icon(best.name, best.kind)
 end
 
@@ -277,7 +282,7 @@ local function BestZones(out, ranks, refresh)
 	for _, zone in ipairs(zones) do
 		out[#out + 1] = {
 			type = "card",
-			icon = ZoneIcon(zone.types),
+			icon = ZoneIcon(zone.types, ranks),
 			title = zone.name,
 			right = Ranges(zone, learned),
 			lines = {
@@ -454,7 +459,7 @@ function Panel.ZoneSpecs(refresh)
 		out[#out + 1] = {
 			type = "card",
 			large = true,
-			icon = ZoneIcon(types),
+			icon = ZoneIcon(types, ranks),
 			title = zone.name,
 			right = { MinutesText(zone.travel) },
 			lines = lines,

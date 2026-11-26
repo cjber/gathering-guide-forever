@@ -156,6 +156,7 @@ assert(shopping.corner == "0 of 25" and shopping.bar.need == 25)
 local ranked = Find(overview, "card", "Arathi Highlands")
 assert(#ranked.right == 1 and ranked.right[1] == "<pickaxe>1-175" and ranked.corner == "4 min", ranked.right[1])
 assert(ranked.lines[1] == "5.0 skill-ups per 10 min", ranked.lines[1])
+assert(ranked.icon == ns.ItemIDs["Iron Ore"] * 10, "the card wears the hardest node the player can gather")
 assert(Find(overview, "header", "Best zones for you").count == "2", "the header counts every zone")
 
 -- The rest of the zones, and the trips to them, wait for a click.
