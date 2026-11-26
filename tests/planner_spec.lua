@@ -60,4 +60,17 @@ end, function()
 end)
 assert(value == 42 and failed == 1, "a finished plan is delivered")
 
+-- A lap is never shorter than a respawn, so a one-node zone cannot beat a real loop, and the trip there counts.
+ns.WALK_YARDS_PER_SECOND, ns.SECONDS_PER_NODE, ns.NODE_RESPAWN_SECONDS = 7, 5, 600
+local R = ns.NODE_RESPAWN_SECONDS
+assert(ns.Planner.Seconds(0, 1) == R, "one node still takes a respawn")
+local single = ns.Planner.Rate(1, ns.Planner.Seconds(0, 1), 0)
+local loop = ns.Planner.Rate(20, ns.Planner.Seconds(2800, 20), 0)
+assert(loop > single * 10, "a real loop beats a one-node zone")
+assert(ns.Planner.Rate(20, ns.Planner.Seconds(2800, 20), 1320) < loop, "travel lowers the rate")
+assert(
+	ns.Planner.Rate(20, ns.Planner.Seconds(2800, 20), 3000) < ns.Planner.Rate(10, ns.Planner.Seconds(1400, 10), 0),
+	"a far zone loses to a near one of similar yield"
+)
+
 print("planner_spec ok")

@@ -31,6 +31,8 @@ These images are generated previews of the Gathering Guide Forever UI.
 
 Skill-up chances follow Classic's rule: certain while your skill is under 25 above a node's requirement, then 75%, 25% and never from 100 above. WoW: Forever may differ.
 
+A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned.
+
 ## Usage
 
 Open the world map and pick the Gathering tab, or type `/gathering` or `/ggf`.

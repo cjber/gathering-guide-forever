@@ -76,12 +76,11 @@ end
 ---@param zone table
 ---@return string
 local function ZoneSub(zone)
-	local travel = ns.Navigation.Estimate(zone.uiMapID, zone.order[1].x, zone.order[1].y)
 	local parts = {
 		string.format(L["Skill %d to %d"], zone.lowest or 0, zone.highest or 0),
 	}
-	if travel then
-		parts[#parts + 1] = string.format(L["travel %d min"], Minutes(travel))
+	if zone.travel then
+		parts[#parts + 1] = string.format(L["travel %d min"], Minutes(zone.travel))
 	end
 	parts[#parts + 1] = string.format(L["%.1f per 10 min"], zone.rate)
 	return table.concat(parts, ", ")

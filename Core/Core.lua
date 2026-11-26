@@ -30,6 +30,10 @@ end
 -- Walking pace and the time spent at each node, the two numbers a loop's duration and skill-up rate come from.
 ns.WALK_YARDS_PER_SECOND = 7
 ns.SECONDS_PER_NODE = 5
+-- A node cannot be gathered again until it respawns, so no lap is shorter than this. Assumed, not measured: Blizzard
+-- publishes no respawn time for Classic or Forever gathering nodes and players report anything from 5 to 30 minutes,
+-- so ten minutes stands in until a source says otherwise (listed under Known limitations).
+ns.NODE_RESPAWN_SECONDS = 600
 
 ---@type table<string, fun(...)[]>
 local handlers = {}

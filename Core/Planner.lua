@@ -42,12 +42,29 @@ function Planner.Place(nodes)
 	return placed
 end
 
--- Seconds to walk a loop and gather at every node.
+-- Seconds for one lap: walking the loop and gathering at every node, but never less than a node takes to respawn.
 ---@param yards number
 ---@param count number
 ---@return number
 function Planner.Seconds(yards, count)
-	return yards / ns.WALK_YARDS_PER_SECOND + count * ns.SECONDS_PER_NODE
+	return math.max(yards / ns.WALK_YARDS_PER_SECOND + count * ns.SECONDS_PER_NODE, ns.NODE_RESPAWN_SECONDS)
+end
+
+-- Gains per ten minutes for one lap, counting the trip to the zone.
+---@param gain number
+---@param seconds number the lap, from Planner.Seconds
+---@param travel number? seconds to reach the zone, when known
+---@return number
+function Planner.Rate(gain, seconds, travel)
+	return gain / (seconds + (travel or 0)) * 600
+end
+
+-- Seconds to reach a loop's first node, or nil when Shortest Path cannot say.
+---@param uiMapID number
+---@param order GGNode[]
+---@return number?
+local function Travel(uiMapID, order)
+	return ns.Navigation.Estimate(uiMapID, order[1].x, order[1].y)
 end
 
 ---@param nodes GGNode[]
@@ -120,6 +137,7 @@ function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
 	end
 	local order, yards = Planner.Loop(nodes, yield)
 	local seconds = Planner.Seconds(yards, #order)
+	local travel = Travel(uiMapID, order)
 	local expected = 0
 	local lowest, highest = math.huge, 0
 	for _, node in ipairs(order) do
@@ -136,7 +154,8 @@ function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
 		count = #order,
 		yards = yards,
 		seconds = seconds,
-		rate = expected / seconds * 600,
+		travel = travel,
+		rate = Planner.Rate(expected, seconds, travel),
 		lowest = lowest,
 		highest = highest,
 	}
@@ -263,6 +282,7 @@ function Planner.ListZones(limit, yield)
 		local entry = byMap[uiMapID]
 		local order, yards = Planner.Loop(entry.nodes, yield)
 		local seconds = Planner.Seconds(yards, #order)
+		local travel = Travel(uiMapID, order)
 		zones[#zones + 1] = {
 			kind = entry.kind,
 			list = true,
@@ -272,7 +292,8 @@ function Planner.ListZones(limit, yield)
 			count = #order,
 			yards = yards,
 			seconds = seconds,
-			rate = #order / seconds * 600,
+			travel = travel,
+			rate = Planner.Rate(#order, seconds, travel),
 		}
 	end
 	table.sort(zones, function(a, b)
