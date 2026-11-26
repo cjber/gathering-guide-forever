@@ -20,21 +20,32 @@ function GM.Available()
 	return gm ~= nil and type(gm.GetNodesForZone) == "function"
 end
 
--- Every uiMapID GatherMate2 holds nodes of this kind for. The table also holds GatherMate2's own metadata under string
--- keys (__gm2_prefix and the like), which are not zones.
+-- Every uiMapID GatherMate2 holds nodes of this kind for. GatherMate2 has no iterator over zones: gmdbs[kind] is a
+-- proxy whose only real keys are metadata, and a zone's nodes come through its __index. The zones are keys of the
+-- base storage and of each storage-map table, the two places GatherMate2's own UpgradeNodeIDs walks, so they are read
+-- from there.
 ---@param kind string
 ---@return number[]
 function GM.Zones(kind)
 	local gm = Addon()
-	local zones = {}
-	if gm and type(gm.gmdbs) == "table" and type(gm.gmdbs[kind]) == "table" then
-		for uiMapID in pairs(gm.gmdbs[kind]) do
-			if type(uiMapID) == "number" then
+	local zones, seen = {}, {}
+	local proxy = gm and type(gm.gmdbs) == "table" and gm.gmdbs[kind]
+	if type(proxy) ~= "table" then
+		return zones
+	end
+	local stores = { proxy.__gm2_base_storage }
+	for _, store in pairs(proxy.__gm2_storage_map or {}) do
+		stores[#stores + 1] = store
+	end
+	for _, store in ipairs(stores) do
+		for uiMapID, nodes in pairs(store) do
+			if not seen[uiMapID] and type(nodes) == "table" and next(nodes) ~= nil then
+				seen[uiMapID] = true
 				zones[#zones + 1] = uiMapID
 			end
 		end
-		table.sort(zones)
 	end
+	table.sort(zones)
 	return zones
 end
 
