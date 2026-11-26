@@ -39,7 +39,7 @@ It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for no
 
 - **Best zones for you.** Mining and Herbalism each list the zones that give the most skill-ups per ten minutes at your current skill, with the skill range, travel time and rate.
 - **Zone view.** Every node in the zone is coloured by its chance to raise your skill. "Skip nodes with no skill-up" leaves out nodes that can no longer help, and Next zones shows where to go as your skill rises.
-- **Gathering tours.** The loop starts at the node nearest you. A breadcrumb trail on the world map and a Gathering Tour section in the objective tracker follow your progress.
+- **Gathering tours.** The loop starts at the node nearest you. The nodes on the loop get small muted pins on the world map (dimmed once visited, the next one clearer) with a breadcrumb trail between them and a Gathering Tour section in the objective tracker follow your progress.
 - **Farm for a list.** A shopping list with how many you carry and need, and the best zone for all of it.
 - **Live tally and gold per hour.** The tracker counts what you loot on a tour, shows what a list item still needs with a progress bar and your gold per hour from Auctionator or the vendor price. It lasts as long as the tour.
 

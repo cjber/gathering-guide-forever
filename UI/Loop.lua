@@ -4,13 +4,22 @@ if ns.broken then
 	return
 end
 
--- Draws a loop on the world map as breadcrumb dots along each leg and a marker on the next node. The frames are
--- ForeverCore's private map canvas pins, never a Blizzard data provider.
+-- Draws a loop on the world map: calm pins for the nodes on it, one atlas per GatherMate2 node kind, and breadcrumb
+-- dots along each leg. Visited nodes are dimmed and the next one is slightly clearer. GatherMate2's own pins stay.
+-- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
 local Loop = {}
 ns.Loop = Loop
 
+-- The client's profession atlases (UiTextureAtlasElement: Mobile-Mining, Mobile-Herbalism) by GatherMate2's kind.
+local KIND_ATLAS = {
+	["Mining"] = "Mobile-Mining",
+	["Herb Gathering"] = "Mobile-Herbalism",
+}
 local DOT_SIZE = 8
-local NODE_SIZE = 22
+local DOT_ALPHA = 0.45
+local PIN_SIZE = 14
+local NEXT_SIZE = 18
+local ALPHA = { ahead = 0.6, visited = 0.25, next = 0.95 }
 -- Breadcrumbs sit this far apart, as a fraction of the map.
 local SPACING = 0.012
 local MAX_DOTS = 400
@@ -30,6 +39,7 @@ function DotPin:OnLoad()
 	self:SetScalingLimits(1, 0.8, 1.2)
 	Setup(self)
 	self.Texture:SetAllPoints()
+	self:SetAlpha(DOT_ALPHA)
 	ns.Fit(self.Texture, "Waypoint-MapPin-Untracked", DOT_SIZE, DOT_SIZE)
 end
 function DotPin:OnAcquired(x, y)
@@ -37,16 +47,29 @@ function DotPin:OnAcquired(x, y)
 end
 
 function NodePin:OnLoad()
-	self:SetSize(NODE_SIZE, NODE_SIZE)
 	self:SetScalingLimits(1, 1, 1.2)
-	self.takesMouse = true
 	Setup(self)
 	self.Texture:SetPoint("CENTER")
-	ns.Fit(self.Texture, "Waypoint-MapPin-Tracked", NODE_SIZE, NODE_SIZE)
 end
-function NodePin:OnAcquired(node)
-	self.node = node
+function NodePin:OnAcquired(node, state)
+	local size = state == "next" and NEXT_SIZE or PIN_SIZE
+	self:SetSize(size, size)
+	self:SetAlpha(ALPHA[state])
+	self.Texture:SetDesaturated(state == "visited")
+	ns.Fit(self.Texture, KIND_ATLAS[node.kind], size, size)
 	self:SetPosition(node.x, node.y)
+end
+
+-- How a loop's node i is drawn when the next one is index pos: "visited" before it, "next" on it, else "ahead". A loop
+-- with no next node (a zone preview) draws every pin "ahead".
+---@param i number
+---@param pos number?
+---@return "visited"|"next"|"ahead"
+function Loop.State(i, pos)
+	if not pos or i > pos then
+		return "ahead"
+	end
+	return i == pos and "next" or "visited"
 end
 
 ---@return table?
@@ -113,9 +136,8 @@ function Loop.Draw()
 			end
 		end
 	end
-	local node = order[nextIndex or 1]
-	if node then
-		pool:Acquire(node)
+	for i, node in ipairs(order) do
+		pool:Acquire(node, Loop.State(i, nextIndex))
 	end
 end
 
