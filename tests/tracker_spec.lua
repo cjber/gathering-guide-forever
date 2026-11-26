@@ -217,10 +217,18 @@ end
 lines = Draw()
 assert(lines[#lines - 1].text == "Copper Ore: 5 gathered, 20 still needed", lines[#lines - 1].text)
 
--- A tour with no items to tally draws no rate line.
-ns.Session.Begin({ name = "Zone", order = { { name = "Elsewhere", kind = "Mining" } } }, 0)
+-- A zone tour draws no item or rate line before anything is looted.
+ns.Session.Begin({ name = "Zone", order = { { name = "Copper Vein", kind = "Mining" } } }, 0)
+for _, line in ipairs(Draw()) do
+	assert(not line.text:find("gathered") and not line.text:find("Gold per hour"), line.text)
+end
+handlers.LOOT_OPENED()
+bags[2770] = bags[2770] + 2
+handlers.BAG_UPDATE_DELAYED()
+handlers.LOOT_CLOSED()
 lines = Draw()
-assert(not lines[#lines].text:find("Gold per hour"), "no rate without entries")
+assert(lines[#lines - 1].text == "Copper Ore: 2 gathered", lines[#lines - 1].text)
+assert(lines[#lines].text:find("Gold per hour"), "the rate follows the first loot")
 ns.Session.End()
 
 -- The title counts the whole loop; the rows are the next node, the skill and the session's skill-ups and rate.

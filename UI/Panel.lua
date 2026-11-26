@@ -646,7 +646,7 @@ function Panel.ListSpecs(refresh)
 	end
 	local key = ("list:%s:%s"):format(ns.Planner.Key(ranks, ns.DB.skipNoSkillUp), table.concat(missing, ","))
 	local zones, failed = ns.Planner.Result(key, function(yield)
-		return ns.Planner.ListZones(4, yield)
+		return ns.Planner.ListZones(ns.TOP_ZONES + 1, yield)
 	end, refresh)
 	if not zones then
 		out[#out + 1] = { type = "text", text = PlanText(failed, L["Planning loops..."]) }
@@ -840,7 +840,7 @@ RowTypes.heading = {
 		row.Back:SetPoint("TOPLEFT", 2, -12)
 		local arrow = row.Back:CreateTexture(nil, "ARTWORK")
 		arrow:SetPoint("CENTER")
-		ns.Fit(arrow, "common-icon-backarrow", 24, 24)
+		ns.Fit(arrow, "common-icon-backarrow", 32, 32)
 	end,
 	Fill = function(row, spec, width)
 		local top = spec.onBack and 12 or 7

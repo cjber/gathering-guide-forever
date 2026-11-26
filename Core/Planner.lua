@@ -418,8 +418,9 @@ end
 ---@return table[]
 function Planner.Next(zone, ranks, skipNoSkillUp, yield)
 	local list = {}
-	for _, z in ipairs((Planner.Best(Planner.NextRanks(zone, ranks), skipNoSkillUp, 4, yield))) do
-		if z.uiMapID ~= zone.uiMapID then
+	-- One more than is shown, since this zone itself can be among the best.
+	for _, z in ipairs((Planner.Best(Planner.NextRanks(zone, ranks), skipNoSkillUp, ns.TOP_ZONES + 1, yield))) do
+		if z.uiMapID ~= zone.uiMapID and #list < ns.TOP_ZONES then
 			list[#list + 1] = z
 		end
 	end

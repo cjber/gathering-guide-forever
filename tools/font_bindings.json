@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "775b042fa616556c735f0d938e3788d97fd141f0c523f9c4a11222653a868aa0",
+      "sha256": "e0390be8dfe8b8d7864fd3fd38d04a03a24393868b55b7dd1ca06de6d312bdf8",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
@@ -459,7 +459,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "b95b2c759f10ddf274b46c8aa3cd9a1e4f5aa23929cc414d1c22d0d8f1605ca3",
+      "sha256": "4281c3c51648c773a1ae32f78f72c65a111741d929e8f45b051bb6371121e027",
       "review": "In the pinned Blizzard ObjectiveTracker XML the module Header.Text inherits ObjectiveTrackerHeaderFont, and both a block's HeaderText and an objective line's Text inherit ObjectiveTrackerLineFont. LayoutContents and ForeverCore v1.17.5 TrackerSection.UpdateText only set text and colour. ForeverCore's TrackerHost swaps in its own chat-face font while another addon has shrunk the shared fonts below the game's minimum; that fallback is not covered. Zone, node and item names, coin strings and numbers are game data.",
       "bindings": [
         {

@@ -157,12 +157,17 @@ function Tracker.Blocks()
 		end
 		Add("gained", text)
 	end
-	local tally = ns.Session.Rows()
-	for _, row in ipairs(tally) do
-		local percent = row.need and math.floor(math.min(row.have, row.need) / row.need * 100)
-		Add("item:" .. row.item, Tracker.TallyLine(row), percent)
+	-- A zone tour's items appear once looted, so the section lists only what happened; a list item always shows what it
+	-- still needs.
+	local looted = false
+	for _, row in ipairs(ns.Session.Rows()) do
+		looted = looted or row.gathered > 0
+		if row.need or row.gathered > 0 then
+			local percent = row.need and math.floor(math.min(row.have, row.need) / row.need * 100)
+			Add("item:" .. row.item, Tracker.TallyLine(row), percent)
+		end
 	end
-	if #tally > 0 then
+	if looted then
 		Add("gold", Tracker.RateLine(ns.Session.PerHour(now)))
 	end
 	if progress.laps > 0 then
