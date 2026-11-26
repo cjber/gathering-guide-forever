@@ -350,11 +350,13 @@ local function NodeRow(node, rank)
 	local note
 	if color == "red" then
 		note = L["not yet"]
-	elseif color == "green" then
+	elseif color == "green" and chance > 0 then
 		note = string.format(L["1 in %d"], math.floor(1 / chance + 0.5))
-	elseif color ~= "grey" then
+	elseif color == "orange" or color == "yellow" then
 		local after, at = ns.Skills.NextBand(rank, node.required)
-		note = string.format(after == "yellow" and L["yellow at %d"] or L["green at %d"], at)
+		if after then
+			note = string.format(after == "yellow" and L["yellow at %d"] or L["green at %d"], at)
+		end
 	end
 	return {
 		type = "node",
@@ -368,21 +370,27 @@ local function NodeRow(node, rank)
 end
 
 -- A zone card's lines on the skills the loop raises: one for each still short of its trained maximum, or a single one
--- when both are and share that maximum, taking the longer of the two times.
----@param goals {skill: GGSkill, seconds: number}[]
+-- when both are and share that maximum, taking the longer of the two times; then one for each at a trained maximum the
+-- player can still train past.
+---@param zone {order: GGNode[], seconds: number, ranges: table<string, GGRange>}
+---@param skills GGSkill[]
 ---@return string[]
-local function GoalLines(goals)
+local function GoalLines(zone, skills)
+	local goals, lines = ns.Planner.Goals(zone, skills), {}
 	local first, second = goals[1], goals[2]
 	if second and first.skill.max == second.skill.max then
-		local seconds = math.max(first.seconds, second.seconds)
-		return {
-			string.format(L["Both skills to %d in about %d min"], first.skill.max, ns.Planner.Minutes(seconds)),
-		}
+		local minutes = ns.Planner.Minutes(math.max(first.seconds, second.seconds))
+		lines[1] = string.format(L["Both skills to %d in about %d min"], first.skill.max, minutes)
+	else
+		for i, goal in ipairs(goals) do
+			local minutes = ns.Planner.Minutes(goal.seconds)
+			lines[i] = string.format(L["%s to %d in about %d min"], goal.skill.label, goal.skill.max, minutes)
+		end
 	end
-	local lines = {}
-	for i, goal in ipairs(goals) do
-		local minutes = ns.Planner.Minutes(goal.seconds)
-		lines[i] = string.format(L["%s to %d in about %d min"], goal.skill.label, goal.skill.max, minutes)
+	for _, skill in ipairs(skills) do
+		if zone.ranges[skill.kind] and skill.rank >= skill.max and skill.max < ns.Skills.MAX then
+			lines[#lines + 1] = string.format(L["Train %s to raise it past %d"], skill.label, skill.max)
+		end
 	end
 	return lines
 end
@@ -422,7 +430,7 @@ function Panel.ZoneSpecs(refresh)
 	if zone then
 		pickedZone = zone
 		local lines = { string.format(L["%.1f skill-ups per 10 min"], zone.rate) }
-		for _, line in ipairs(GoalLines(ns.Planner.Goals(zone, ns.Skills.Learned()))) do
+		for _, line in ipairs(GoalLines(zone, ns.Skills.Learned())) do
 			lines[#lines + 1] = line
 		end
 		lines[#lines + 1] = string.format(L["%d nodes · %d min loop"], zone.count, ns.Planner.Minutes(zone.seconds))

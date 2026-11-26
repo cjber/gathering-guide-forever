@@ -7,8 +7,12 @@ end
 local Skills = {}
 ns.Skills = Skills
 
+-- The highest a gathering skill goes, whatever the player has trained so far.
+Skills.MAX = 300
+
 -- Classic's gathering rule: a node gives a skill point for certain while the skill is under 25 above its requirement,
--- then 75%, 25% and finally never at 100 above it. A node above the skill cannot be gathered yet.
+-- then 75%, 25% and finally never at 100 above it. A node above the skill cannot be gathered yet, and a skill at its
+-- highest gains nothing from any node.
 local BANDS = {
 	{ below = 25, chance = 1.0, color = "orange" },
 	{ below = 50, chance = 0.75, color = "yellow" },
@@ -26,14 +30,14 @@ function Skills.Chance(rank, required)
 	local over = rank - required
 	for _, band in ipairs(BANDS) do
 		if over < band.below then
-			return band.chance, band.color
+			return rank < Skills.MAX and band.chance or 0, band.color
 		end
 	end
 	return 0, "grey"
 end
 
 -- The next change in a gatherable node's colour as the skill rises: the colour it turns to and the skill it turns at.
--- Nil while the node is out of reach and once it is grey.
+-- Nil while the node is out of reach, once it is grey, and when the skill cannot rise that far.
 ---@param rank number the player's skill
 ---@param required number the node's requirement
 ---@return string? color
@@ -45,8 +49,11 @@ function Skills.NextBand(rank, required)
 	end
 	for i, band in ipairs(BANDS) do
 		if over < band.below then
-			local after = BANDS[i + 1]
-			return after and after.color or "grey", required + band.below
+			local after, at = BANDS[i + 1], required + band.below
+			if at > Skills.MAX then
+				return nil
+			end
+			return after and after.color or "grey", at
 		end
 	end
 end

@@ -48,12 +48,30 @@ local function Walk(kind, fn)
 	end
 end
 
+-- The requirement of a node this addon knows, by GatherMate2's node ID.
+---@param nodeID number
+---@return string? name
+---@return number[]? skill
+local function Known(nodeID)
+	local name = ns.NodeNames[nodeID]
+	local skill = name and ns.NodeSkills[name]
+	if skill then
+		return name, skill
+	end
+end
+
+-- The zones holding at least one node of this kind that this addon knows.
 ---@param kind string
 ---@return number[]
 function GM.Zones(kind)
 	local zones = {}
-	Walk(kind, function(uiMapID)
-		zones[#zones + 1] = uiMapID
+	Walk(kind, function(uiMapID, nodes)
+		for _, nodeID in pairs(nodes) do
+			if Known(nodeID) then
+				zones[#zones + 1] = uiMapID
+				return
+			end
+		end
 	end)
 	table.sort(zones)
 	return zones
@@ -87,9 +105,8 @@ function GM.Nodes(uiMapID, kind)
 	end
 	for coord, nodeID in gm:GetNodesForZone(uiMapID, kind, false) do
 		local x, y = gm:DecodeLoc(coord)
-		local name = ns.NodeNames[nodeID]
-		local skill = name and ns.NodeSkills[name]
-		if skill and x and y then
+		local name, skill = Known(nodeID)
+		if name and skill and x and y then
 			nodes[#nodes + 1] = {
 				uiMapID = uiMapID,
 				kind = kind,

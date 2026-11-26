@@ -17,12 +17,13 @@ H.Load(ns, "Locales/enUS.lua", "Core/GatherMate.lua", "Core/Planner.lua")
 
 -- GatherMate2's real shape: gmdbs[kind] is a proxy with string metadata keys, and a zone's nodes come through __index
 -- from the base storage or, once a storage addon registers the zone, from a storage-map table.
+ns.NodeNames, ns.NodeSkills = { [201] = "Copper Vein" }, { ["Copper Vein"] = { 186, 1 } }
 local storageMap = { Extra = { [1413] = { [3560355000] = 201 }, [1414] = {} } }
 local zoneStorage = { [1413] = "Extra", [1414] = "Extra" }
 local proxy = setmetatable({
 	__gm2_prefix = "Mine",
 	__gm2_storage_map = storageMap,
-	__gm2_base_storage = { [1411] = { [3560355000] = 201 }, [1412] = {} },
+	__gm2_base_storage = { [1411] = { [3560355000] = 201 }, [1412] = {}, [1415] = { [3560355000] = 999 } },
 }, {
 	__index = function(t, zone)
 		local store = zoneStorage[zone] and t.__gm2_storage_map[zoneStorage[zone]] or t.__gm2_base_storage
@@ -33,7 +34,7 @@ GatherMate2 = { gmdbs = { Mining = proxy }, GetNodesForZone = function() end }
 local zones = ns.GatherMate.Zones("Mining")
 assert(
 	#zones == 2 and zones[1] == 1411 and zones[2] == 1413,
-	"the zones with nodes, from base storage and storage maps"
+	"the zones with nodes the addon knows, from base storage and storage maps"
 )
 assert(#ns.GatherMate.Zones("Herb Gathering") == 0, "a kind GatherMate2 has no table for has no zones")
 
@@ -136,6 +137,8 @@ local later = ns.Planner.NextRanks(mixed, both)
 assert(later.Mining == 101 and later["Herb Gathering"] == 200, "each skill at where its highest node here goes grey")
 later = ns.Planner.NextRanks(low, { Mining = 300, ["Herb Gathering"] = 99 })
 assert(later.Mining == 300 and later["Herb Gathering"] == 99, "never below the player, nor moved without a node")
+later = ns.Planner.NextRanks({ ranges = { Mining = { lowest = 230, highest = 230 } } }, { Mining = 240 })
+assert(later.Mining == 299, "rated at the last skill that can still rise, never past the highest")
 
 -- A zone search matches names, whatever the case, among the zones of the player's professions.
 local found = ns.Planner.SearchZones("H", both)
@@ -214,6 +217,20 @@ ns.Planner.Async = function() end
 ns.Planner.ClearResults()
 assert(Open(40, 11).total == 7, "the saved ranking stands in while a new skill is planned")
 assert(not Open(40), "a ranking saved for other professions never stands in")
+-- A plan overtaken by a newer one finishes later and leaves the newer ranking saved.
+local pending = {}
+ns.Planner.Async = function(_, work, finish)
+	pending[#pending + 1] = function()
+		finish(work(function() end))
+	end
+end
+ns.Planner.ClearResults()
+Open(41, 11)
+Open(42, 11)
+pending[2]()
+local newest = ns.Char.ranking.key
+pending[1]()
+assert(ns.Char.ranking.key == newest and newest:find("=42=", 1, true), "the newer ranking stays saved")
 ns.Planner.Async = async
 for name, fn in pairs(real) do
 	ns.Planner[name] = fn
@@ -294,6 +311,15 @@ do
 	local part = 70 * 2 / 5 / 7 + 2 * 5
 	assert(math.abs(list[1].rate - 2 / part * 600) < 1e-6, "two wanted veins, walked without a respawn wait")
 	assert(#list[1].lacking == 1 and list[1].lacking[1] == "herb" and list[1].found.herb == nil, "what it lacks")
+
+	-- A zone with exactly the nodes still missing walks them once: no respawn wait there either.
+	ns.Planner.ListRows = function()
+		return { { item = "ore", need = 5, have = 0 } }
+	end
+	list = ns.Planner.ListZones(4)
+	local once = 70 / 7 + 5 * 5
+	assert(#list[1].lacking == 0 and math.abs(list[1].whole - once) < 1e-6, "one pass over just enough nodes")
+	assert(math.abs(list[1].rate - 5 / once * 600) < 1e-6, "and ranked at that pace")
 end
 
 -- Adding keeps a listed item's count; setting changes only a listed item.

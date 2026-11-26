@@ -397,7 +397,8 @@ function Planner.Best(ranks, skipNoSkillUp, limit, yield)
 end
 
 -- The skills the zones after this one are planned at: each at the one where this loop's highest node of its profession
--- stops giving skill-ups, or the player's own once past it or when the loop has none of its nodes.
+-- stops giving skill-ups, at most the last that can still rise, or the player's own once past that or when the loop has
+-- none of its nodes.
 ---@param zone {ranges: table<string, GGRange>}
 ---@param ranks table<string, number>
 ---@return table<string, number>
@@ -405,7 +406,7 @@ function Planner.NextRanks(zone, ranks)
 	local later = {}
 	for kind, rank in pairs(ranks) do
 		local range = zone.ranges[kind]
-		later[kind] = range and math.max(rank, range.highest + 100) or rank
+		later[kind] = range and math.max(rank, math.min(range.highest + 100, ns.Skills.MAX - 1)) or rank
 	end
 	return later
 end
@@ -555,15 +556,15 @@ function Planner.ListZones(limit, yield)
 				walked = walked + 1
 			end
 		end
-		local passing = walked < #order
-				and yards * walked / #order / ns.WALK_YARDS_PER_SECOND + walked * ns.SECONDS_PER_NODE
-			or seconds
 		local lacking = {}
 		for _, row in ipairs(rows) do
 			if missing[row.item] and (found[row.item] or 0) < missing[row.item] then
 				lacking[#lacking + 1] = row.item
 			end
 		end
+		local passing = (walked < #order or #lacking == 0)
+				and yards * walked / #order / ns.WALK_YARDS_PER_SECOND + walked * ns.SECONDS_PER_NODE
+			or seconds
 		zones[#zones + 1] = {
 			list = true,
 			uiMapID = uiMapID,
@@ -698,6 +699,10 @@ local function Thaw(saved)
 	return { zones = zones, total = saved.total }
 end
 
+-- The key last asked for, the only one whose ranking is saved: an older plan can finish after a newer one.
+---@type string?
+local asked
+
 -- The best zones at these skills, from memory or the saved variables when they are current, else planned over frames.
 -- While that runs the last saved ranking stands in. With all set it is every zone, each with its trip, planned only
 -- when asked for and kept in memory.
@@ -716,6 +721,7 @@ function Planner.Ranking(ranks, skip, refresh, all)
 	if all then
 		return Planner.Result("all:" .. key, Rank, refresh)
 	end
+	asked = key
 	local professions = Professions(ranks)
 	local saved = ns.Char.ranking
 	if saved and saved.professions ~= professions then
@@ -726,7 +732,9 @@ function Planner.Ranking(ranks, skip, refresh, all)
 	end
 	local ranking, failed = Planner.Result(key, function(yield)
 		local planned = Rank(yield)
-		ns.Char.ranking = Freeze(planned, key, professions)
+		if key == asked then
+			ns.Char.ranking = Freeze(planned, key, professions)
+		end
 		return planned
 	end, refresh)
 	if not ranking and saved then

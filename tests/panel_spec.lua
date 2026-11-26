@@ -203,8 +203,13 @@ assert(
 local onward = page[#page]
 assert(onward.type == "place" and onward.value == "5.0" and onward.levels == "20-30" and later.Mining == 275)
 assert(Find(page, "header", "Next zones").trailing == "per 10 min at 275")
--- At the trained maximum there is no time to give.
+-- At the trained maximum there is no time to give, only where to go next with the skill.
 skills[186] = { 150, 150 }
+top = Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands")
+assert(top.lines[2] == "Train Mining to raise it past 150", top.lines[2])
+assert(top.lines[3] == "5 nodes · 10 min loop" and not top.lines[4], top.lines[3])
+-- At the highest skill there is nothing left to train.
+skills[186] = { 300, 300 }
 top = Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands")
 assert(top.lines[2] == "5 nodes · 10 min loop" and not top.lines[3], top.lines[2])
 
@@ -242,7 +247,8 @@ assert(top.lines[3] == ("Herbalism to 200 in about %d min"):format(Minutes("Herb
 assert(top.lines[4] == "7 nodes · 10 min loop", top.lines[4])
 skills[186] = { 150, 150 }
 top = Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands")
-assert(top.lines[2]:find("^Herbalism to 200 ") and top.lines[3] == "7 nodes · 10 min loop", top.lines[2])
+assert(top.lines[2]:find("^Herbalism to 200 ") and top.lines[3] == "Train Mining to raise it past 150", top.lines[2])
+assert(top.lines[4] == "7 nodes · 10 min loop", top.lines[4])
 
 -- The list's zone card says how long all of it takes, or what the zone comes short of.
 shopping.onClick()
