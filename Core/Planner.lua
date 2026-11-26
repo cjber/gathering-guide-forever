@@ -122,14 +122,15 @@ function Planner.ZoneName(uiMapID)
 	return info and info.name or tostring(uiMapID)
 end
 
--- One zone's plan for a kind at a skill: the loop, its duration and the expected skill-ups per ten minutes.
+-- One zone's loop for a kind at a skill, before the trip there: its duration and the expected skill-ups per lap. The
+-- rate is the one from where the player already stands (rate, no travel); Planner.Reach adds the trip.
 ---@param kind string
 ---@param uiMapID number
 ---@param rank number
 ---@param skipNoSkillUp boolean
 ---@param yield fun()?
 ---@return table?
-function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
+function Planner.Plan(kind, uiMapID, rank, skipNoSkillUp, yield)
 	local all = Planner.Place(ns.GatherMate.Nodes(uiMapID, kind))
 	local nodes = Planner.Eligible(all, rank, skipNoSkillUp)
 	if #nodes == 0 then
@@ -137,7 +138,6 @@ function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
 	end
 	local order, yards = Planner.Loop(nodes, yield)
 	local seconds = Planner.Seconds(yards, #order)
-	local travel = Travel(uiMapID, order)
 	local expected = 0
 	local lowest, highest = math.huge, 0
 	for _, node in ipairs(order) do
@@ -154,14 +154,46 @@ function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
 		count = #order,
 		yards = yards,
 		seconds = seconds,
-		travel = travel,
-		rate = Planner.Rate(expected, seconds, travel),
+		expected = expected,
+		rate = Planner.Rate(expected, seconds, 0),
 		lowest = lowest,
 		highest = highest,
 	}
 end
 
--- The best zones for a kind at a skill, by skill-ups per ten minutes, best first.
+-- Counts the trip from where the player stands to the zone's loop into its rate.
+---@param zone table
+---@return table zone
+function Planner.Reach(zone)
+	zone.travel = Travel(zone.uiMapID, zone.order)
+	zone.rate = Planner.Rate(zone.expected, zone.seconds, zone.travel)
+	return zone
+end
+
+---@param kind string
+---@param uiMapID number
+---@param rank number
+---@param skipNoSkillUp boolean
+---@param yield fun()?
+---@return table?
+function Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
+	local zone = Planner.Plan(kind, uiMapID, rank, skipNoSkillUp, yield)
+	return zone and Planner.Reach(zone)
+end
+
+---@param a table
+---@param b table
+---@return boolean
+local function Better(a, b)
+	if a.rate ~= b.rate then
+		return a.rate > b.rate
+	end
+	return a.uiMapID < b.uiMapID
+end
+
+-- The best zones for a kind at a skill, by skill-ups per ten minutes including the trip there, best first. A trip only
+-- lowers a rate, so zones are taken in order of their rate without it and the search stops once the next one cannot
+-- beat the limit-th best with its trip: the answer is exact and most zones never ask Shortest Path for a route.
 ---@param kind string
 ---@param rank number
 ---@param skipNoSkillUp boolean
@@ -169,22 +201,28 @@ end
 ---@param yield fun()?
 ---@return table[]
 function Planner.Best(kind, rank, skipNoSkillUp, limit, yield)
-	local zones = {}
+	local plans = {}
 	for _, uiMapID in ipairs(ns.GatherMate.Zones(kind)) do
-		local zone = Planner.Zone(kind, uiMapID, rank, skipNoSkillUp, yield)
+		local zone = Planner.Plan(kind, uiMapID, rank, skipNoSkillUp, yield)
 		if yield then
 			yield()
 		end
 		if zone and zone.rate > 0 then
-			zones[#zones + 1] = zone
+			plans[#plans + 1] = zone
 		end
 	end
-	table.sort(zones, function(a, b)
-		if a.rate ~= b.rate then
-			return a.rate > b.rate
+	table.sort(plans, Better)
+	local zones = {}
+	for _, zone in ipairs(plans) do
+		if #zones >= limit and zone.rate <= zones[limit].rate then
+			break
 		end
-		return a.uiMapID < b.uiMapID
-	end)
+		zones[#zones + 1] = Planner.Reach(zone)
+		table.sort(zones, Better)
+		if yield then
+			yield()
+		end
+	end
 	while #zones > limit do
 		zones[#zones] = nil
 	end
@@ -338,10 +376,10 @@ function Planner.ClearResults()
 	results, failures = {}, {}
 end
 
--- The three best zones are saved per realm and kind in the account's saved variables, so a new login shows them at
+-- The best zones are saved per realm and kind in the account's saved variables, so a new login shows them at
 -- once. A saved ranking is current when its key (kind, skill, setting and the fingerprint of the GatherMate2 data)
--- matches; otherwise it is shown while a new one is planned. The trip to a zone is measured from where the player
--- stood when it was planned.
+-- matches; otherwise it is shown while a new one is planned. The key holds the map the player stands in, because the
+-- trip to a zone depends on it.
 local SUMMARY = { "uiMapID", "lowest", "highest", "travel", "rate", "seconds", "count" }
 
 ---@param zones table[]
@@ -389,13 +427,29 @@ end
 ---@return boolean? failed
 ---@return boolean? stale
 function Planner.Ranking(kind, rank, skip, refresh)
-	local key = ("best:%s:%d:%s:%s"):format(kind, rank, tostring(skip), ns.GatherMate.Fingerprint(kind))
+	local here = ns.World.PlayerMap()
+	local key = ("best:%s:%d:%s:%s:%s"):format(
+		kind,
+		rank,
+		tostring(skip),
+		ns.GatherMate.Fingerprint(kind),
+		tostring(here)
+	)
 	local saved = Saved(kind)
 	if results[key] == nil and saved and saved.key == key then
 		results[key] = Thaw(saved.zones)
 	end
 	local zones, failed = Planner.Result(key, function(yield)
-		local best = Planner.Best(kind, rank, skip, 3, yield)
+		local best = Planner.Best(kind, rank, skip, ns.TOP_ZONES, yield)
+		-- The player's own zone is the commonest choice, so it is always offered.
+		local inBest = false
+		for _, zone in ipairs(best) do
+			inBest = inBest or zone.uiMapID == here
+		end
+		local own = here and not inBest and Planner.Zone(kind, here, rank, skip, yield)
+		if own then
+			best[#best + 1] = own
+		end
 		ns.DB.plans = ns.DB.plans or {}
 		local realm = GetRealmName()
 		ns.DB.plans[realm] = ns.DB.plans[realm] or {}

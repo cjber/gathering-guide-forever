@@ -34,6 +34,9 @@ ns.SECONDS_PER_NODE = 5
 -- publishes no respawn time for Classic or Forever gathering nodes and players report anything from 5 to 30 minutes,
 -- so ten minutes stands in until a source says otherwise (listed under Known limitations).
 ns.NODE_RESPAWN_SECONDS = 600
+-- The overview offers this many of the best zones for a skill, plus the player's own: enough to choose between at a
+-- glance without a long list to scroll.
+ns.TOP_ZONES = 3
 
 ---@type table<string, fun(...)[]>
 local handlers = {}

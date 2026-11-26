@@ -75,11 +75,39 @@ assert(
 
 -- The ranking is planned once: reopening reads memory, a fresh session reads the saved variables, and a changed
 -- skill or GatherMate2 data plans again while the saved ranking stands in.
+-- Best asks for a route only to the zones that can still make the list, and the trip counts in the order.
+local realBest = ns.Planner.Best
+local rates, reached = { [1] = 30, [2] = 20, [3] = 10, [4] = 9, [5] = 8 }, 0
+ns.Planner.Plan = function(kind, uiMapID)
+	return { kind = kind, uiMapID = uiMapID, rate = rates[uiMapID], expected = rates[uiMapID] }
+end
+ns.Planner.Reach = function(zone)
+	reached = reached + 1
+	zone.rate = zone.uiMapID == 1 and 5 or zone.rate
+	return zone
+end
+ns.GatherMate.Zones = function()
+	return { 1, 2, 3, 4, 5 }
+end
+local top = realBest("Mining", 38, true, 2)
+assert(top[1].uiMapID == 2 and top[2].uiMapID == 3, "a far zone drops below the near ones")
+assert(top[1].rate == 20 and reached == 3, "zones that cannot beat the list are never reached: " .. reached)
+
 GetRealmName = function()
 	return "Realm"
 end
 ns.DB = {}
+ns.TOP_ZONES = 3
+local spot = 1426
+ns.World = {
+	PlayerMap = function()
+		return spot
+	end,
+}
 local plans, planned = 0, 0
+ns.Planner.Zone = function(kind, uiMapID)
+	return { kind = kind, uiMapID = uiMapID, rate = 4 }
+end
 ns.Planner.Best = function(kind)
 	plans = plans + 1
 	return { { kind = kind, uiMapID = 1411, lowest = 1, highest = 2, travel = 60, rate = 9, seconds = 600, count = 3 } }
@@ -91,7 +119,7 @@ local function Open(rank)
 	return ranked, stale
 end
 local ranked = Open(38)
-assert(plans == 1 and #ranked == 1, "the first open plans")
+assert(plans == 1 and #ranked == 2, "the first open plans")
 assert(Open(38) and plans == 1, "reopening does no planning")
 ns.Planner.ClearResults()
 ranked = Open(38)
@@ -108,5 +136,12 @@ ns.DB.plans = nil
 ns.Planner.ClearResults()
 Open(39)
 assert(plans == before + 2, "no saved ranking plans")
+
+-- The player's own zone is always offered, and a move to another zone plans again.
+ranked = Open(39)
+assert(#ranked == 2 and ranked[2].uiMapID == 1426, "the current zone joins the best zones")
+spot = 1411
+ranked = Open(39)
+assert(plans == before + 3 and #ranked == 1, "the current zone is not offered twice")
 
 print("planner_spec ok")

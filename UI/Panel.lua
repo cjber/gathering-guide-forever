@@ -156,7 +156,13 @@ function Panel.ZoneSpecs(refresh)
 	local k = ns.KindByName[view.kind]
 	local rank = Rank(view.kind)
 	local skip = ns.DB.skipNoSkillUp
-	local key = ("zone:%s:%d:%d:%s"):format(view.kind, view.uiMapID, rank, tostring(skip))
+	local key = ("zone:%s:%d:%d:%s:%s"):format(
+		view.kind,
+		view.uiMapID,
+		rank,
+		tostring(skip),
+		tostring(ns.World.PlayerMap())
+	)
 	local zone, zoneFailed = Result(key, function(yield)
 		return ns.Planner.Zone(view.kind, view.uiMapID, rank, skip, yield) or false
 	end, refresh)
