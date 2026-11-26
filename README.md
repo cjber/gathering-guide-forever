@@ -41,7 +41,7 @@ Turned on again, the map shows only this addon's pins.
 
 <p align="center"><img src="docs/screenshots/gathering-tour-stopped.png" width="960" alt="The Gathering page after stopping the tour"></p>
 
-Stopping the tour clears the pins and the tracker section.
+Stopping the tour ends its route line and removes its tracker section. The page keeps pinning the zone you are viewing.
 
 <p align="center"><img src="docs/screenshots/gathering-list.png" width="960" alt="A farming list with how many of each item you carry and the best zone to farm it"></p>
 
