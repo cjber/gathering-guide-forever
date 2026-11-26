@@ -117,8 +117,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # A release publishes its changelog entry, so every tagged version needs one.
-      - run: python3 tools/changelog.py --check
+      # Changelog fragments are checked on every push, and direct changelog edits are checked on pull requests.
+      - name: Check changelog
+        env:
+          CHANGELOG_BASE: ${{ github.base_ref }}
+        run: |
+          if [ -n "$CHANGELOG_BASE" ]; then
+            python3 tools/changelog.py --check --base "origin/$CHANGELOG_BASE"
+          else
+            python3 tools/changelog.py --check
+          fi
       # A release-prep pull request adds a new CHANGELOG.md version heading; check --latest here so a
       # stale pin fails the pull request instead of the release workflow after tagging.
       - name: Verify the ForeverCore pin on a release-prep PR
@@ -161,6 +169,8 @@ jobs:
     if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      FOREVER_CORE: forever-core
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -168,6 +178,19 @@ jobs:
           # Every commit and tag for the version, without old file contents.
           filter: blob:none
           persist-credentials: false
+      - name: Read the ForeverCore ref
+        id: forever-core
+        run: echo "ref=$(cat tools/forever-core.txt)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cjber/forever-core
+          ref: ${{ steps.forever-core.outputs.ref }}
+          path: forever-core
+          persist-credentials: false
+      # The package gate parses and runs Lua, so it needs the pinned LuaJIT and luac5.1 from tools/toolchain.json.
+      - uses: cjber/forever-core/.github/actions/toolchain@3776350a0b7bd71448ac7a8db8bf58d60303b4d3 # main
+        with:
+          tools: lua
       # .pkgmeta's manual changelog, which the release fills with the version's entry.
       - run: printf 'Package check\n' > .release-notes.md
       # The packager skips a push build when HEAD carries a tag ("Found future tag, not packaging"), so a tag that
@@ -176,10 +199,19 @@ jobs:
       # push to main builds.
       - name: Package this commit as an untagged build
         run: git tag --points-at HEAD | xargs -r git tag --delete
+      - name: Embed ForeverCore
+        run: python3 -m tools.forever_tools.embed
       # The packager fills @project-version@ with the tag, v and all; write the bare version first.
       - name: Write the bare version into the TOC
         run: python3 -m tools.forever_tools.toc_version
       - uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         with:
           args: -d -z
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tools/.cache/forever_sim
+          key: forever-sim-${{ hashFiles('tools/forever_sim/fetch.py') }}
+      - run: python3 tools/forever_sim/fetch.py
       - run: python3 tools/check_package.py
+        env:
+          GH_TOKEN: ${{ github.token }}

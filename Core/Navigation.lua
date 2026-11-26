@@ -6,9 +6,11 @@ end
 
 -- The only file that talks to Shortest Path Forever, and only through its published ShortestPathForever.API. Everything
 -- else asks this module, so a change in that API lands here.
---   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order.
+--   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order. Its
+--   stopMarkers = false and fadeLaterLegs = false options draw the whole line at full strength with no numbered stops.
 --   API.ObserveStops(owner, callback) calls callback(phase, index, stop) with phase "arrived" or "settled" and returns
 --   a function that unsubscribes.
+--   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
 --   API.JourneyState() reads {busy, pending, failure, blocked}: another journey under way, a route still being worked
 --   out, why the last one failed, and whether combat or a corpse holds guidance.
 local Nav = {}
@@ -27,6 +29,9 @@ local function API()
 	return api
 end
 
+-- Sets the other map marks Shortest Path Forever draws aside or brings them back; the journey's line and stops stay.
+Nav.SetPinsHidden = ns.MapHold(API)
+
 -- Whether Shortest Path Forever offers everything a tour needs.
 ---@return boolean
 function Nav.Available()
@@ -37,11 +42,38 @@ function Nav.Available()
 		and type(api.JourneyState) == "function"
 end
 
--- Starts a walking journey through the stops. Returns whether it started, and why not.
+-- The NavigateRoute option that draws the route line without its numbered stop markers, as the newer Shortest Path
+-- Forever publishes it (docs/api.md there). An older one answers any other option with "invalid" and changes nothing,
+-- so a tour asks once with it and once without.
+Nav.MARKERS_OPTION = "stopMarkers"
+
+-- The option that draws the legs past the next stop at full strength, so a tour shows its whole loop. Shortest Path
+-- Forever publishes it from API minor 10, and an older one refuses the whole call for it.
+Nav.FADE_OPTION = "fadeLaterLegs"
+Nav.FADE_MINOR = 10
+
+---@param api table
+---@param bare boolean?
+---@return table<string, string|boolean>
+local function Options(api, bare)
+	---@type table<string, string|boolean>
+	local options = { policy = "walking" }
+	if type(api.minor) == "number" and api.minor >= Nav.FADE_MINOR then
+		options[Nav.FADE_OPTION] = false
+	end
+	if bare then
+		options[Nav.MARKERS_OPTION] = false
+	end
+	return options
+end
+
+-- Starts a walking journey through the stops. Returns whether it started, and why not. With bare set, Shortest Path
+-- Forever draws the route line without its numbered markers when this version can; an older one keeps them.
 ---@param stops {map: number, x: number, y: number, title: string?, tooltip: string?}[]
+---@param bare boolean?
 ---@return boolean ok
 ---@return string? reason
-function Nav.Route(stops)
+function Nav.Route(stops, bare)
 	local api = API()
 	if not Nav.Available() or not api then
 		return false, "unavailable"
@@ -49,7 +81,13 @@ function Nav.Route(stops)
 	if #stops == 0 or #stops > Nav.MAX_STOPS then
 		return false, "invalid"
 	end
-	local ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, { policy = "walking" })
+	local ok, result
+	if bare then
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api, true))
+	end
+	if not (ok and result == true) then
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api))
+	end
 	if not ok or result ~= true then
 		return false, ok and "refused" or "error"
 	end
@@ -108,16 +146,11 @@ function Nav.Estimate(map, x, y)
 		return nil
 	end
 	local here = ns.World.PlayerMap()
-	local px, py = 0, 0
-	if C_Map and C_Map.GetPlayerMapPosition and here then
-		local pos = C_Map.GetPlayerMapPosition(here, "player")
-		if pos then
-			px, py = pos:GetXY()
-		end
-	end
-	if not here then
+	local pos = here and C_Map and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(here, "player")
+	if not pos then
 		return nil
 	end
-	local seconds = api.Estimate(here, px, py, map, x, y)
-	return type(seconds) == "number" and seconds or nil
+	local px, py = pos:GetXY()
+	local ok, seconds = pcall(api.Estimate, here, px, py, map, x, y)
+	return ok and type(seconds) == "number" and seconds or nil
 end

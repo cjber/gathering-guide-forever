@@ -9,25 +9,31 @@
 ## X-License: GPL-3.0-or-later
 ## X-Website: https://github.com/cjber/gathering-guide-forever
 ## X-Donate: https://github.com/sponsors/cjber
-## OptionalDeps: GatherMate2, ShortestPathForever, ForeverCore
-## X-Forever-Core: v1.17.3
+## OptionalDeps: GatherMate2, AdventureGuideForever, LegacyForever, ShortestPathForever, ForeverCore
+## X-Forever-Core: v1.17.6
+## X-Forever-Core-Embed: 1
 ## SavedVariables: GatheringGuideForeverDB
 ## SavedVariablesPerCharacter: GatheringGuideForeverCharDB
 
 Core\ForeverRequire.lua
 Core\Require.lua
 Locales\enUS.lua
+Data\NodeNames.lua
 Data\NodeSkills.lua
+Data\NodeArt.lua
 Data\Items.lua
 Data\Credits.lua
 Core\Core.lua
 Core\World.lua
 Core\GatherMate.lua
 Core\Skills.lua
+Core\MapHold.lua
 Core\Navigation.lua
 Journey\Order.lua
 Core\Planner.lua
 Core\Settings.lua
+Core\MapFocus.lua
+Journey\Session.lua
 Journey\Tour.lua
 UI\Loop.lua
 UI\Tracker.lua

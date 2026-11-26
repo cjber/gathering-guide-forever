@@ -18,12 +18,29 @@ local state
 local unobserve
 local listeners = {}
 
+-- The tour last toured and how far it got, for the panel's Continue card.
+local function Remember()
+	local tour = assert(state)
+	ns.Char.last = {
+		kind = tour.kind,
+		uiMapID = tour.uiMapID,
+		name = tour.name,
+		list = tour.list,
+		pos = tour.pos,
+		total = #tour.order,
+		gained = (ns.Session.SkillUps(GetServerTime())),
+	}
+end
+
 local function Notify()
+	if state then
+		Remember()
+	end
 	for _, fn in ipairs(listeners) do
 		ns.core.SafeCall("tour listener", fn)
 	end
 	if ns.Loop then
-		ns.Loop.Refresh()
+		ns.Loop.Draw()
 	end
 end
 
@@ -33,19 +50,19 @@ function Tour.Listen(fn)
 end
 
 -- The order indices of the next batch, walking the loop from pos, at most one lap and max stops. A node that can no
--- longer raise the skill is passed over when skip is set.
+-- longer raise its profession's skill is passed over when skip is set.
 ---@param order GGNode[]
 ---@param pos number
 ---@param skip boolean
----@param rank number
+---@param ranks table<string, number>
 ---@param max number
 ---@return number[]
-function Tour.NextBatch(order, pos, skip, rank, max)
+function Tour.NextBatch(order, pos, skip, ranks, max)
 	local batch = {}
 	for step = 0, #order - 1 do
 		local index = (pos - 1 + step) % #order + 1
 		local node = order[index]
-		if not skip or ns.Skills.Chance(rank, node.required) > 0 then
+		if not skip or ns.Skills.Chance(ranks[node.kind] or 0, node.required) > 0 then
 			batch[#batch + 1] = index
 			if #batch >= max then
 				break
@@ -55,16 +72,21 @@ function Tour.NextBatch(order, pos, skip, rank, max)
 	return batch
 end
 
-local function Rank()
-	return (ns.Skills.Rank(assert(state).line))
+-- The order indices the journey is given from pos.
+---@param pos number
+---@param max number
+---@return number[]
+local function Batch(pos, max)
+	local tour = assert(state)
+	-- A shopping-list tour gathers every wanted node, whatever it does for the skill.
+	local skip = assert(ns.DB).skipNoSkillUp and not tour.list
+	return Tour.NextBatch(tour.order, pos, skip, ns.Skills.Ranks(), max)
 end
 
 -- Sends the next batch to the journey. Returns whether it started.
 local function Submit()
 	local tour, db = assert(state), assert(ns.DB)
-	-- A shopping-list tour gathers every wanted node, whatever it does for the skill.
-	local skip = db.skipNoSkillUp and not tour.list
-	local batch = Tour.NextBatch(tour.order, tour.pos, skip, Rank(), ns.Navigation.MAX_STOPS)
+	local batch = Batch(tour.pos, ns.Navigation.MAX_STOPS)
 	if #batch == 0 then
 		tour.status = "nothing"
 		return false
@@ -74,12 +96,13 @@ local function Submit()
 		local node = tour.order[index]
 		stops[i] = { map = node.uiMapID, x = node.x, y = node.y, title = node.name }
 	end
-	local ok, why = ns.Navigation.Route(stops)
+	local ok, why = ns.Navigation.Route(stops, db.onlyGatheringPins)
 	if not ok then
-		tour.status = why or "refused"
+		tour.status = ns.Navigation.State().blocked and "blocked" or why or "refused"
 		return false
 	end
 	tour.batch = batch
+	tour.pos = batch[1]
 	tour.status = "running"
 	return true
 end
@@ -96,10 +119,13 @@ local function Observed(phase, index)
 		return
 	end
 	state.visited = state.visited + 1
-	state.pos = orderIndex % #state.order + 1
-	if orderIndex == #state.order then
+	local after = orderIndex % #state.order + 1
+	local upcoming = state.batch[index + 1] or Batch(after, 1)[1] or after
+	-- The loop's next stop sits no further on than this one only after the walk came round.
+	if upcoming <= orderIndex then
 		state.laps = state.laps + 1
 	end
+	state.pos = upcoming
 	if index < #state.batch then
 		Notify()
 		return
@@ -114,9 +140,25 @@ local function Observed(phase, index)
 	end)
 end
 
+-- The first profession in ns.Kinds order a loop has nodes of: the art of its Continue card.
+---@param order GGNode[]
+---@return string
+local function FirstKind(order)
+	local present = {}
+	for _, node in ipairs(order) do
+		present[node.kind] = true
+	end
+	for _, k in ipairs(ns.Kinds) do
+		if present[k.kind] then
+			return k.kind
+		end
+	end
+	error("a loop without a gathering profession")
+end
+
 -- Starts a tour over a planned zone. Returns whether it started and why not: "navigation" when Shortest Path Forever
 -- lacks the API, "blocked" when combat or a corpse holds guidance, "empty" when nothing is left to gather.
----@param plan table a Planner zone: kind, uiMapID, name, order
+---@param plan table a Planner zone: uiMapID, name, order
 ---@return boolean ok
 ---@return string? reason
 function Tour.Start(plan)
@@ -138,32 +180,36 @@ function Tour.Start(plan)
 			order = ns.Order.Rotate(order, nearest)
 		end
 	end
-	local k = ns.KindByName[plan.kind]
-	Tour.Stop(true)
+	local previous = state
 	state = {
-		kind = plan.kind,
-		line = k and k.line or 0,
+		kind = FirstKind(order),
 		name = plan.name,
 		list = plan.list == true,
 		uiMapID = plan.uiMapID,
+		seconds = plan.seconds,
 		order = order,
 		pos = 1,
 		visited = 0,
 		laps = 0,
 		status = "starting",
 	}
-	unobserve = ns.Navigation.Observe(Observed)
 	if not Submit() then
 		local why = state.status
-		Tour.Stop(true)
+		state = previous
 		return false, why
 	end
-	ns.Char.last = { kind = plan.kind, uiMapID = plan.uiMapID, name = plan.name }
+	-- The new journey replaced the old one; only now does the old tour let go of its observer and its session.
+	if unobserve then
+		unobserve()
+	end
+	unobserve = ns.Navigation.Observe(Observed)
+	ns.Session.Begin(plan, GetServerTime())
+	ns.MapFocus.Sync()
 	Notify()
 	return true
 end
 
--- Ends the tour and the journey it started.
+-- Ends the tour, its journey and its session.
 ---@param quiet boolean?
 function Tour.Stop(quiet)
 	if unobserve then
@@ -171,9 +217,12 @@ function Tour.Stop(quiet)
 		unobserve = nil
 	end
 	if state then
+		Remember()
 		ns.Navigation.Cancel()
 		state = nil
 	end
+	ns.Session.End()
+	ns.MapFocus.Sync()
 	if not quiet then
 		Notify()
 	end
@@ -191,9 +240,10 @@ function Tour.Progress()
 		return nil
 	end
 	return {
-		kind = state.kind,
+		list = state.list,
 		name = state.name,
 		uiMapID = state.uiMapID,
+		seconds = state.seconds,
 		visited = state.visited,
 		total = #state.order,
 		laps = state.laps,
@@ -215,7 +265,7 @@ end
 -- A changed setting that affects the batch in flight sends it again from the current stop.
 ---@param key string
 function Tour.OnSettingChanged(key)
-	if state and key == "skipNoSkillUp" then
+	if state and (key == "skipNoSkillUp" or key == "onlyGatheringPins") then
 		if Submit() then
 			Notify()
 		end
@@ -237,8 +287,20 @@ function Tour.Reason(reason)
 	return text[reason or ""] or L["The journey could not start."]
 end
 
--- A new skill level or a leaving player can end a stale tour. A player who dies or enters combat keeps the tour; the
--- journey itself pauses.
+-- A player who dies or enters combat keeps the tour; the journey itself pauses. A batch sent while it is paused is
+-- refused, so it goes again once combat ends or the player is alive.
+local function Retry()
+	ns.Defer(function()
+		if state and state.status ~= "running" then
+			Submit()
+			Notify()
+		end
+	end)
+end
+ns.On("PLAYER_REGEN_ENABLED", Retry)
+ns.On("PLAYER_ALIVE", Retry)
+ns.On("PLAYER_UNGHOST", Retry)
+
 ns.On("PLAYER_LOGOUT", function()
 	Tour.Stop(true)
 end)

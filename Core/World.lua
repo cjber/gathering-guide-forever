@@ -34,8 +34,9 @@ function World.Player()
 	if not UnitPosition then
 		return nil
 	end
-	local y, x, _, instance = UnitPosition("player")
-	if y == nil or (canaccessvalue and not canaccessvalue(y)) then
+	-- UnitPosition answers in the frame C_Map.GetWorldPosFromMapPos uses, its first value the x of a node's wx.
+	local x, y, _, instance = UnitPosition("player")
+	if x == nil or (canaccessvalue and not canaccessvalue(x)) then
 		return nil
 	end
 	if not Finite(x) or not Finite(y) then
@@ -50,6 +51,18 @@ end
 function World.Distance(a, b)
 	local dx, dy = a.x - b.x, a.y - b.y
 	return math.sqrt(dx * dx + dy * dy)
+end
+
+-- A zone's level range as the client's own map label shows it ("20-30", one number when both ends match), or nil for
+-- a map the client gives no levels.
+---@param uiMapID number
+---@return string?
+function World.Levels(uiMapID)
+	local low, high = C_Map.GetMapLevels(uiMapID)
+	if not low or not high or low <= 0 or high <= 0 then
+		return nil
+	end
+	return low == high and tostring(high) or ("%d-%d"):format(low, high)
 end
 
 -- The map the player stands on, for the zone views.

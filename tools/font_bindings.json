@@ -3,158 +3,313 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "ea3e87b0516832b51456b5c4f7c554e871a3c746927e519da143a4a4069f0bd8",
-      "review": "Reviewed the view specs, NewRow, Layout, Footer, Refresh and tab attachment. Layout resets the left font for each reused row and changes text rows to GameFontDisableSmall. Color changes do not change the font. Refresh draws the search placeholder on the left label and assigns user input to the edit box. ZoneSub reaches both text and card sublabels. SharedButtonSmallTemplate declares the normal, highlight and disabled FontObjects in the pinned Blizzard SharedXML ThreeSliceButtonTemplate.xml. The row and tab tooltips are excluded.",
+      "sha256": "cd5a5baf0f53fd257090b13087babe2d63697313b1611cf7ae89a333de4ed5b4",
+      "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
-          "phrase": "Continue"
+          "font": "GameFontNormalLarge2",
+          "widget": "RowTypes.heading Title",
+          "phrase": "Gathering Guide"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
-          "phrase": "%s, skill %d"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.heading Sub",
+          "phrase": "Level %d"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.heading Sub",
           "phrase": "Farm for a list"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.heading Sub",
+          "literal": " · "
+        },
+        {
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
+          "phrase": "Continue"
+        },
+        {
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
+          "phrase": "Best zones for you"
+        },
+        {
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
+          "phrase": "On this tour"
+        },
+        {
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
           "phrase": "Next zones"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
-          "phrase": "Best zone for the whole list"
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
+          "phrase": "Shopping list"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Layout header row.Left",
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.header Title",
           "phrase": "Other places"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Layout card, back and button row.Left",
-          "phrase": "%s: %s"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.header Trailing",
+          "phrase": "skill"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Layout card, back and button row.Left",
-          "phrase": "Back"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.header Trailing",
+          "phrase": "per 10 min at %d"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Layout card, back and button row.Left",
-          "phrase": "Open my farming list"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.header Trailing",
+          "phrase": "per 10 min at %d and %d"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Refresh search placeholder row.Left",
-          "phrase": "Add an item"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.header Trailing",
+          "phrase": "have / need"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "GatherMate2 supplies the node locations. Install it to plan a tour."
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.header Trailing",
+          "phrase": "whole list"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Update Shortest Path Forever to start a tour. You can still plan one here."
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.card Title",
+          "phrase": "%s tour"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Planning loops..."
+          "font": "GameFontNormalMed3",
+          "widget": "RowTypes.card Title",
+          "phrase": "Farm for a list"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "No zone in your GatherMate2 data has nodes for this skill."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Learn Mining or Herbalism to see the best zones for your skill."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Planning the loop..."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Nothing here can raise your skill yet."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Search for an herb or ore to add it."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Nothing on your list is in your GatherMate2 data."
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "Skill %d to %d"
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "travel %d min"
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout text row.Left",
-          "phrase": "%.1f per 10 min"
-        },
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout card row.Sub",
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
           "phrase": "Start again from the node nearest you"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout card row.Sub",
-          "phrase": "%d nodes, %d min a loop"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "Node %d of %d"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout card row.Sub",
-          "phrase": "Skill %d to %d"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "1 skill-up so far"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout card row.Sub",
-          "phrase": "travel %d min"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%d skill-ups so far"
         },
         {
-          "font": "GameFontDisableSmall",
-          "widget": "Layout card row.Sub",
-          "phrase": "%.1f per 10 min"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "Search for an herb or ore to add it."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%s %d of %d"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%s %d of %d, and %d more"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%.1f skill-ups per 10 min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "Both skills to %d in about %d min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%s to %d in about %d min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "%d nodes · %d min loop"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "Whole list in about %d min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "Short of %s here"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "phrase": "The loop takes only your list's nodes"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Lines",
+          "literal": " · "
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Right and Corner",
+          "phrase": "%d min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.card Right and Corner",
+          "phrase": "%d of %d"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.node Note",
+          "phrase": "not yet"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.node Note",
+          "phrase": "1 in %d"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.node Note",
+          "phrase": "yellow at %d"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.node Note",
+          "phrase": "green at %d"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.node Trailing",
+          "phrase": "Add"
         },
         {
           "font": "GameFontHighlight",
-          "widget": "Layout toggle row.Left",
+          "widget": "RowTypes.item Name",
+          "phrase": "%s (needs %d)"
+        },
+        {
+          "font": "GameFontHighlightLarge",
+          "widget": "RowTypes.place Value",
+          "phrase": "%d min"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.place Corner",
+          "phrase": "%d min"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "RowTypes.more Text",
+          "phrase": "Show fewer zones"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "RowTypes.more Text",
+          "phrase": "%d more: click to show"
+        },
+        {
+          "font": "GameFontHighlightMedium",
+          "widget": "RowTypes.more Sign",
+          "literal": "+"
+        },
+        {
+          "font": "GameFontHighlightMedium",
+          "widget": "RowTypes.more Sign",
+          "literal": "-"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.check Text",
           "phrase": "Skip nodes with no skill-up"
         },
         {
-          "font": "GameFontNormalSmall",
-          "widget": "Layout row.Right",
-          "phrase": "needs %d"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "The plan failed. The report window (/ggf report) shows why."
         },
         {
-          "font": "GameFontNormalSmall",
-          "widget": "Layout row.Right",
-          "phrase": "Add"
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Planning loops..."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Planning the loop..."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "No zone with nodes for your skills matches."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "No zone in your GatherMate2 data can raise your skill."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "GatherMate2 supplies the node locations. Install it to plan a tour."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Update Shortest Path Forever to start a tour. You can still plan one here."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Learn Mining or Herbalism to see the best zones for your skill."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Nothing here can raise your skill yet."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "Search for an herb or ore to add it."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "You have everything on your list."
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RowTypes.text Text",
+          "phrase": "No zone in your GatherMate2 data has anything on your list that your skill can gather."
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "SearchBoxTemplate Instructions",
+          "phrase": "Search zones"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "SearchBoxTemplate Instructions",
+          "phrase": "Add an item"
         },
         {
           "font": "GameFontNormal",
@@ -205,27 +360,37 @@
     },
     {
       "source": "Core/Core.lua",
-      "sha256": "33d5e68c1b3fd25f0beae79ed57dfd7c108fe0c4e6151f901193c6f31a7b447a",
-      "review": "The Kinds labels reach both an overview or zone header and the Continue card through UI/Panel.lua. Layout draws headers with GameFontNormal and cards with GameFontHighlight. ReportTitle configures the ForeverCore v1.17.1 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
+      "sha256": "96f35ebc245bdb98083d54f0c0e6e349e0998b485277bdbae0670d209508dce9",
+      "review": "The Kinds labels reach the panel's heading skill line and zone card goal lines (UI/Panel.lua, GameFontHighlightSmall) and the tracker's skill lines and onward line (UI/Tracker.lua, default objective lines with ObjectiveTrackerLineFont). ns.Markup returns only icon markup. ReportTitle configures the ForeverCore v1.17.5 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
       "bindings": [
         {
-          "font": "GameFontNormal",
-          "widget": "Panel Layout header row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "Panel heading Sub skill line",
           "phrase": "Mining"
         },
         {
-          "font": "GameFontNormal",
-          "widget": "Panel Layout header row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "Panel heading Sub skill line",
           "phrase": "Herbalism"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Panel Layout Continue card row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "Panel card goal Lines",
           "phrase": "Mining"
         },
         {
-          "font": "GameFontHighlight",
-          "widget": "Panel Layout Continue card row.Left",
+          "font": "GameFontHighlightSmall",
+          "widget": "Panel card goal Lines",
+          "phrase": "Herbalism"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker objective line Text",
+          "phrase": "Mining"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "Tracker objective line Text",
           "phrase": "Herbalism"
         },
         {
@@ -237,8 +402,8 @@
     },
     {
       "source": "Journey/Tour.lua",
-      "sha256": "161442763b8ccaadcd93d85b2fd7c269947f9e63572de9f6d297bf8f8f307944",
-      "review": "Tour.Reason feeds the explicit GameFontDisableSmall footerText on a failed tour start and the default ObjectiveTrackerLineFont objective line when Tracker.Lines includes a non-running status. Neither caller changes the font after setting the text.",
+      "sha256": "5caa418b46087794279f285110c357f63f4350cf531db047348984ad1288b129",
+      "review": "Tour.Reason feeds the GameFontDisableSmall footerText on a failed tour start (UI/Panel.lua) and the status objective line Tracker.Blocks adds while a tour is not running, in ObjectiveTrackerLineFont. Neither caller changes the font after setting the text. Tour.Describe goes only to the report text.",
       "bindings": [
         {
           "font": "GameFontDisableSmall",
@@ -267,35 +432,35 @@
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "Tracker.Lines default objective line Text",
+          "widget": "Tracker.Blocks status objective line Text",
           "phrase": "Shortest Path Forever needs an update to guide a tour."
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "Tracker.Lines default objective line Text",
+          "widget": "Tracker.Blocks status objective line Text",
           "phrase": "Guidance is paused in combat or while dead."
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "Tracker.Lines default objective line Text",
+          "widget": "Tracker.Blocks status objective line Text",
           "phrase": "There is nothing to gather here at your skill."
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "Tracker.Lines default objective line Text",
+          "widget": "Tracker.Blocks status objective line Text",
           "phrase": "No node here can raise your skill."
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "Tracker.Lines default objective line Text",
+          "widget": "Tracker.Blocks status objective line Text",
           "phrase": "The journey could not start."
         }
       ]
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "eb5a97c621c2c858d47d55790f5f6fc6c7c60abe5507df58999fc0a05612cc1d",
-      "review": "The pinned Blizzard ObjectiveTrackerModuleTemplate draws SetHeader on Header.Text with ObjectiveTrackerHeaderFont. LayoutContents calls AddObjective with the default line template, whose Text inherits ObjectiveTrackerLineFont. Blizzard_ObjectiveTrackerManager changes the tracker font sizes within the same per-locale font file mappings. ForeverCore v1.17.1 attaches the module without overriding these fonts. The block header is a client map name or numeric ID and the next node name comes from game data, so only the localized format is bound.",
+      "sha256": "4281c3c51648c773a1ae32f78f72c65a111741d929e8f45b051bb6371121e027",
+      "review": "In the pinned Blizzard ObjectiveTracker XML the module Header.Text inherits ObjectiveTrackerHeaderFont, and both a block's HeaderText and an objective line's Text inherit ObjectiveTrackerLineFont. LayoutContents and ForeverCore v1.17.5 TrackerSection.UpdateText only set text and colour. ForeverCore's TrackerHost swaps in its own chat-face font while another addon has shrunk the shared fonts below the game's minimum; that fallback is not covered. Zone, node and item names, coin strings and numbers are game data.",
       "bindings": [
         {
           "font": "ObjectiveTrackerHeaderFont",
@@ -304,18 +469,73 @@
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "ObjectiveTracker default objective line Text",
-          "phrase": "Node %d of %d"
+          "widget": "Tour block HeaderText",
+          "phrase": "%s · node %d of %d"
         },
         {
           "font": "ObjectiveTrackerLineFont",
-          "widget": "ObjectiveTracker default objective line Text",
+          "widget": "Onward block HeaderText",
           "phrase": "Next: %s"
         },
         {
           "font": "ObjectiveTrackerLineFont",
           "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "At %s %d, in about %d min"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "%d yd"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "1 skill-up"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "%d skill-ups"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "%.1f per 10 min"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "%s: %d gathered, %d still needed"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "%s: %d gathered"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "Gold per hour: price unknown"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "phrase": "Gold per hour: %s"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
           "phrase": "Loops finished: %d"
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "literal": " · "
+        },
+        {
+          "font": "ObjectiveTrackerLineFont",
+          "widget": "ObjectiveTracker default objective line Text",
+          "literal": " / "
         }
       ]
     }

@@ -20,8 +20,9 @@ globals = {
 	"SLASH_GATHERINGGUIDEFOREVER2",
 	"SlashCmdList",
 }
-files["tests/**"] = { globals = { "ShortestPathForever", "C_SkillInfo" } }
+files["tests/**"] = { globals = { "C_AddOns", "AdventureGuideForever", "LegacyForever", "UnitPosition", "CreateVector2D", "C_Map", "ShortestPathForever", "C_SkillInfo", "C_Item", "GetServerTime", "C_CurrencyInfo", "Auctionator", "debugprofilestop", "GatherMate2", "C_Timer", "ObjectiveTrackerFrame", "ObjectiveTrackerManager", "CreateFrame", "Mixin", "ForeverCore", "InCombatLockdown", "wipe", "WorldMapFrame", "Lerp", "Saturate", "UnitLevel", "C_Texture", "OBJECTIVE_DASH_STYLE_HIDE", "OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE" } }
 read_globals = {
+	"NORMAL_FONT_COLOR",
 	"ForeverCore",
 	"GatherMate2",
 	"ShortestPathForeverDB",
@@ -36,6 +37,10 @@ read_globals = {
 	"CreateFromMixins",
 	"CreateVector2D",
 	"CreateFrame",
+	"InCombatLockdown",
+	"wipe",
+	"Lerp",
+	"Saturate",
 	"C_AddOns",
 	"C_Item",
 	"C_Map",
@@ -49,6 +54,11 @@ read_globals = {
 	"GameFontNormal",
 	"GameFontNormalSmall",
 	"GameTooltip",
+	"GetServerTime",
+	"C_CurrencyInfo",
 	"UIParent",
 	"UnitPosition",
+	"UnitLevel",
+	"OBJECTIVE_DASH_STYLE_HIDE",
+	"OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE",
 }

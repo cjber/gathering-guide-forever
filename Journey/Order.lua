@@ -11,7 +11,8 @@ end
 local Order = {}
 ns.Order = Order
 
-local WORK_PER_STEP = 128
+-- Loop iterations between two yields. A yield and resume cost far more than an iteration, so a slice is large.
+local WORK_PER_STEP = 2048
 
 local function Identity(a, b)
 	for _, key in ipairs({ "uiMapID", "kind", "coord", "nodeID" }) do
@@ -34,6 +35,14 @@ end
 function Order.Begin(nodes)
 	local job = { status = "working", order = {}, yards = 0 }
 	local count = #nodes
+	local work = 0
+	local function tick()
+		work = work + 1
+		if work == WORK_PER_STEP then
+			work = 0
+			coroutine.yield()
+		end
+	end
 	local co = coroutine.create(function()
 		if count == 0 then
 			return "ready", {}
@@ -62,7 +71,7 @@ function Order.Begin(nodes)
 				then
 					pick = i
 				end
-				coroutine.yield()
+				tick()
 			end
 			used[pick] = true
 			for i = 1, count do
@@ -72,7 +81,7 @@ function Order.Begin(nodes)
 						best[i], parent[i] = d, pick
 					end
 				end
-				coroutine.yield()
+				tick()
 			end
 		end
 		local result, stack, visited = {}, { root }, {}
@@ -87,7 +96,7 @@ function Order.Begin(nodes)
 				if parent[i] == current and not visited[i] and (not child or Identity(nodes[i], nodes[child])) then
 					child = i
 				end
-				coroutine.yield()
+				tick()
 			end
 			if child then
 				stack[#stack + 1] = child
@@ -101,18 +110,13 @@ function Order.Begin(nodes)
 		if job.status ~= "working" then
 			return job.status
 		end
-		for _ = 1, WORK_PER_STEP do
-			local ok, status, result = coroutine.resume(co)
-			if not ok then
-				job.status = "error"
-				return job.status
-			end
-			if coroutine.status(co) == "dead" then
-				job.status = status
-				job.order = result or {}
-				job.yards = Order.Length(job.order)
-				return job.status
-			end
+		local ok, status, result = coroutine.resume(co)
+		if not ok then
+			job.status = "error"
+		elseif coroutine.status(co) == "dead" then
+			job.status = status
+			job.order = result or {}
+			job.yards = Order.Length(job.order)
 		end
 		return job.status
 	end
