@@ -28,6 +28,7 @@ Core\Navigation.lua
 Journey\Order.lua
 Core\Planner.lua
 Core\Settings.lua
+Journey\Session.lua
 Journey\Tour.lua
 UI\Loop.lua
 UI\Tracker.lua

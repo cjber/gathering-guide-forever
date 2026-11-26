@@ -19,6 +19,10 @@ ns.On = function() end
 ns.Defer = function(fn)
 	fn()
 end
+ns.Session = { Begin = function() end, End = function() end }
+GetServerTime = function()
+	return 0
+end
 H.Load(ns, "Journey/Tour.lua")
 local Tour = ns.Tour
 

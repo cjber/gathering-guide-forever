@@ -159,13 +159,13 @@ function Tour.Start(plan)
 		return false, why
 	end
 	ns.Char.last = { kind = plan.kind, uiMapID = plan.uiMapID, name = plan.name }
+	ns.Session.Begin(plan, GetServerTime())
 	Notify()
 	return true
 end
 
--- Ends the tour and the journey it started.
----@param quiet boolean?
-function Tour.Stop(quiet)
+-- Lets go of the running tour and the journey it started, leaving the session for a reload to keep.
+local function Release()
 	if unobserve then
 		unobserve()
 		unobserve = nil
@@ -174,6 +174,13 @@ function Tour.Stop(quiet)
 		ns.Navigation.Cancel()
 		state = nil
 	end
+end
+
+-- Ends the tour, its journey and its session.
+---@param quiet boolean?
+function Tour.Stop(quiet)
+	Release()
+	ns.Session.End()
 	if not quiet then
 		Notify()
 	end
@@ -240,5 +247,5 @@ end
 -- A new skill level or a leaving player can end a stale tour. A player who dies or enters combat keeps the tour; the
 -- journey itself pauses.
 ns.On("PLAYER_LOGOUT", function()
-	Tour.Stop(true)
+	Release()
 end)
