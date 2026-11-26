@@ -17,10 +17,13 @@ ns.Tour = {
 		return touring
 	end,
 }
-local guideHidden = false
-ns.AdventureGuide = {
-	SetHidden = function(value)
-		guideHidden = value
+local guideHidden, journeyHidden = false, false
+ns.SetGuidePinsHidden = function(value)
+	guideHidden = value
+end
+ns.Navigation = {
+	SetPinsHidden = function(value)
+		journeyHidden = value
 	end,
 }
 
@@ -90,7 +93,7 @@ ns.DB.onlyGatheringPins = true
 
 Focus.SetPanelShown(true)
 Frames()
-assert(guideHidden, "the guide's marks are set aside while the Gathering page is up")
+assert(guideHidden and journeyHidden, "the suite addons' marks are set aside while the Gathering page is up")
 assert(not pins[1].shown, "the game's quest pins are hidden")
 
 -- A pin shown again on the frame after, as Adventure Guide Forever does when set aside, is caught.
@@ -108,7 +111,7 @@ assert(not pins[3].shown, "a new quest pin is hidden")
 
 Focus.SetPanelShown(false)
 Frames()
-assert(not guideHidden, "leaving the page brings the guide's marks back")
+assert(not guideHidden and not journeyHidden, "leaving the page brings the suite addons' marks back")
 assert(pins[1].shown and pins[2].shown and pins[3].shown, "and the quest pins")
 
 -- Only pins hidden here come back.
@@ -140,5 +143,5 @@ ns.DB.onlyGatheringPins = false
 touring = true
 Focus.SetPanelShown(true)
 Frames()
-assert(pins[2].shown and not guideHidden, "the setting off leaves the map alone")
+assert(pins[2].shown and not guideHidden and not journeyHidden, "the setting off leaves the map alone")
 print("map_focus_spec ok")

@@ -1,6 +1,13 @@
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local H = dofile(here .. "/harness.lua")
-local ns = H.Load(H.Namespace(), "Locales/enUS.lua", "Core/Skills.lua", "Journey/Order.lua", "Core/Navigation.lua")
+local ns = H.Load(
+	H.Namespace(),
+	"Locales/enUS.lua",
+	"Core/Skills.lua",
+	"Journey/Order.lua",
+	"Core/MapHold.lua",
+	"Core/Navigation.lua"
+)
 ns.World = {
 	player = { x = 0, y = 0 },
 	Player = function()

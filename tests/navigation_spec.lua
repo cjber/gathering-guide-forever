@@ -1,6 +1,6 @@
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]") or "."
 local H = dofile(here .. "/harness.lua")
-local ns = H.Load(H.Namespace(), "Locales/enUS.lua", "Core/Navigation.lua")
+local ns = H.Load(H.Namespace(), "Locales/enUS.lua", "Core/MapHold.lua", "Core/Navigation.lua")
 local Nav = ns.Navigation
 
 -- Without Shortest Path Forever the adapter is unavailable and every call is harmless.

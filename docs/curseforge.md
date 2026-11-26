@@ -38,6 +38,7 @@ These images are captures from the game client.
 - **Zone view.** Every node is coloured by its chance to raise your skill, with Next zones for when it rises.
 - **Gathering tours.** The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map and a Gathering Tour section in the objective tracker.
 - **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
+- **A calm world map.** While the Gathering page is up or a tour runs, other map markers are cleared so the route and the node pins stand out. Other addons need versions that allow it, and one setting turns this off.
 
 ## Known limitations
 

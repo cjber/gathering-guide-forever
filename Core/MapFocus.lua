@@ -5,9 +5,9 @@ if ns.broken then
 end
 
 -- Clears other markers off the world map while the Gathering page is up or a tour runs, under the Only show Gathering
--- pins on the map setting: Adventure Guide Forever's marks are set aside through its API and the game's own quest pins
--- are hidden, and both come back afterwards. GatherMate2's icons follow the setting alone (Core/GatherMate.lua), and a
--- tour's route is sent without Shortest Path Forever's numbered markers (Journey/Tour.lua).
+-- pins on the map setting: the suite addons' pins are set aside through their APIs (Core/MapHold.lua) and the game's
+-- own quest pins are hidden, and all come back afterwards. GatherMate2's icons follow the setting alone
+-- (Core/GatherMate.lua), and a tour's route is sent without numbered stop markers (Journey/Tour.lua).
 local Focus = {}
 ns.MapFocus = Focus
 
@@ -84,14 +84,15 @@ driver:SetScript("OnUpdate", function(self)
 	end
 end)
 
--- Applies the current state. Hidden pins come back before Adventure Guide Forever resumes, so it can hide its own
--- again.
+-- Applies the current state. Hidden quest pins come back before the other addons resume, so Adventure Guide Forever can
+-- hide its own again.
 function Focus.Sync()
 	local active = Active()
 	if not active then
 		Pass()
 	end
-	ns.AdventureGuide.SetHidden(active)
+	ns.SetGuidePinsHidden(active)
+	ns.Navigation.SetPinsHidden(active)
 	Queue()
 end
 

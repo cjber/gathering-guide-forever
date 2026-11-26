@@ -9,6 +9,7 @@ end
 --   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order.
 --   API.ObserveStops(owner, callback) calls callback(phase, index, stop) with phase "arrived" or "settled" and returns
 --   a function that unsubscribes.
+--   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
 --   API.JourneyState() reads {busy, pending, failure, blocked}: another journey under way, a route still being worked
 --   out, why the last one failed, and whether combat or a corpse holds guidance.
 local Nav = {}
@@ -26,6 +27,9 @@ local function API()
 	end
 	return api
 end
+
+-- Sets the other map marks Shortest Path Forever draws aside or brings them back; the journey's line and stops stay.
+Nav.SetPinsHidden = ns.MapHold(API)
 
 -- Whether Shortest Path Forever offers everything a tour needs.
 ---@return boolean
