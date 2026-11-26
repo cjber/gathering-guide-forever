@@ -1285,8 +1285,8 @@ local function PlaceSearch(searchRow)
 	local zones = home and ns.GatherMate.Available() and next(ns.Skills.Ranks()) ~= nil
 	local typing = box:HasFocus()
 	box:SetShown(zones or searchRow ~= nil)
-	assert(box.Instructions):SetText(home and L["Search zones"] or L["Add an item"])
-	cog:SetShown(home)
+	box.Instructions:SetText(home and L["Search zones"] or L["Add an item"])
+	assert(cog):SetShown(home)
 	if searchRow then
 		box:SetParent(content)
 		box:SetFrameLevel(searchRow:GetFrameLevel() + 1)
