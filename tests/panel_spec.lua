@@ -44,6 +44,26 @@ ns.World = {
 }
 -- Planning runs across frames in game; here the list's zones stay pending.
 ns.Planner.Result = function() end
+-- The world map and the shared opener, recording the maps the panel turns to.
+local turned, gamepad = {}, false
+WorldMapFrame = {
+	GetMapID = function()
+		return 1426
+	end,
+}
+ForeverCore = {
+	OpenMap = function(uiMapID)
+		turned[#turned + 1] = uiMapID
+		return true
+	end,
+}
+ns.core = {
+	MapCanvas = {
+		Gamepad = function()
+			return gamepad
+		end,
+	},
+}
 H.Load(ns, "UI/Panel.lua")
 ns.Char.list = { { item = "Copper Ore", need = 20 }, { item = "Silver Ore", need = 5 } }
 
@@ -182,6 +202,13 @@ ns.Planner.NextZones = function(of, ranks)
 	return { further }
 end
 assert(Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands") and opened:find("zone:1424:", 1, true))
+ns.Panel.ZoneSpecs(Nothing)
+assert(#turned == 1 and turned[1] == 1424, "a picked zone turns the map to it once")
+gamepad = true
+match.onClick()
+ns.Panel.ZoneSpecs(Nothing)
+assert(#turned == 1, "the gamepad interface turns its own map")
+gamepad = false
 
 ranked.onClick()
 local page = ns.Panel.ZoneSpecs(Nothing)

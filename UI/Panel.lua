@@ -140,12 +140,28 @@ local function ZoneIcon(types)
 	return ns.Planner.Icon(best.name, best.kind)
 end
 
+-- Set by a click that asks for a zone: the map turns to it once the page knows which one.
+local turnMap = false
+
+-- The shared opener refuses in combat, and under the gamepad interface the map is left to the player
+-- (cjber/shortest-path-forever#158).
+---@param uiMapID number
+local function TurnMap(uiMapID)
+	if not turnMap then
+		return
+	end
+	turnMap = false
+	if WorldMapFrame:GetMapID() ~= uiMapID and not ns.core.MapCanvas.Gamepad() then
+		ForeverCore.OpenMap(uiMapID)
+	end
+end
+
 ---@param next table the view to open
 ---@param refresh fun()
 ---@return fun()
 local function Open(next, refresh)
 	return function()
-		view = next
+		view, turnMap = next, true
 		refresh()
 	end
 end
@@ -421,6 +437,7 @@ function Panel.ZoneSpecs(refresh)
 		},
 	}
 	local ranks, uiMapID = ns.Skills.Ranks(), view.uiMapID
+	TurnMap(uiMapID)
 	local skip = ns.DB.skipNoSkillUp
 	local key = ("zone:%d:%s"):format(uiMapID, ns.Planner.Key(ranks, skip))
 	local zone, zoneFailed = ns.Planner.Result(key, function(yield)
@@ -674,6 +691,7 @@ function Panel.ListSpecs(refresh)
 		end
 	end
 	pickedZone = picked
+	TurnMap(picked.uiMapID)
 	out[#out + 1] = ListZoneCard(picked, listRows)
 	if #zones == 1 then
 		return out
@@ -688,7 +706,7 @@ function Panel.ListSpecs(refresh)
 				names = MissingNames(zone, listRows),
 				corner = MinutesText(zone.travel),
 				onClick = function()
-					view.pick = zone.uiMapID
+					view.pick, turnMap = zone.uiMapID, true
 					refresh()
 				end,
 			}
@@ -1347,7 +1365,9 @@ function Panel.Refresh()
 	end
 	content:SetSize(width, y + PAD)
 	PlaceSearch(searchRow)
-	if view.name == "zone" and pickedZone then
+	-- The picked zone's loop is previewed; a running tour on that map keeps its own pins.
+	local progress = ns.Tour.Progress()
+	if pickedZone and not (progress and progress.uiMapID == pickedZone.uiMapID) then
 		ns.Loop.Show(pickedZone)
 	else
 		ns.Loop.Refresh()
