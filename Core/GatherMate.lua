@@ -135,8 +135,13 @@ end
 -- GatherMate2's own way to apply a setting change (its minimap button sends it after toggling showWorldMap): modules
 -- listening re-read the profile and redraw. Display listens only once enabled and takes its profile from this message,
 -- so nothing is redrawn before it exists, and it reads the switch itself when it enables.
-local function Refresh()
-	Addon():SendMessage("GatherMate2ConfigChanged")
+-- The redraw reads the profile's show table, which a profile in an older format lacks and which makes that redraw raise inside GatherMate2: such a
+-- profile is not redrawn from here, and GatherMate2 applies the switch on its next refresh.
+---@param profile table
+local function Refresh(profile)
+	if type(profile.show) == "table" then
+		Addon():SendMessage("GatherMate2ConfigChanged")
+	end
 end
 
 ---@return string?
@@ -157,7 +162,7 @@ function GM.HideWorldMap()
 	end
 	if profile.showWorldMap then
 		profile.showWorldMap = false
-		Refresh()
+		Refresh(profile)
 	end
 end
 
@@ -174,6 +179,6 @@ function GM.RestoreWorldMap()
 	ns.DB.gm2WorldMap = nil
 	if saved.profile == ProfileName() and profile.showWorldMap ~= saved.shown then
 		profile.showWorldMap = saved.shown
-		Refresh()
+		Refresh(profile)
 	end
 end

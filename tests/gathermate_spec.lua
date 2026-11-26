@@ -12,7 +12,7 @@ ns.Tour = nil
 
 -- GatherMate2's profile switches: the world map and the minimap each have their own.
 local refreshes, profileName = 0, "Default"
-local profile = { showWorldMap = true, showMinimap = true }
+local profile = { showWorldMap = true, showMinimap = true, show = {} }
 GatherMate2 = {
 	GetNodesForZone = function() end,
 	db = {
@@ -115,6 +115,31 @@ do
 	assert(db.showWorldMap == false, "Display reads the hidden switch when it enables")
 	Settings.Set("onlyGatheringPins", false)
 	assert(real.showWorldMap == true and errors == 0, "a restore after enable redraws through the message")
+end
+
+-- A profile in an older format has no show table: GatherMate2's redraw would raise on it, so we only write the switch.
+do
+	local sent = 0
+	local old = { showWorldMap = true }
+	GatherMate2 = {
+		db = {
+			profile = old,
+			GetCurrentProfile = function()
+				return "Default"
+			end,
+		},
+		SendMessage = function()
+			sent = sent + 1
+		end,
+	}
+	ns.DB = { onlyGatheringPins = true }
+	Settings.SyncGatherMate()
+	assert(old.showWorldMap == false and sent == 0, "a profile without show is hidden without a redraw")
+	Settings.Set("onlyGatheringPins", false)
+	assert(old.showWorldMap == true and sent == 0, "and restored without one")
+	old.show = {}
+	Settings.Set("onlyGatheringPins", true)
+	assert(sent == 1, "a complete profile is redrawn")
 end
 
 print("gathermate_spec ok")

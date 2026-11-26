@@ -58,7 +58,7 @@ function Tracker.RateLine(perHour)
 	if not perHour then
 		return L["Gold per hour: price unknown"]
 	end
-	return string.format(L["Gold per hour: %s"], GetCoinTextureString(math.floor(perHour)))
+	return string.format(L["Gold per hour: %s"], C_CurrencyInfo.GetCoinTextureString(math.floor(perHour)))
 end
 
 function ModuleMixin:LayoutContents()

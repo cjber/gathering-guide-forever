@@ -51,9 +51,13 @@ C_Timer = {
 		return { Cancel = function() end }
 	end,
 }
-GetCoinTextureString = function(copper)
-	return copper .. "c"
-end
+-- The client has only C_CurrencyInfo.GetCoinTextureString; the retail global of that name is nil here.
+C_CurrencyInfo = {
+	GetCoinTextureString = function(copper)
+		return copper .. "c"
+	end,
+}
+assert(rawget(_G, "GetCoinTextureString") == nil, "no legacy money global is stubbed")
 local now = 0
 GetServerTime = function()
 	return now
