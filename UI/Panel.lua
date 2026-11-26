@@ -530,7 +530,7 @@ local function LowestSkill(nodes)
 	return lowest
 end
 
--- The item names matching what the player typed, at most six.
+-- The item names matching what the player typed and not yet on the list, at most six.
 ---@param text string
 ---@return string[]
 function Panel.Matches(text)
@@ -540,7 +540,7 @@ function Panel.Matches(text)
 		return found
 	end
 	for name in pairs(ns.Planner.Items()) do
-		if name:lower():find(text, 1, true) then
+		if not ns.Planner.Listed(name) and name:lower():find(text, 1, true) then
 			found[#found + 1] = name
 		end
 	end

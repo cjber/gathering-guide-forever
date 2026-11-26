@@ -97,14 +97,11 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 	sim:advance(0.1)
 	assert(list[1].need == 45 and count:GetNumber() == 45, "an empty count puts the old one back")
 
-	-- Adding it again leaves the count alone.
 	sim:input(function()
 		search:SetText("copper ore")
 	end)
 	sim:advance(0.1)
-	sim:click(assert(row("Name", "Copper Ore"), "the result row"))
-	sim:advance(0.1)
-	assert(#list == 1 and list[1].need == 45, "an item already listed keeps its count")
+	assert(not row("Name", "Copper Ore"), "an item already listed is not offered again")
 
 	-- Back on the home page the list shows as a card to continue.
 	local back = assert(

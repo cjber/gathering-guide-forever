@@ -322,12 +322,11 @@ do
 	assert(math.abs(list[1].rate - 5 / once * 600) < 1e-6, "and ranked at that pace")
 end
 
--- Adding keeps a listed item's count; setting changes only a listed item.
+-- Setting changes only a listed item.
 do
 	ns.Char.list = {}
 	ns.Planner.AddItem("Copper Ore", 20)
 	ns.Planner.SetNeed("Copper Ore", 45)
-	ns.Planner.AddItem("Copper Ore", 20)
 	ns.Planner.SetNeed("Tin Ore", 3)
 	assert(#ns.Char.list == 1 and ns.Char.list[1].need == 45)
 end

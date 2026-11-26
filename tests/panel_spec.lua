@@ -278,6 +278,10 @@ top = Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands")
 assert(top.lines[2]:find("^Herbalism to 200 ") and top.lines[3] == "Train Mining to raise it past 150", top.lines[2])
 assert(top.lines[4] == "7 nodes · 10 min loop", top.lines[4])
 
+-- An item already on the list is not offered again.
+assert(ns.Planner.Listed("Copper Ore") and #ns.Panel.Matches("copper ore") == 0, "a listed item is not offered")
+assert(ns.Panel.Matches("tin ore")[1] == "Tin Ore", "an unlisted item is offered")
+
 -- The list's zone card says how long all of it takes, or what the zone comes short of.
 shopping.onClick()
 local listed = {

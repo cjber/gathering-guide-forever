@@ -463,7 +463,7 @@ end
 
 ---@param item string
 ---@return {item: string, need: number}?
-local function Listed(item)
+function Planner.Listed(item)
 	for _, entry in ipairs(ns.Char.list) do
 		if entry.item == item then
 			return entry
@@ -471,20 +471,17 @@ local function Listed(item)
 	end
 end
 
--- An item already on the list keeps its count.
----@param item string
+---@param item string an item not yet on the list
 ---@param need number
 function Planner.AddItem(item, need)
-	if not Listed(item) then
-		table.insert(ns.Char.list, { item = item, need = need })
-		ns.Session.ListChanged()
-	end
+	table.insert(ns.Char.list, { item = item, need = need })
+	ns.Session.ListChanged()
 end
 
 ---@param item string
 ---@param need number
 function Planner.SetNeed(item, need)
-	local entry = Listed(item)
+	local entry = Planner.Listed(item)
 	if entry then
 		entry.need = need
 		ns.Session.ListChanged()
