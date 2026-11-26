@@ -741,14 +741,6 @@ function Panel.State()
 	return specs, view
 end
 
----@param name string
----@param kind string?
----@param uiMapID number?
-function Panel.Go(name, kind, uiMapID)
-	view = { name = name, kind = kind, uiMapID = uiMapID }
-	Panel.Refresh()
-end
-
 -- Centre-crop the native quest list artwork as Adventure Guide does on the same host.
 ---@param background Texture
 ---@param width number

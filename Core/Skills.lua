@@ -46,15 +46,6 @@ function Skills.Rank(line)
 	return info.skillLevel or info.rank or 0, info.maxSkillLevel or info.maxRank or 0
 end
 
--- Whether a node can still raise the player's skill now.
----@param node GGNode
----@param rank number
----@return boolean
-function Skills.Gives(node, rank)
-	local chance = Skills.Chance(rank, node.required)
-	return chance > 0
-end
-
 local COLORS = {
 	orange = { 1, 0.5, 0.25 },
 	yellow = { 1, 1, 0 },

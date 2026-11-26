@@ -106,22 +106,6 @@ function GM.Nodes(uiMapID, kind)
 	return nodes
 end
 
--- A node's distinct names in one zone, for the item search.
----@param kind string
----@return string[]
-function GM.NodeNames(kind)
-	local names, seen = {}, {}
-	for name, skill in pairs(ns.NodeSkills) do
-		local k = ns.Kinds[1].line == skill[1] and ns.Kinds[1].kind or ns.Kinds[2].kind
-		if k == kind and not seen[name] then
-			seen[name] = true
-			names[#names + 1] = name
-		end
-	end
-	table.sort(names)
-	return names
-end
-
 ---@return table? profile GatherMate2's active profile
 local function Profile()
 	local gm = Addon()
