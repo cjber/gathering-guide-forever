@@ -22,6 +22,7 @@ Each version's entry is also its release notes on GitHub and CurseForge.
 
 - **The tracker counts to the next colour change.** Each skill line shows your skill against the rank at which a node on the loop next changes colour, such as Mining 38 / 51 on a Copper loop, in place of your trained cap.
 - **A closed Gathering page stays off the map.** A tour update no longer brings back the pins of the zone you were viewing after you close the page.
+- **The last tracker line is drawn in full.** Letters such as g and y, and commas, keep their lower parts.
 
 ## [0.1.0] - 2026-11-26
 
