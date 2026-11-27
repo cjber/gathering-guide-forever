@@ -122,7 +122,7 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 	end
 	local function setup(page)
 		for _, text in ipairs({
-			"GatherMate2 has no nodes for your skills yet. Install GatherMate2_Data, then type /gathermate.",
+			"GatherMate2 has no nodes for your skills yet. With GatherMate2_Data installed, type /gathermate.",
 			"Open Import, tick Herbalism and Mining, then click Import GatherMate2Data.",
 		}) do
 			local line = assert(row("Text", text), page .. ": " .. text).Text

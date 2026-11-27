@@ -186,7 +186,7 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 	sim:advance(3)
 	-- Eight of the twenty veins and four of the six herbs can still raise a skill; the loop skips the others.
 	assert(drawn(tracker, "node 1 of 12"), "the tracker names the place in the loop")
-	assert(drawn(tracker, "Mining 146 / 225") and drawn(tracker, "Herbalism 141 / 225"), "and both skills")
+	assert(drawn(tracker, "Mining 146 / 150") and drawn(tracker, "Herbalism 141 / 150"), "and both skills")
 	assert(drawn(tracker, " yd"), "and how far the next node is")
 	assert(drawn(tracker, "Next: Hillsbrad Foothills"), "and where to be at the trained maximum")
 	assert(drawn(tracker, "225, in about"), "with the time to get there")

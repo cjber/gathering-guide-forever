@@ -242,7 +242,7 @@ local function NoZones(out, ranks, reason)
 	if next(ranks) and #ns.Planner.Zones(ranks) == 0 then
 		out[#out + 1] = {
 			type = "text",
-			text = L["GatherMate2 has no nodes for your skills yet. Install GatherMate2_Data, then type /gathermate."],
+			text = L["GatherMate2 has no nodes for your skills yet. With GatherMate2_Data installed, type /gathermate."],
 		}
 		reason = L["Open Import, tick Herbalism and Mining, then click Import GatherMate2Data."]
 	end
