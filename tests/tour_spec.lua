@@ -52,6 +52,12 @@ ns.MapFocus = {
 GetServerTime = function()
 	return 0
 end
+local walked
+ns.Planner = {
+	Walked = function()
+		return walked
+	end,
+}
 H.Load(ns, "Journey/Tour.lua")
 local Tour = ns.Tour
 
@@ -173,6 +179,76 @@ assert(hidden == false, "stopping brings the guide's pins back")
 assert(not Tour.Active() and observer == nil, "stop ends the tour and unsubscribes")
 assert(ended == 1, "stop ends the session")
 assert(ns.Char.last.name == "Zone" and ns.Char.last.total == 6, "a stopped tour can be continued")
+
+-- A reload keeps a running tour and its session, from the node it was on.
+local kept, continued = {}, nil
+ns.Session.Current = function()
+	return kept
+end
+ns.Session.Continue = function(saved)
+	continued = saved
+end
+local function Reload(login)
+	events.PLAYER_LOGOUT()
+	events.PLAYER_ENTERING_WORLD(login == true, login ~= true)
+end
+local zone = { kind = "Mining", uiMapID = 1, name = "Zone", order = loop }
+assert(Tour.Start(zone))
+observer("arrived", 1, routes[#routes][1])
+local running, sent = Tour.Progress().order, #routes
+Reload()
+progress = Tour.Progress()
+assert(progress and progress.order == running and progress.pos == 2 and progress.visited == 1, "the tour carries on")
+assert(#routes == sent + 1 and routes[#routes][1].x == running[2].x, "its journey starts at the next node")
+assert(continued == kept and hidden, "with its session, and the guide's pins aside")
+observer("arrived", 1, routes[#routes][1])
+assert(Tour.Progress().visited == 2, "and it follows the new journey")
+Tour.Stop()
+Reload()
+assert(not Tour.Active(), "a stopped tour stays stopped")
+assert(Tour.Start(zone))
+Reload(true)
+assert(not Tour.Active(), "logging in does not start the last tour")
+
+-- A reload where no journey can start, as in a dungeon, leaves the tour waiting for the next entry into the world.
+assert(Tour.Start(zone))
+ShortestPathForever.API.NavigateRoute = function()
+	return false
+end
+Reload()
+assert(Tour.Progress().status == "refused", Tour.Progress().status)
+ShortestPathForever.API.NavigateRoute = navigate
+events.PLAYER_ENTERING_WORLD(false, false)
+assert(Tour.Progress().status == "running", "walking out sends the tour again")
+Tour.Stop()
+
+-- A walking order that arrives is taken up at the next node reached: the node headed for stays next, and the one just
+-- reached comes last. A start uses it from the first.
+ns.World.player = { x = 100, y = 0 }
+assert(Tour.Start(zone))
+local old = Tour.Progress().order
+local first, second, third = old[1], old[2], old[3]
+observer("settled", 1, routes[#routes][1])
+walked = { old[3], second, first, old[5], old[4], old[6] }
+assert(Tour.Progress().order == old, "nothing changes between nodes")
+sent = #routes
+observer("arrived", 1, routes[#routes][1])
+progress = Tour.Progress()
+assert(progress.order[1] == second and progress.pos == 1, "the node headed for is still next")
+assert(progress.order[2] == third and progress.order[6] == first, "turned so the node just reached is last")
+assert(#progress.order == 6 and progress.laps == 0 and progress.visited == 1)
+assert(#routes == sent + 1 and routes[#routes][1].x == second.x, "the journey is sent the new loop")
+assert(routes[#routes][2].x == progress.order[2].x)
+local taken = progress.order
+observer("arrived", 1, routes[#routes][1])
+assert(Tour.Progress().order == taken and Tour.Progress().pos == 2, "it is taken once")
+Reload()
+assert(Tour.Progress().order == taken, "and kept over a reload")
+walked = { third, first, second }
+assert(Tour.Start(zone))
+assert(#Tour.Progress().order == 3 and Tour.Progress().next == first, "a start takes it from the nearest node")
+walked = nil
+Tour.Stop()
 
 -- A blocked journey and a missing API refuse the start with a reason.
 ShortestPathForever.API.JourneyState = function()

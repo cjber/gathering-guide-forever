@@ -51,6 +51,31 @@ end
 local _, lineYards = Order.Solve(line)
 assert(math.abs(lineYards - 80) < 1e-6, "a line of five 10-yard steps closes at 80 yards")
 
+-- Nodes round a circle are walked round it, with no jumps across and no doubling back.
+local circle = {}
+for i = 1, 60 do
+	local angle = ((i * 23) % 60) / 60 * 2 * math.pi
+	circle[i] =
+		{ uiMapID = 1, kind = "Mining", coord = i, nodeID = i, wx = 500 * math.cos(angle), wy = 500 * math.sin(angle) }
+end
+local _, circleYards = Order.Solve(circle)
+assert(math.abs(circleYards - 60 * 1000 * math.sin(math.pi / 60)) < 1e-6, "the loop is the circle's own outline")
+
+-- Every size of set, two nodes on one spot among them, gives a loop of each node once.
+for count = 0, 30 do
+	local set = {}
+	for i = 1, count do
+		set[i] = { uiMapID = 1, kind = "Mining", coord = i, nodeID = i, wx = (i * i * 31) % 17, wy = (i * 29) % 13 }
+	end
+	local loop = Order.Solve(set)
+	local visited = {}
+	for _, node in ipairs(loop) do
+		assert(not visited[node.coord], "no node twice")
+		visited[node.coord] = true
+	end
+	assert(#loop == count, "no node lost")
+end
+
 -- Nearest picks the closest node, and Rotate starts the same loop there.
 local nearest = Order.Nearest(order, { x = line[1].wx, y = 0 })
 assert(nearest ~= nil)

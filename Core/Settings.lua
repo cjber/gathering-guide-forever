@@ -17,6 +17,14 @@ Settings.options = {
 	{ key = "showTracker", label = L["Show the Gathering Tour in the objective tracker"] },
 }
 
+-- The pictures herb and ore nodes can wear on the loop and on GatherMate2's pins (GatherMate.Icon).
+---@type {style: GGIconStyle, label: string}[]
+Settings.iconStyles = {
+	{ style = "gathering", label = L["Gathering"] },
+	{ style = "blizzard", label = L["Game item icons"] },
+	{ style = "gathermate", label = L["GatherMate2"] },
+}
+
 ---@return boolean imported whether saved settings were found and copied
 function Settings.ImportFromSPF()
 	if ns.DB.importedFromSPF then
@@ -34,13 +42,21 @@ function Settings.ImportFromSPF()
 	return true
 end
 
--- GatherMate2's world map icons follow the setting.
+-- GatherMate2's icons and its world map switch follow their settings.
 function Settings.SyncGatherMate()
 	if ns.DB.onlyGatheringPins then
 		ns.GatherMate.HideWorldMap()
 	else
 		ns.GatherMate.RestoreWorldMap()
 	end
+	ns.GatherMate.SetIcons(ns.DB.iconStyle)
+end
+
+---@param style GGIconStyle
+function Settings.SetIconStyle(style)
+	ns.DB.iconStyle = style
+	ns.GatherMate.SetIcons(style)
+	ns.Loop.Draw()
 end
 
 ---@param key string

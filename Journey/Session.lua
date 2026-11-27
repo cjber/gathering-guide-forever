@@ -7,7 +7,7 @@ end
 -- The farming session of a tour: the skill gained since the tour began, what the player looted, counted from bag count
 -- gains while a loot window is open (so mail, the bank, the auction house, trades and crafting never count), and the
 -- gold per hour those items are worth. It lives exactly as long as its tour: a new tour replaces it, and stopping the
--- tour or leaving the game ends it.
+-- tour or logging out ends it, and a reload carries it on with its tour.
 local Session = {}
 ns.Session = Session
 
@@ -103,6 +103,22 @@ function Session.Wanted(plan)
 	return wanted
 end
 
+-- The running session, for a reload to save.
+---@return GGSession?
+function Session.Current()
+	return session
+end
+
+-- Runs a session, replacing any earlier one.
+---@param running GGSession
+function Session.Continue(running)
+	session = running
+	if ticker then
+		ticker:Cancel()
+	end
+	ticker = C_Timer.NewTicker(RATE_REFRESH_SECONDS, Notify)
+end
+
 -- Starts a session for a tour, replacing any earlier one. Counts start from what the bags hold now.
 ---@param plan table a Planner zone
 ---@param now number seconds
@@ -121,11 +137,7 @@ function Session.Begin(plan, now)
 			skills[#skills + 1] = { kind = k.kind, line = k.line, start = (ns.Skills.Rank(k.line)) }
 		end
 	end
-	session = { startedAt = now, list = plan.list == true, entries = entries, skills = skills }
-	if ticker then
-		ticker:Cancel()
-	end
-	ticker = C_Timer.NewTicker(RATE_REFRESH_SECONDS, Notify)
+	Session.Continue({ startedAt = now, list = plan.list == true, entries = entries, skills = skills })
 end
 
 -- Ends the session and the loot window it was watching, so loot still open does not reach the next tour.

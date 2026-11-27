@@ -7,12 +7,15 @@ end
 -- The only file that talks to Shortest Path Forever, and only through its published ShortestPathForever.API. Everything
 -- else asks this module, so a change in that API lands here.
 --   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order. Its
---   stopMarkers = false and fadeLaterLegs = false options draw the whole line at full strength with no numbered stops.
+--   tourLine = true option draws a calm solid line over the next few legs; fadeLaterLegs = false draws every leg at
+--   full strength where that is missing; stopMarkers = false leaves out the numbered stops.
 --   API.ObserveStops(owner, callback) calls callback(phase, index, stop) with phase "arrived" or "settled" and returns
 --   a function that unsubscribes.
 --   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
 --   API.JourneyState() reads {busy, pending, failure, blocked}: another journey under way, a route still being worked
 --   out, why the last one failed, and whether combat or a corpse holds guidance.
+--   API.EstimateWalks(owner, from, targets, callback, opts) measures the walk in yards from one place to each of the
+--   others, and API.NavVersion() names the walking data those yards come from.
 local Nav = {}
 ns.Navigation = Nav
 
@@ -47,8 +50,13 @@ end
 -- so a tour asks once with it and once without.
 Nav.MARKERS_OPTION = "stopMarkers"
 
--- The option that draws the legs past the next stop at full strength, so a tour shows its whole loop. Shortest Path
--- Forever publishes it from API minor 10, and an older one refuses the whole call for it.
+-- The option that draws a tour of many close stops: a solid line with soft corners over the leg under way and the next
+-- few, the later ones faded. Shortest Path Forever publishes it from API minor 12.
+Nav.TOUR_OPTION = "tourLine"
+Nav.TOUR_MINOR = 12
+
+-- Where that is missing, the option that draws the legs past the next stop at full strength, so a tour's dotted line
+-- stays readable. Published from API minor 10. Either option makes an older Shortest Path Forever refuse the call.
 Nav.FADE_OPTION = "fadeLaterLegs"
 Nav.FADE_MINOR = 10
 
@@ -58,7 +66,10 @@ Nav.FADE_MINOR = 10
 local function Options(api, bare)
 	---@type table<string, string|boolean>
 	local options = { policy = "walking" }
-	if type(api.minor) == "number" and api.minor >= Nav.FADE_MINOR then
+	local minor = type(api.minor) == "number" and api.minor or 0
+	if minor >= Nav.TOUR_MINOR then
+		options[Nav.TOUR_OPTION] = true
+	elseif minor >= Nav.FADE_MINOR then
 		options[Nav.FADE_OPTION] = false
 	end
 	if bare then
@@ -133,6 +144,45 @@ function Nav.Cancel()
 		return api.Cancel(Nav.OWNER) == true
 	end
 	return false
+end
+
+-- The walking data walk costs are measured over, or nil when Shortest Path Forever cannot measure walks.
+---@return string?
+function Nav.NavVersion()
+	local api = API()
+	if not api or type(api.EstimateWalks) ~= "function" or type(api.NavVersion) ~= "function" then
+		return nil
+	end
+	local ok, version = pcall(api.NavVersion)
+	return ok and type(version) == "string" and version or nil
+end
+
+-- Measures the walk from one node to each of the others. callback(costs, reason) runs once, later: costs[i] is yards,
+-- or false where there is no walk. Returns whether the search started; combat or loading data refuses it. A new call
+-- drops the search before it.
+---@param from GGNode
+---@param targets GGNode[]
+---@param callback fun(costs: (number|false)[], reason: string?)
+---@return boolean started
+function Nav.Walks(from, targets, callback)
+	local api = API()
+	if not api or not Nav.NavVersion() then
+		return false
+	end
+	local places = {}
+	for i, node in ipairs(targets) do
+		places[i] = { map = node.uiMapID, x = node.x, y = node.y }
+	end
+	-- Water walking is left out, so a kept cost never depends on a buff.
+	local ok, cancel = pcall(
+		api.EstimateWalks,
+		Nav.OWNER,
+		{ map = from.uiMapID, x = from.x, y = from.y },
+		places,
+		callback,
+		{ waterWalking = false }
+	)
+	return ok and cancel ~= nil
 end
 
 -- Travel seconds from the player's place to a map point, or nil when SPF cannot say.

@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "378153d4ce977cfd0c42fe64f7cfb2ab6bc7bcdee87946a8bf72c1aee8cadec4",
+      "sha256": "bb0d8e4fc200fdb674d57baec155151fc3f6119c1c59539157276adc219f5a2d",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
@@ -370,7 +370,7 @@
     },
     {
       "source": "Core/Core.lua",
-      "sha256": "96f35ebc245bdb98083d54f0c0e6e349e0998b485277bdbae0670d209508dce9",
+      "sha256": "d6715d9a5ff08b1a7cacb4410f143306dcb69dd15faae3a647f17f09d7a8a754",
       "review": "The Kinds labels reach the panel's heading skill line and zone card goal lines (UI/Panel.lua, GameFontHighlightSmall) and the tracker's skill lines and onward line (UI/Tracker.lua, default objective lines with ObjectiveTrackerLineFont). ns.Markup returns only icon markup. ReportTitle configures the ForeverCore v1.17.5 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
       "bindings": [
         {
@@ -412,7 +412,7 @@
     },
     {
       "source": "Journey/Tour.lua",
-      "sha256": "5caa418b46087794279f285110c357f63f4350cf531db047348984ad1288b129",
+      "sha256": "20b31536c0dc1976bd6762e4b4ee07f5b642d546499bb82b6df5ad1c4b4045da",
       "review": "Tour.Reason feeds the GameFontDisableSmall footerText on a failed tour start (UI/Panel.lua) and the status objective line Tracker.Blocks adds while a tour is not running, in ObjectiveTrackerLineFont. Neither caller changes the font after setting the text. Tour.Describe goes only to the report text.",
       "bindings": [
         {

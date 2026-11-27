@@ -282,6 +282,54 @@ top = Find(ns.Panel.ZoneSpecs(Nothing), "card", "Arathi Highlands")
 assert(top.lines[2]:find("^Herbalism to 200 ") and top.lines[3] == "Train Mining to raise it past 150", top.lines[2])
 assert(top.lines[4] == "7 nodes · 10 min loop", top.lines[4])
 
+-- Opening a zone starts its tour once, when no tour or other journey is under way.
+local started, touring, busy = {}, false, false
+ns.Tour = {
+	Active = function()
+		return touring
+	end,
+	Start = function(plan)
+		started[#started + 1] = plan.name
+		return not busy, "blocked"
+	end,
+	Reason = function(why)
+		return "reason " .. why
+	end,
+}
+ns.Navigation.State = function()
+	return { busy = busy }
+end
+local function Open()
+	Find(ns.Panel.OverviewSpecs(Nothing), "card", "Arathi Highlands").onClick()
+end
+local function Back()
+	Find(ns.Panel.ZoneSpecs(Nothing), "heading").onBack()
+end
+Open()
+assert(not ns.Panel.AutoStart(zone) and #started == 1, "opening a zone starts its tour")
+ns.Panel.AutoStart(zone)
+assert(#started == 1, "a redraw of the page, as after Stop tour, starts nothing")
+touring = true
+Open()
+ns.Panel.AutoStart(zone)
+touring = false
+ns.Panel.AutoStart(zone)
+assert(#started == 1, "a running tour is not replaced, then or later")
+busy = true
+Open()
+ns.Panel.AutoStart(zone)
+assert(#started == 1, "another journey is not replaced")
+busy = false
+Open()
+Back()
+ns.Panel.AutoStart(zone)
+assert(#started == 1, "leaving the page drops the pending start")
+ns.Tour.Start = function()
+	return false, "blocked"
+end
+Open()
+assert(ns.Panel.AutoStart(zone) == "reason blocked", "a refused start says why")
+
 -- An item already on the list is not offered again.
 assert(ns.Planner.Listed("Copper Ore") and #ns.Panel.Matches("copper ore") == 0, "a listed item is not offered")
 assert(ns.Panel.Matches("tin ore")[1] == "Tin Ore", "an unlisted item is offered")

@@ -58,7 +58,13 @@ function ns.On(event, fn)
 	table.insert(handlers[event], fn)
 end
 
-ns.defaults = { skipNoSkillUp = true, loopOnMap = true, showTracker = true, onlyGatheringPins = true }
+ns.defaults = {
+	skipNoSkillUp = true,
+	loopOnMap = true,
+	showTracker = true,
+	onlyGatheringPins = true,
+	iconStyle = "gathering",
+}
 
 ns.On("ADDON_LOADED", function(name)
 	if name ~= addonName then
@@ -73,6 +79,8 @@ ns.On("ADDON_LOADED", function(name)
 			ns.DB[key] = value
 		end
 	end
+	-- Walking costs and orders by zone, from Planner.Walked.
+	ns.DB.walks = ns.DB.walks or {}
 	ns.Char.list = ns.Char.list or {}
 	-- A saved item the data does not know has no ID or nodes to show or count.
 	for i = #ns.Char.list, 1, -1 do

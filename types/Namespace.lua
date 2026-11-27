@@ -1,4 +1,6 @@
 ---@meta
+---@alias GGIconStyle "gathering"|"blizzard"|"gathermate"
+
 ---@class GGNode
 ---@field uiMapID number
 ---@field kind string
@@ -12,6 +14,21 @@
 ---@field world number?
 ---@field line number?
 ---@field required number?
+
+---@alias GGWalkCosts table<number, table<number, number|false>> walking yards between two positions, lower first
+
+---@class GGWalkZone a zone's walking data
+---@field nav string the walking data the costs were measured over
+---@field pairs GGWalkCosts
+---@field order string[]? the walking loop last worked out, as node identities
+
+---@class GGWalk a walking order being worked out
+---@field signature string
+---@field zone GGWalkZone
+---@field nodes GGNode[]
+---@field order GGNode[] the loop so far
+---@field asks {from: GGNode, index: number?, targets: GGNode[]?}[] searches still to send
+---@field rounds number
 
 ---@class GGRange the lowest to highest skill a profession's nodes on a loop need
 ---@field lowest number

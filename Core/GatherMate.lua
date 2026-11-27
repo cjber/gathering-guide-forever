@@ -5,8 +5,9 @@ if ns.broken then
 end
 
 -- Reads the player's GatherMate2 database. Its nodes are never written; the one setting touched is the profile's
--- world map switch, while the Hide GatherMate2 map icons setting is on (HideWorldMap), and the player's value is put
--- back after it. The minimap keeps its own switch (showMinimap) untouched: our pins are for the world map.
+-- world map switch, while the Only show Gathering pins on the map setting is on (HideWorldMap), and the player's value
+-- is put back after it. SetIcons swaps GatherMate2's herb and ore pictures for the chosen icon style's, in memory only,
+-- and makes those minimap pins see-through.
 -- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (GPL-2.0-or-later; see THIRD_PARTY.md).
 local GM = {}
 ns.GatherMate = GM
@@ -150,6 +151,90 @@ end
 local function ProfileName()
 	local gm = Addon()
 	return gm and gm.db and type(gm.db.GetCurrentProfile) == "function" and gm.db:GetCurrentProfile() or nil
+end
+
+---@type table<table, table<number, any>> GatherMate2's own pictures where SetIcons has put another
+local originals = {}
+---@type GGIconStyle the style GatherMate2's pictures are in
+local applied = "gathermate"
+local hooked = false
+-- The game draws its yellow tracking dot under GatherMate2's minimap pins: this much of a pin lets the dot show.
+local FADE = 0.5
+-- How much of each side of a game item icon its bevelled border takes.
+local BEVEL = 0.08
+
+-- The picture a herb or ore node wears in an icon style, and how much of each side of it to cut off: this addon's, the
+-- game's icon of the item the node gives, or GatherMate2's own. Nil where the style has none for the node.
+---@param style GGIconStyle
+---@param name string
+---@param kind string
+---@param nodeID number
+---@return number|string? texture
+---@return number inset
+function GM.Icon(style, name, kind, nodeID)
+	if style == "gathering" then
+		return ns.NodeArt[name], 0
+	elseif style == "blizzard" then
+		return ns.Planner.ItemIcon(name), BEVEL
+	end
+	local gm = Addon()
+	local textures = gm and gm.nodeTextures and gm.nodeTextures[kind]
+	return textures and textures[nodeID], 0
+end
+
+-- Runs after GatherMate2 has placed a minimap pin and set its picture and colour. Its hollow ring and every pin that
+-- keeps its picture are left as they are.
+local function Fade(_, pin)
+	if pin.isCircle then
+		return
+	end
+	local swapped = originals[Addon().nodeTextures[pin.nodeType]]
+	if swapped and swapped[pin.nodeID] then
+		pin.texture:SetVertexColor(1, 1, 1, FADE)
+		if applied == "blizzard" then
+			pin.texture:SetTexCoord(BEVEL, 1 - BEVEL, BEVEL, 1 - BEVEL)
+		end
+	end
+end
+
+-- GatherMate2 draws a herb or ore pin, on the minimap and its world map, from GatherMate2.nodeTextures[kind][nodeID],
+-- and its Display holds that same table, so entries are replaced in place and put back from `originals`.
+---@param style GGIconStyle
+function GM.SetIcons(style)
+	local gm = Addon()
+	local textures = gm and gm.nodeTextures
+	if not gm or type(textures) ~= "table" or style == applied then
+		return
+	end
+	for icons, saved in pairs(originals) do
+		for nodeID, texture in pairs(saved) do
+			icons[nodeID] = texture
+		end
+	end
+	originals = {}
+	applied = style
+	if style ~= "gathermate" then
+		if not hooked then
+			hooked = true
+			-- taint-ok: GatherMate2 owns its Display module and its pins, never a Blizzard frame.
+			hooksecurefunc(gm:GetModule("Display"), "addMiniPin", Fade)
+		end
+		for _, entry in ipairs(ns.Kinds) do
+			local icons, saved = textures[entry.kind], {}
+			for nodeID, texture in pairs(icons) do
+				local name = ns.NodeNames[nodeID]
+				local icon = name and GM.Icon(style, name, entry.kind, nodeID)
+				if icon then
+					saved[nodeID], icons[nodeID] = texture, icon
+				end
+			end
+			originals[icons] = saved
+		end
+	end
+	local profile = Profile()
+	if profile then
+		Refresh(profile)
+	end
 end
 
 -- Turns GatherMate2's world map pins off through its own profile switch. The player's value is saved per profile
