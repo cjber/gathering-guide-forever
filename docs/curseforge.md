@@ -26,7 +26,7 @@ Only the nodes still to visit get a pin on the world map, showing the herb or or
 
 ![The Gathering Tour section of the objective tracker](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-tracker.png)
 
-The objective tracker shows the next node and its distance, your place in the loop, each skill and your skill-ups, what you gathered, your gold per hour and the zone to move on to.
+The objective tracker shows the next node and its distance, your place in the loop, each skill against the next node colour change, your skill-ups, what you gathered, your gold per hour and the zone to move on to.
 
 ![A farming list and the best zone to farm it](https://raw.githubusercontent.com/cjber/gathering-guide-forever/main/docs/screenshots/gathering-list.png)
 

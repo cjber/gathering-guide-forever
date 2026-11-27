@@ -306,7 +306,14 @@ herbs = { skillLevel = 150, maxSkillLevel = 150 }
 ahead = Onward()
 assert(ahead.rows[1].text:find("^At Mining 150, "), ahead.rows[1].text)
 assert(askedAt.Mining == 150 and askedAt["Herb Gathering"] == 150)
-herbs, rank = nil, 149
+-- The skill counts to the next colour change among the loop's nodes of its kind, whatever the trained cap, and stands
+-- alone once none is left.
+herbs, rank, max = nil, 38, 75
+ns.Session.Begin({ name = "Zone", order = { order[1], order[2] } }, 0)
+assert(Rows(ns.Tracker.Blocks())[2] == "Mining 38 / 51", Rows(ns.Tracker.Blocks())[2])
+rank = 120
+assert(Rows(ns.Tracker.Blocks())[2] == "Mining 120", "grey copper has no change left and iron is out of reach")
+rank, max = 149, 150
 ns.Tracker.Refresh()
 
 -- One ticker rewrites the text while a tour is drawn, waits out combat and stops with the tour.

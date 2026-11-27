@@ -29,7 +29,7 @@ Only the nodes still to visit get a pin, showing the herb or ore, and the next o
 
 <p align="center"><img src="docs/screenshots/gathering-tracker.png" width="300" alt="The Gathering Tour section of the objective tracker"></p>
 
-The objective tracker shows the next node and its distance, your place in the loop, each skill and your skill-ups, what you gathered, your gold per hour and the zone to move on to.
+The objective tracker shows the next node and its distance, your place in the loop, each skill against the next node colour change, your skill-ups, what you gathered, your gold per hour and the zone to move on to.
 
 <p align="center"><img src="docs/screenshots/gathering-map-setting-off.png" width="960" alt="The same map with Only show Gathering pins on the map turned off, showing every GatherMate2 icon"></p>
 
