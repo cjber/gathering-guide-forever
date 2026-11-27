@@ -176,7 +176,7 @@ end
 function GM.SetIcons(ours)
 	local gm = Addon()
 	local textures = gm and gm.nodeTextures
-	if type(textures) ~= "table" or ours == (originals ~= nil) then
+	if not gm or type(textures) ~= "table" or ours == (originals ~= nil) then
 		return
 	end
 	if ours then
