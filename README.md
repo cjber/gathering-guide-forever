@@ -65,7 +65,7 @@ GatherMate2 starts with no node locations and records each node you gather. To f
 1. Open the world map and pick the Gathering tab, or type `/gathering`.
 2. Choose a zone from Best zones for you, or type its name in Search zones.
 3. The zone's tour starts by itself when nothing else is guiding you. It begins at the node nearest you and follows
-   the loop. Stop tour ends it, and Start tour begins it again.
+   the loop. Stop tour ends it, and Start tour begins it again. A reload keeps it running.
 
 ## Features
 

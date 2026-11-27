@@ -174,6 +174,36 @@ assert(not Tour.Active() and observer == nil, "stop ends the tour and unsubscrib
 assert(ended == 1, "stop ends the session")
 assert(ns.Char.last.name == "Zone" and ns.Char.last.total == 6, "a stopped tour can be continued")
 
+-- A reload keeps a running tour and its session, from the node it was on.
+local kept, continued = {}, nil
+ns.Session.Current = function()
+	return kept
+end
+ns.Session.Continue = function(saved)
+	continued = saved
+end
+local function Reload(login)
+	events.PLAYER_LOGOUT()
+	events.PLAYER_ENTERING_WORLD(login == true, login ~= true)
+end
+local zone = { kind = "Mining", uiMapID = 1, name = "Zone", order = loop }
+assert(Tour.Start(zone))
+observer("arrived", 1, routes[#routes][1])
+local running, sent = Tour.Progress().order, #routes
+Reload()
+progress = Tour.Progress()
+assert(progress and progress.order == running and progress.pos == 2 and progress.visited == 1, "the tour carries on")
+assert(#routes == sent + 1 and routes[#routes][1].x == running[2].x, "its journey starts at the next node")
+assert(continued == kept and hidden, "with its session, and the guide's pins aside")
+observer("arrived", 1, routes[#routes][1])
+assert(Tour.Progress().visited == 2, "and it follows the new journey")
+Tour.Stop()
+Reload()
+assert(not Tour.Active(), "a stopped tour stays stopped")
+assert(Tour.Start(zone))
+Reload(true)
+assert(not Tour.Active(), "logging in does not start the last tour")
+
 -- A blocked journey and a missing API refuse the start with a reason.
 ShortestPathForever.API.JourneyState = function()
 	return { blocked = "combat" }

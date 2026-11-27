@@ -301,6 +301,33 @@ ns.On("PLAYER_REGEN_ENABLED", Retry)
 ns.On("PLAYER_ALIVE", Retry)
 ns.On("PLAYER_UNGHOST", Retry)
 
+-- Runs the tour a reload interrupted, from the node it was on. A journey held by combat or a corpse leaves it waiting,
+-- as it does a running tour.
+---@param saved {tour: table, session: GGSession}
+local function Resume(saved)
+	if not ns.Navigation.Available() then
+		return
+	end
+	state = saved.tour
+	ns.Session.Continue(saved.session)
+	Submit()
+	unobserve = ns.Navigation.Observe(Observed)
+	ns.MapFocus.Sync()
+	Notify()
+end
+
+-- A reload keeps a running tour: leaving the world saves it with its session, and the entry that ends a reload runs it
+-- again. Logging in forgets it.
 ns.On("PLAYER_LOGOUT", function()
+	ns.Char.running = state and { tour = state, session = ns.Session.Current() } or nil
 	Tour.Stop(true)
+end)
+ns.On("PLAYER_ENTERING_WORLD", function(_, reload)
+	local saved = ns.Char.running
+	ns.Char.running = nil
+	if reload and saved then
+		ns.Defer(function()
+			Resume(saved)
+		end)
+	end
 end)
