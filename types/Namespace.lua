@@ -1,4 +1,6 @@
 ---@meta
+---@alias GGIconStyle "gathering"|"blizzard"|"gathermate"
+
 ---@class GGNode
 ---@field uiMapID number
 ---@field kind string

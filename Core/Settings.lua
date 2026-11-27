@@ -14,8 +14,15 @@ Settings.options = {
 	{ key = "skipNoSkillUp", label = L["Skip nodes with no skill-up"] },
 	{ key = "loopOnMap", label = L["Draw the loop on the world map"] },
 	{ key = "onlyGatheringPins", label = L["Only show Gathering pins on the map"] },
-	{ key = "gatheringIcons", label = L["Use Gathering icons on the minimap"] },
 	{ key = "showTracker", label = L["Show the Gathering Tour in the objective tracker"] },
+}
+
+-- The pictures herb and ore nodes can wear on the loop and on GatherMate2's pins (GatherMate.Icon).
+---@type {style: GGIconStyle, label: string}[]
+Settings.iconStyles = {
+	{ style = "gathering", label = L["Gathering"] },
+	{ style = "blizzard", label = L["Game item icons"] },
+	{ style = "gathermate", label = L["GatherMate2"] },
 }
 
 ---@return boolean imported whether saved settings were found and copied
@@ -42,17 +49,22 @@ function Settings.SyncGatherMate()
 	else
 		ns.GatherMate.RestoreWorldMap()
 	end
-	ns.GatherMate.SetIcons(ns.DB.gatheringIcons)
+	ns.GatherMate.SetIcons(ns.DB.iconStyle)
+end
+
+---@param style GGIconStyle
+function Settings.SetIconStyle(style)
+	ns.DB.iconStyle = style
+	ns.GatherMate.SetIcons(style)
+	ns.Loop.Draw()
 end
 
 ---@param key string
 ---@param value boolean
 function Settings.Set(key, value)
 	ns.DB[key] = value and true or false
-	if key == "onlyGatheringPins" or key == "gatheringIcons" then
-		Settings.SyncGatherMate()
-	end
 	if key == "onlyGatheringPins" then
+		Settings.SyncGatherMate()
 		ns.MapFocus.Sync()
 	end
 	if ns.Tour then

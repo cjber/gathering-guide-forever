@@ -4,11 +4,11 @@ if ns.broken then
 	return
 end
 
--- Draws a loop on the world map: calm pins for the nodes still to visit, each herb and ore in the addon's own art
--- (Data/NodeArt.lua), the next one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their
--- middle, in the first one's art; the next node keeps its own pin, which also stands for the nodes under it. A visited
--- node is not drawn: only the pins that matter stay on the map. Hovering a pin names its nodes and, on a tour, where
--- the first of each comes in the loop.
+-- Draws a loop on the world map: calm pins for the nodes still to visit, each herb and ore in the chosen icon style
+-- (GatherMate.Icon), the next one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their
+-- middle, in the first one's picture; the next node keeps its own pin, which also stands for the nodes under it. A
+-- visited node is not drawn: only the pins that matter stay on the map. Hovering a pin names its nodes and, on a tour,
+-- where the first of each comes in the loop.
 -- The way between them is Shortest Path Forever's own journey line. GatherMate2's own world map pins are switched off
 -- by the Only show Gathering pins on the map setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
@@ -39,7 +39,14 @@ function NodePin:OnAcquired(node, state, steps, total)
 	local size = state == "next" and NEXT_SIZE or PIN_SIZE
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
-	self.Texture:SetTexture(ns.NodeArt[node.name])
+	local first = node.members[1]
+	local texture, inset = ns.GatherMate.Icon(ns.DB.iconStyle, first.name, first.kind, first.nodeID)
+	-- A node the style has no picture for wears this addon's.
+	if not texture then
+		texture, inset = ns.NodeArt[first.name], 0
+	end
+	self.Texture:SetTexture(texture)
+	self.Texture:SetTexCoord(inset, 1 - inset, inset, 1 - inset)
 	self:SetPosition(node.x, node.y)
 end
 
@@ -99,7 +106,7 @@ local function Middle(group)
 	for _, node in ipairs(group) do
 		x, y = x + node.x, y + node.y
 	end
-	return { x = x / #group, y = y / #group, name = group[1].name, members = group }
+	return { x = x / #group, y = y / #group, members = group }
 end
 
 -- The loop for a map: the running tour's when the tour is there, else the zone the panel is previewing.
@@ -152,7 +159,7 @@ function Loop.Draw()
 		pool:Acquire(Middle(group), "ahead", steps, #order)
 	end
 	if nextNode then
-		local pin = { x = nextNode.x, y = nextNode.y, name = nextNode.name, members = under }
+		local pin = { x = nextNode.x, y = nextNode.y, members = under }
 		pool:Acquire(pin, "next", steps, #order)
 	end
 end

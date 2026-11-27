@@ -73,6 +73,7 @@ local function Loop(count, d, tick)
 			end
 			tick()
 		end
+		---@cast pick -?
 		order[i], pos[pick] = pick, i
 	end
 

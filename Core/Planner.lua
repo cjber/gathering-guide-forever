@@ -41,13 +41,20 @@ local function Item(name)
 	end
 end
 
+-- The game's icon of the item behind a node or item name, nil for a name with no item.
+---@param name string
+---@return number? icon a file ID
+function Planner.ItemIcon(name)
+	local item = Item(name)
+	return item and C_Item.GetItemIconByID(ns.ItemIDs[item]) or nil
+end
+
 -- The art for a node or item: the item's icon file, else the profession's tracking atlas.
 ---@param name string
 ---@param kind string
 ---@return number|string icon a file ID, or an atlas name
 function Planner.Icon(name, kind)
-	local item = Item(name)
-	return item and C_Item.GetItemIconByID(ns.ItemIDs[item]) or ns.KIND_ATLAS[kind]
+	return Planner.ItemIcon(name) or ns.KIND_ATLAS[kind]
 end
 
 -- Each kind of node among a zone's nodes: how many there are and the skill it needs, the commonest first.

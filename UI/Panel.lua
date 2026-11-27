@@ -18,10 +18,10 @@ local HIDE_TIP = "Shows only this addon's pins on the world map. It hides Gather
 	.. "tour Shortest Path Forever's numbered stop markers and Adventure Guide Forever's map pins (these two need "
 	.. "their newer versions). The tour's markers come back when it stops. GatherMate2's pins come back when you turn "
 	.. "this off, log out or disable the addon."
-local ICONS_TIP = "Draws GatherMate2's herb and ore pins with this addon's pictures, on the minimap and on its world "
-	.. "map. On the minimap they are see-through, and close nodes keep GatherMate2's hollow ring, so the game's "
-	.. "tracking dot shows under them."
-local TIPS = { onlyGatheringPins = HIDE_TIP, gatheringIcons = ICONS_TIP }
+local ICONS_TIP = "The herb and ore pictures on this addon's map pins and on GatherMate2's, on the minimap and the "
+	.. "world map. With Gathering or the game item icons, GatherMate2's minimap pins are see-through and close nodes "
+	.. "keep its hollow ring, so the game's tracking dot shows under them."
+local TIPS = { onlyGatheringPins = HIDE_TIP }
 -- Row heights, and the room before and after a row, by type. A heading with a back button and a zone's own card are
 -- taller (Height).
 local HEIGHTS = {
@@ -1424,6 +1424,12 @@ function Panel.State()
 	return specs, view
 end
 
+local function Tip(entry, text)
+	entry:SetTooltip(function(tooltip)
+		tooltip:SetText(L[text], nil, nil, nil, nil, true)
+	end)
+end
+
 -- The settings, as a menu on the overview's cog.
 ---@param owner Button
 local function OpenSettings(owner)
@@ -1440,12 +1446,19 @@ local function OpenSettings(owner)
 				end
 				Panel.Refresh()
 			end)
-			local tip = TIPS[option.key]
-			if tip then
-				entry:SetTooltip(function(tooltip)
-					tooltip:SetText(L[tip], nil, nil, nil, nil, true)
-				end)
+			if TIPS[option.key] then
+				Tip(entry, TIPS[option.key])
 			end
+		end
+		local icons = root:CreateButton(L["Node icons"])
+		Tip(icons, ICONS_TIP)
+		-- menu-scroll-ok: three fixed styles
+		for _, choice in ipairs(ns.SettingsModule.iconStyles) do
+			icons:CreateRadio(choice.label, function(style)
+				return ns.DB.iconStyle == style
+			end, function(style)
+				ns.SettingsModule.SetIconStyle(style)
+			end, choice.style)
 		end
 	end)
 end

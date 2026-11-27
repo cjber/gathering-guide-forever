@@ -40,6 +40,9 @@ local function Pin()
 		function t:SetTexture(path)
 			self.path = path
 		end
+		function t:SetTexCoord(left)
+			self.left = left
+		end
 		function t:SetDesaturated(d)
 			self.desaturated = d
 		end
@@ -108,13 +111,19 @@ _G.WorldMapFrame = {
 	end,
 }
 ns.DB.loopOnMap = true
+ns.DB.iconStyle = "gathering"
 local tour
 ns.Tour = {
 	Progress = function()
 		return tour
 	end,
 }
-H.Load(ns, "UI/Loop.lua")
+ns.Planner = {
+	ItemIcon = function(name)
+		return name == "Peacebloom" and 2447 or nil
+	end,
+}
+H.Load(ns, "Core/GatherMate.lua", "UI/Loop.lua")
 local Loop = ns.Loop
 
 local function Art(pin, name)
@@ -139,6 +148,21 @@ assert(pins[2].alpha < 1, "no pin is fully opaque")
 for _, pin in ipairs(pins) do
 	assert(pin.width <= 16 and pin.width == pin.height, "pins stay calm in size and keep their aspect")
 end
+
+-- The chosen icon style dresses the pins; a node it has no picture for wears this addon's.
+ns.DB.iconStyle = "blizzard"
+acquired = {}
+Loop.Draw()
+assert(Art(acquired[1], "Tin Vein") and acquired[1].Texture.left == 0, "no item: our art, whole")
+assert(acquired[2].Texture.path == 2447 and acquired[2].Texture.left > 0, "the item's icon without its border")
+ns.DB.iconStyle = "gathermate"
+GatherMate2 = { nodeTextures = { Mining = { [202] = "gm-tin" } } }
+order[3].kind, order[3].nodeID, order[2].kind, order[2].nodeID = "Mining", 202, "Herb Gathering", 401
+acquired = {}
+Loop.Draw()
+assert(acquired[1].Texture.path == "gm-tin", "GatherMate2's own picture")
+assert(Art(acquired[2], "Peacebloom"), "and ours where it has none")
+ns.DB.iconStyle, GatherMate2 = "gathering", nil
 
 -- A preview with no next node draws every pin.
 acquired, tour = {}, nil
