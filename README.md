@@ -29,7 +29,7 @@ Only the nodes still to visit get a pin, showing the herb or ore, and the next o
 
 <p align="center"><img src="docs/screenshots/gathering-tracker.png" width="300" alt="The Gathering Tour section of the objective tracker"></p>
 
-The objective tracker shows the next node and its distance, your place in the loop, each skill and your skill-ups, what you gathered, your gold per hour and the zone to move on to.
+The objective tracker shows the next node and its distance, your place in the loop, each skill against the next node colour change, your skill-ups, what you gathered, your gold per hour and the zone to move on to.
 
 <p align="center"><img src="docs/screenshots/gathering-map-setting-off.png" width="960" alt="The same map with Only show Gathering pins on the map turned off, showing every GatherMate2 icon"></p>
 
@@ -52,6 +52,13 @@ Farm for a list instead: add herbs and ores, type how many you need of each, and
 Download the zip from [Releases](https://github.com/cjber/gathering-guide-forever/releases) and extract it into the WoW: Forever client's `Interface/AddOns/` folder (`_forever_` on the live client), so you end up with `AddOns/GatheringGuideForever/GatheringGuideForever.toc`. The zip includes ForeverCore, so there is nothing else to install.
 
 It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for node locations and [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) to walk a tour. Without Shortest Path Forever you can still plan.
+
+GatherMate2 starts with no node locations and records each node you gather. To fill it at once:
+
+1. Install [GatherMate2_Data](https://www.curseforge.com/wow/addons/gathermate2_data) and enable it.
+2. Type `/gathermate` and open Import.
+3. Under Databases to Import, tick Herbalism and Mining.
+4. Click Import GatherMate2Data.
 
 ## Quickstart
 
@@ -83,7 +90,7 @@ Saved farming settings from Shortest Path Forever are read once and never change
 - The time to a skill assumes the same loop every lap. It is left off when the loop's nodes cannot take you that far.
 - Nodes are whatever your GatherMate2 database holds.
 - Node and item names are in English in every client language.
-- Heavy Thorium Veins, Demonsage and Marefoil are left out: the skill they need is not known yet.
+- Marefoil is left out: the skill it needs is not known yet.
 
 ## Credits
 
@@ -128,6 +135,6 @@ python3 tools/repo_rules.py
 
 [AGENTS.md](AGENTS.md) lists the full gate.
 
-**Releasing:** move the `[Unreleased]` notes in `CHANGELOG.md` under `## [X.Y.Z] - YYYY-MM-DD`, then `git tag -s vX.Y.Z && git push --tags`.
+**Releasing:** `python3 tools/changelog.py release X.Y.Z` writes that version's `CHANGELOG.md` section from the notes in `changes/`. Merge it, then `git tag -s vX.Y.Z && git push origin vX.Y.Z`.
 
 See [CONTRIBUTING](https://github.com/cjber/.github/blob/main/CONTRIBUTING.md) and [SECURITY](https://github.com/cjber/.github/blob/main/SECURITY.md).

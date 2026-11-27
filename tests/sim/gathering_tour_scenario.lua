@@ -60,13 +60,15 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 		local x, y = pos:GetXY()
 		return 0, G.CreateVector2D(x * 1000, y * 1000)
 	end
+	local observed
 	G.ShortestPathForever = {
 		API = {
 			version = 2,
 			NavigateRoute = function()
 				return true
 			end,
-			ObserveStops = function()
+			ObserveStops = function(_, callback)
+				observed = callback
 				return function() end
 			end,
 			JourneyState = function()
@@ -184,7 +186,7 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 	sim:advance(3)
 	-- Eight of the twenty veins and four of the six herbs can still raise a skill; the loop skips the others.
 	assert(drawn(tracker, "node 1 of 12"), "the tracker names the place in the loop")
-	assert(drawn(tracker, "Mining 146 / 225") and drawn(tracker, "Herbalism 141 / 225"), "and both skills")
+	assert(drawn(tracker, "Mining 146 / 150") and drawn(tracker, "Herbalism 141 / 150"), "and both skills")
 	assert(drawn(tracker, " yd"), "and how far the next node is")
 	assert(drawn(tracker, "Next: Hillsbrad Foothills"), "and where to be at the trained maximum")
 	assert(drawn(tracker, "225, in about"), "with the time to get there")
@@ -192,6 +194,41 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 	click(heading().Back)
 	local card = assert(row("Title", "Arathi Highlands tour"), "the tour to continue")
 	assert(card.Corner:GetText() == "1 of 12", card.Corner:GetText())
+
+	local function pins()
+		local count = 0
+		local function walk(frame)
+			for _, child in ipairs({ frame:GetChildren() }) do
+				local art = child:IsVisible() and child.Texture and tostring(child.Texture:GetTexture())
+				if art and art:find("GatheringGuideForever", 1, true) then
+					count = count + 1
+				end
+				walk(child)
+			end
+		end
+		walk(G.WorldMapFrame)
+		return count
+	end
+	click(assert(row("Title", "Hillsbrad Foothills"), "a zone the tour is not in"))
+	sim:advance(5)
+	assert(G.WorldMapFrame:GetMapID() == 1424 and pins() > 0, "the page previews the picked zone's loop")
+	sim:input(function()
+		G.ForeverCore.QuestLogTabs.ShowQuests()
+	end)
+	sim:advance(1)
+	assert(pins() == 0, "closing the tab clears the preview")
+	sim:input(function()
+		observed("arrived", 1)
+	end)
+	sim:advance(1)
+	assert(drawn(G.GatheringGuideForeverObjectiveTracker, "node 2 of 12"), "the tour moves on")
+	assert(pins() == 0, "and a tour update leaves the closed page's preview off the map")
+	sim:input(function()
+		G.ForeverCore.QuestLogTabs.Select("gathering")
+	end)
+	sim:advance(1)
+	assert(pins() > 0, "the preview returns with the tab")
+	click(heading().Back)
 
 	click(assert(
 		find(panel, function(frame)
@@ -205,6 +242,6 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 	assert(row("Title", "Arathi Highlands") or row("Title", "Hillsbrad Foothills"), "a zone for the list")
 	assert(drawn(panel, "Whole list in about") or drawn(panel, "Short of"), "and what it gives of the list")
 	click(assert(footer("Stop tour"), "the stop button"))
-	assert(not tracker:IsShown() or not drawn(tracker, "node 1 of 12"), "the section goes with the tour")
+	assert(not tracker:IsShown() or not drawn(tracker, "node 2 of 12"), "the section goes with the tour")
 	sim:expectNoErrors(ADDON)
 end)

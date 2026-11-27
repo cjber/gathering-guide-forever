@@ -31,7 +31,8 @@ required check. `headless-smoke` is a commit status posted from the in-game agen
 - Shortest Path Forever is reached only through `Core/Navigation.lua`, using its published `ShortestPathForever.API`
   (`NavigateRoute` with `{policy = "walking"}`, `ObserveStops`, `JourneyState`, `Cancel`, `Estimate`). Settings may read
   its saved farming options once, read-only. `tools/repo_rules.py` enforces this.
-- Node skill requirements are `Data/NodeSkills.lua`, copied from SkillUp Forever's data; GatherMate2 does not hold them.
+- Node skill requirements are `Data/NodeSkills.lua`, copied from SkillUp Forever's data; GatherMate2 does not hold
+  them. A node new in WoW: Forever takes its row from a source named in that file and `THIRD_PARTY.md`.
 - Atlases from the client only, native aspect (`ns.Fit`), except the map pins, which are the addon's own art
   (`media/Nodes/`, `tools/export_nodes.py`). No minimap button, no chat messages. Vendored
   `tools/forever_tools` and `tools/forever_sim` refresh with

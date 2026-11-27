@@ -53,4 +53,6 @@ ns.NodeNames = {
 	[428] = "Plaguebloom",
 	[429] = "Icecap",
 	[431] = "Black Lotus",
+	[4201] = "Heavy Thorium Vein",
+	[4401] = "Demonsage",
 }

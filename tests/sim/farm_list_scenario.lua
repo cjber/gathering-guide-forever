@@ -115,5 +115,37 @@ scenario("the farm list's search box and item counts", { addons = { { core, "For
 	sim:advance(0.1)
 	local card = assert(row("Title", "Farm for a list"), "the list's card")
 	assert(card.Corner:GetText() == "0 of 45", "how much of the list is carried")
+
+	-- With a profession learned and no node in GatherMate2, the page says how to import them.
+	G.C_SkillInfo.GetSkillLineInfoByID = function(line)
+		return { skillLevel = line == 186 and 1 or 0, maxSkillLevel = line == 186 and 75 or 0 }
+	end
+	local function setup(page)
+		for _, text in ipairs({
+			"GatherMate2 has no nodes for your skills yet. With GatherMate2_Data installed, type /gathermate.",
+			"Open Import, tick Herbalism and Mining, then click Import GatherMate2Data.",
+		}) do
+			local line = assert(row("Text", text), page .. ": " .. text).Text
+			assert(line:GetStringHeight() <= line:GetParent():GetHeight() - 2, text .. " overflows its row")
+		end
+	end
+	sim:input(function()
+		G.ForeverCore.QuestLogTabs.ShowQuests()
+		G.ForeverCore.QuestLogTabs.Select("gathering")
+	end)
+	sim:advance(3)
+	setup("the home page")
+	sim:input(function()
+		assert(box(), "the zone search"):SetText("dun")
+	end)
+	sim:advance(1)
+	setup("a zone search")
+	sim:input(function()
+		box():SetText("")
+	end)
+	sim:advance(1)
+	sim:click(assert(row("Title", "Farm for a list"), "the list's card"))
+	sim:advance(3)
+	setup("the list")
 	sim:expectNoErrors(ADDON)
 end)

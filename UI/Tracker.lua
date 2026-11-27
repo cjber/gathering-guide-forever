@@ -110,6 +110,27 @@ local function NodeLine(node)
 	return text
 end
 
+-- A skill against the next rank at which one of the loop's nodes of that kind changes colour, or the skill alone once
+-- none will.
+---@param kind string
+---@param line number
+---@param nodes GGNode[]
+---@return string
+local function SkillLine(kind, line, nodes)
+	local rank = ns.Skills.Rank(line)
+	local change
+	for _, node in ipairs(nodes) do
+		if node.kind == kind then
+			local _, at = ns.Skills.NextBand(rank, node.required)
+			if at and (not change or at < change) then
+				change = at
+			end
+		end
+	end
+	local label = ns.KindByName[kind].label
+	return change and string.format("%s %d / %d", label, rank, change) or string.format("%s %d", label, rank)
+end
+
 -- The line for one item of the session: what was gathered and, for a list item, how many are still needed.
 ---@param row table a Session row
 ---@return string
@@ -145,8 +166,7 @@ function Tracker.Blocks()
 		Add("next", NodeLine(progress.next), nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
 	end
 	for _, skill in ipairs(ns.Session.Skills()) do
-		local rank, max = ns.Skills.Rank(skill.line)
-		Add("skill:" .. skill.kind, string.format("%s %d / %d", ns.KindByName[skill.kind].label, rank, max))
+		Add("skill:" .. skill.kind, SkillLine(skill.kind, skill.line, progress.order))
 	end
 	local now = GetServerTime()
 	local gained, rate = ns.Session.SkillUps(now)

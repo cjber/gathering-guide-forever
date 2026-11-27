@@ -33,6 +33,10 @@ ns.GatherMate = {
 	Fingerprint = function()
 		return "0:0"
 	end,
+	-- GatherMate2 holds nodes, so a page with no zone says why rather than how to import them.
+	Zones = function()
+		return { 1426 }
+	end,
 }
 ns.World = {
 	PlayerMap = function()
