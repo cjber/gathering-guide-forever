@@ -8,6 +8,12 @@ Added/Fixed lists.
 
 Each version's entry is also its release notes on GitHub and CurseForge.
 
+## [0.2.1] - 2026-11-27
+
+### Fixed
+
+- **The shopping list ranks its zones over several frames.** With Shortest Path Forever installed it could ask for a travel time to every zone in one frame, which could freeze the game.
+
 ## [0.2.0] - 2026-11-27
 
 <!-- discord-image: docs/screenshots/gathering-tour.png -->
