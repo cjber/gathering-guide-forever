@@ -7,19 +7,22 @@ end
 -- Draws a loop on the world map: calm pins for the nodes still to visit, each herb and ore in the addon's own art
 -- (Data/NodeArt.lua), the next one slightly clearer. Nodes whose pins would overlap at this zoom share one pin at their
 -- middle, in the first one's art; the next node keeps its own pin, which also stands for the nodes under it. A visited
--- node is not drawn: only the pins that matter stay on the map.
+-- node is not drawn: only the pins that matter stay on the map. Hovering a pin names its nodes and, on a tour, where
+-- the first of each comes in the loop.
 -- The way between them is Shortest Path Forever's own journey line. GatherMate2's own world map pins are switched off
 -- by the Only show Gathering pins on the map setting (Core/GatherMate.lua).
 -- The frames are ForeverCore's private map canvas pins, never a Blizzard data provider.
 local Loop = {}
 ns.Loop = Loop
+local L = ns.L
 
 -- A calm size at which the pictures still tell apart.
 local PIN_SIZE = 14
 local NEXT_SIZE = 16
 local ALPHA = { ahead = 0.8, next = 0.95 }
 
-local NodePin = {}
+-- Hover only: presses still reach the map under the pin.
+local NodePin = { takesMouse = true }
 local pool
 ---@type table?
 local preview
@@ -31,12 +34,44 @@ function NodePin:OnLoad()
 	self.Texture = self:CreateTexture(nil, "ARTWORK")
 	self.Texture:SetAllPoints()
 end
-function NodePin:OnAcquired(node, state)
+function NodePin:OnAcquired(node, state, steps, total)
+	self.members, self.steps, self.total = node.members, steps, total
 	local size = state == "next" and NEXT_SIZE or PIN_SIZE
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
 	self.Texture:SetTexture(ns.NodeArt[node.name])
 	self:SetPosition(node.x, node.y)
+end
+
+-- A line for each herb or ore among the pin's nodes, with how many it stands for, and under it the loop step of the
+-- first one when a tour is running.
+function NodePin:OnMouseEnter()
+	local names, count, first = {}, {}, {}
+	for _, node in ipairs(self.members) do
+		if not count[node.name] then
+			names[#names + 1] = node.name
+			count[node.name], first[node.name] = 0, self.steps and self.steps[node]
+		end
+		count[node.name] = count[node.name] + 1
+	end
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	for i, name in ipairs(names) do
+		local label = count[name] > 1 and string.format(L["%s x%d"], name, count[name]) or name
+		if i == 1 then
+			GameTooltip:SetText(label)
+		else
+			GameTooltip:AddLine(label)
+		end
+		if first[name] then
+			GameTooltip:AddLine(string.format(L["Node %d of %d"], first[name], self.total), 1, 1, 1)
+		end
+	end
+	GameTooltip:Show()
+end
+function NodePin:OnMouseLeave()
+	if GameTooltip:IsOwned(self) then
+		GameTooltip:Hide()
+	end
 end
 
 ---@return table?
@@ -64,7 +99,7 @@ local function Middle(group)
 	for _, node in ipairs(group) do
 		x, y = x + node.x, y + node.y
 	end
-	return { x = x / #group, y = y / #group, name = group[1].name }
+	return { x = x / #group, y = y / #group, name = group[1].name, members = group }
 end
 
 -- The loop for a map: the running tour's when the tour is there, else the zone the panel is previewing.
@@ -102,18 +137,23 @@ function Loop.Draw()
 	local Group = ns.core.MapCanvas.OverlapGroups
 	local nextNode = nextIndex and order[nextIndex]
 	-- Nodes before the next one are visited and stay off the map; a preview has no next node and draws all of them.
-	local ahead = {}
+	local ahead, under, steps = {}, { nextNode }, nextNode and {}
 	for i = nextIndex or 1, #order do
 		local node = order[i]
-		if node ~= nextNode and not (nextNode and #Group(map, { nextNode, node }, size) == 1) then
-			ahead[#ahead + 1] = node
+		if steps then
+			steps[node] = i
+		end
+		if node ~= nextNode then
+			local covered = nextNode and #Group(map, { nextNode, node }, size) == 1
+			table.insert(covered and under or ahead, node)
 		end
 	end
 	for _, group in ipairs(Group(map, ahead, size)) do
-		pool:Acquire(Middle(group), "ahead")
+		pool:Acquire(Middle(group), "ahead", steps, #order)
 	end
 	if nextNode then
-		pool:Acquire(nextNode, "next")
+		local pin = { x = nextNode.x, y = nextNode.y, name = nextNode.name, members = under }
+		pool:Acquire(pin, "next", steps, #order)
 	end
 end
 

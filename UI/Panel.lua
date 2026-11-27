@@ -149,6 +149,8 @@ end
 
 -- Set by a click that asks for a zone: the map turns to it once the page knows which one.
 local turnMap = false
+-- Set by a click that opens a zone's page, and spent once the page knows its zone (Panel.AutoStart).
+local autoStart = false
 
 -- The shared opener refuses in combat, and under the gamepad interface the map is left to the player
 -- (cjber/shortest-path-forever#158).
@@ -168,9 +170,25 @@ end
 ---@return fun()
 local function Open(next, refresh)
 	return function()
-		view, turnMap = next, true
+		view, turnMap, autoStart = next, true, next.name == "zone"
 		refresh()
 	end
+end
+
+-- Starts the tour of a zone the player has just opened, unless a tour or another journey is under way. Redraws of the
+-- same page start nothing, so a stopped tour stays stopped.
+---@param zone table
+---@return string? failure why it could not start, in the player's words
+function Panel.AutoStart(zone)
+	if not autoStart then
+		return
+	end
+	autoStart = false
+	if ns.Tour.Active() or ns.Navigation.State().busy then
+		return
+	end
+	local ok, why = ns.Tour.Start(zone)
+	return not ok and ns.Tour.Reason(why) or nil
 end
 
 -- The tour last toured and how far it got. A save without a position offers the tour alone.
@@ -1387,6 +1405,12 @@ function Panel.Refresh()
 	PlaceSearch(searchRow)
 	ns.Loop.Preview(pickedZone)
 	Footer()
+	if pickedZone then
+		local failure = Panel.AutoStart(pickedZone)
+		if failure then
+			assert(footerText):SetText(failure)
+		end
+	end
 end
 
 -- Specs the layout tests and the screenshots read.
@@ -1493,6 +1517,7 @@ local function Build()
 			if visible then
 				Panel.Refresh()
 			else
+				autoStart = false
 				ns.Loop.Preview(nil)
 			end
 		end,

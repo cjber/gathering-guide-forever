@@ -3,7 +3,7 @@ local H = dofile(here .. "/harness.lua")
 local ns = H.Namespace()
 
 -- Every node the addon knows a skill for has its own picture, and the file it names is there.
-H.Load(ns, "Data/NodeSkills.lua")
+H.Load(ns, "Locales/enUS.lua", "Data/NodeSkills.lua")
 H.Load(ns, "Data/NodeArt.lua")
 for name in pairs(ns.NodeSkills) do
 	local path = ns.NodeArt[name]
@@ -184,6 +184,38 @@ local grouped = Draw(1)
 assert(#grouped == 2, "the node under the next stop has no pin of its own, the one beyond it does")
 assert(grouped[1].x == 0.16 and grouped[2].x == 0.1 and grouped[2].y == 0.2, "the next stop keeps its place")
 assert(grouped[2].alpha > grouped[1].alpha, "the next stop is the clearest")
+-- Hovering a pin names its nodes; on a tour each name gets the loop step of its first node.
+local tip
+GameTooltip = {
+	SetOwner = function(self, owner)
+		self.owner, tip = owner, {}
+	end,
+	SetText = function(_, text)
+		tip[#tip + 1] = text
+	end,
+	AddLine = function(_, text)
+		tip[#tip + 1] = text
+	end,
+	Show = function() end,
+	Hide = function(self)
+		self.owner, tip = nil, nil
+	end,
+	IsOwned = function(self, owner)
+		return self.owner == owner
+	end,
+}
+local function Tip(pin)
+	assert(pin.takesMouse and not pin.clicks, "a pin takes hover and lets presses through")
+	pin:OnMouseEnter()
+	local text = table.concat(tip, "; ")
+	pin:OnMouseLeave()
+	assert(tip == nil, "leaving a pin hides its tooltip")
+	return text
+end
+grouped = Draw(1)
+assert(Tip(grouped[2]) == "Peacebloom; Node 1 of 3; Copper Vein; Node 2 of 3", "the next pin names the node under it")
+assert(Tip(grouped[1]) == "Copper Vein; Node 3 of 3", Tip(grouped[1]))
+assert(Tip(Draw(nil)[1]) == "Peacebloom; Copper Vein x2", "a preview counts each name and has no steps")
 reach = 0
 assert(#Draw(nil) == 3, "nodes apart keep their own pins")
 

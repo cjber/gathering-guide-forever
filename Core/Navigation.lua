@@ -7,7 +7,8 @@ end
 -- The only file that talks to Shortest Path Forever, and only through its published ShortestPathForever.API. Everything
 -- else asks this module, so a change in that API lands here.
 --   API.NavigateRoute(owner, stops, {policy = "walking"}) guides a walking journey through the stops in order. Its
---   stopMarkers = false and fadeLaterLegs = false options draw the whole line at full strength with no numbered stops.
+--   tourLine = true option draws a calm solid line over the next few legs; fadeLaterLegs = false draws every leg at
+--   full strength where that is missing; stopMarkers = false leaves out the numbered stops.
 --   API.ObserveStops(owner, callback) calls callback(phase, index, stop) with phase "arrived" or "settled" and returns
 --   a function that unsubscribes.
 --   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
@@ -47,8 +48,13 @@ end
 -- so a tour asks once with it and once without.
 Nav.MARKERS_OPTION = "stopMarkers"
 
--- The option that draws the legs past the next stop at full strength, so a tour shows its whole loop. Shortest Path
--- Forever publishes it from API minor 10, and an older one refuses the whole call for it.
+-- The option that draws a tour of many close stops: a solid line with soft corners over the leg under way and the next
+-- few, the later ones faded. Shortest Path Forever publishes it from API minor 12.
+Nav.TOUR_OPTION = "tourLine"
+Nav.TOUR_MINOR = 12
+
+-- Where that is missing, the option that draws the legs past the next stop at full strength, so a tour's dotted line
+-- stays readable. Published from API minor 10. Either option makes an older Shortest Path Forever refuse the call.
 Nav.FADE_OPTION = "fadeLaterLegs"
 Nav.FADE_MINOR = 10
 
@@ -58,7 +64,10 @@ Nav.FADE_MINOR = 10
 local function Options(api, bare)
 	---@type table<string, string|boolean>
 	local options = { policy = "walking" }
-	if type(api.minor) == "number" and api.minor >= Nav.FADE_MINOR then
+	local minor = type(api.minor) == "number" and api.minor or 0
+	if minor >= Nav.TOUR_MINOR then
+		options[Nav.TOUR_OPTION] = true
+	elseif minor >= Nav.FADE_MINOR then
 		options[Nav.FADE_OPTION] = false
 	end
 	if bare then

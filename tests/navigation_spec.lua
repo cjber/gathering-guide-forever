@@ -75,6 +75,14 @@ assert(Nav.Route(stops, true) == true)
 assert(calls[1].options[Nav.FADE_OPTION] == false and calls[1].options[Nav.MARKERS_OPTION] == false)
 Nav.Route(stops)
 assert(calls[2].options[Nav.FADE_OPTION] == false and calls[2].options[Nav.MARKERS_OPTION] == nil)
+assert(calls[2].options[Nav.TOUR_OPTION] == nil, "minor 10 has no tour line")
+
+-- A Shortest Path with the tour line is asked for it, and keeps its own fading of the later legs.
+ShortestPathForever.API.minor = 12
+calls = {}
+assert(Nav.Route(stops, true) == true)
+assert(calls[1].options[Nav.TOUR_OPTION] == true and calls[1].options[Nav.FADE_OPTION] == nil)
+assert(calls[1].options[Nav.MARKERS_OPTION] == false)
 ShortestPathForever.API.minor = nil
 
 ok, why = Nav.Route({})
