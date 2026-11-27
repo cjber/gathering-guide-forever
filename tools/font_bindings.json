@@ -370,7 +370,7 @@
     },
     {
       "source": "Core/Core.lua",
-      "sha256": "243dfe477a6acf37f7466078d683bd659f31eb3c61b5d79f0e8146c31f995434",
+      "sha256": "d6715d9a5ff08b1a7cacb4410f143306dcb69dd15faae3a647f17f09d7a8a754",
       "review": "The Kinds labels reach the panel's heading skill line and zone card goal lines (UI/Panel.lua, GameFontHighlightSmall) and the tracker's skill lines and onward line (UI/Tracker.lua, default objective lines with ObjectiveTrackerLineFont). ns.Markup returns only icon markup. ReportTitle configures the ForeverCore v1.17.5 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
       "bindings": [
         {
@@ -412,7 +412,7 @@
     },
     {
       "source": "Journey/Tour.lua",
-      "sha256": "e994786440427e7673a12f138a73fd8aa8bb6591b3884eff720dfa2259bccabc",
+      "sha256": "0e539020ed5faf25857c4171cd2ed3de932f20bd1ad81f5d67882833d3007c64",
       "review": "Tour.Reason feeds the GameFontDisableSmall footerText on a failed tour start (UI/Panel.lua) and the status objective line Tracker.Blocks adds while a tour is not running, in ObjectiveTrackerLineFont. Neither caller changes the font after setting the text. Tour.Describe goes only to the report text.",
       "bindings": [
         {

@@ -107,6 +107,33 @@ local function Submit()
 	return true
 end
 
+-- Takes up the walking order, once there is one, from the node the tour was about to head for, going round the way
+-- that comes back to the node just reached latest.
+---@param reached GGNode
+---@return boolean taken
+local function Reorder(reached)
+	local tour = assert(state)
+	local walked = not tour.walked and ns.Planner.Walked(tour.order)
+	if not walked then
+		return false
+	end
+	local upcoming = tour.order[tour.pos]
+	local at = {}
+	for i, node in ipairs(walked) do
+		at[node] = i
+	end
+	local order = ns.Order.Rotate(walked, at[upcoming])
+	if (at[reached] - at[upcoming]) % #order < #order / 2 then
+		local back = { upcoming }
+		for i = #order, 2, -1 do
+			back[#back + 1] = order[i]
+		end
+		order = back
+	end
+	tour.order, tour.pos, tour.walked, tour.batch = order, 1, true, nil
+	return true
+end
+
 local function Observed(phase, index)
 	if not state or not state.batch then
 		return
@@ -126,11 +153,11 @@ local function Observed(phase, index)
 		state.laps = state.laps + 1
 	end
 	state.pos = upcoming
-	if index < #state.batch then
+	if not Reorder(state.order[orderIndex]) and index < #state.batch then
 		Notify()
 		return
 	end
-	-- The last stop of the batch was reached: send the next batch once the journey's own callback has returned.
+	-- The batch is walked out, or the loop has a new order: send the next once the journey's callback has returned.
 	local tour = state
 	ns.Defer(function()
 		if state == tour then
@@ -172,7 +199,8 @@ function Tour.Start(plan)
 	if #plan.order == 0 then
 		return false, "empty"
 	end
-	local order = plan.order
+	local walked = ns.Planner.Walked(plan.order)
+	local order = walked or plan.order
 	local player = ns.World.Player()
 	if player then
 		local nearest = ns.Order.Nearest(order, player)
@@ -191,6 +219,7 @@ function Tour.Start(plan)
 		pos = 1,
 		visited = 0,
 		laps = 0,
+		walked = walked ~= nil,
 		status = "starting",
 	}
 	if not Submit() then
@@ -309,6 +338,10 @@ local function Resume(saved)
 		return
 	end
 	state = saved.tour
+	if not state.walked then
+		-- Carries the walking order on where the reload left it.
+		ns.Planner.Walked(state.order)
+	end
 	ns.Session.Continue(saved.session)
 	Submit()
 	unobserve = ns.Navigation.Observe(Observed)

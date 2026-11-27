@@ -38,7 +38,7 @@ These images are captures from the game client.
 
 - **Best zones for you.** One ranking for your gathering professions by skill-ups per ten minutes, with a click for more zones and a zone search by name.
 - **Zone view.** Picking a zone turns the world map to it and pins its loop. The page shows the time to your trained maximum, every node coloured by its chance to raise your skill, and Next zones for when it rises.
-- **Gathering tours.** Opening a zone starts its tour when nothing else is guiding you. The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map, node pins that name themselves on hover, and a Gathering Tour section in the objective tracker.
+- **Gathering tours.** Opening a zone starts its tour when nothing else is guiding you. The loop starts at the node nearest you, with Shortest Path Forever's journey line on the world map, node pins that name themselves on hover, and a Gathering Tour section in the objective tracker. The loop is then reordered by walking distance in the background, so it stops detouring round hills and walls.
 - **Farm for a list.** A shopping list with how many you carry and need, the skill each item above yours needs, and the best zone for what you can gather now.
 - **A calm world map.** While the Gathering page is up or a tour runs, other map markers are cleared so the route and the node pins stand out. Other addons need versions that allow it, and one setting turns this off.
 

@@ -4,9 +4,10 @@ if ns.broken then
 	return
 end
 
--- The loop through a set of nodes over world distance: nearest neighbour from the lowest identity, then 2-opt and
--- Or-opt moves, each joining a node to one of its nearest neighbours, until none shortens the loop. The loop does not
--- depend on the player; a tour rotates it to start at the node nearest them.
+-- The loop through a set of nodes: nearest neighbour from the lowest identity, then 2-opt and Or-opt moves, each
+-- joining a node to one of its nearest neighbours, until none shortens the loop. Distances are straight world yards
+-- unless the caller measures them another way, the same both ways round. The loop does not depend on the player; a
+-- tour rotates it to start at the node nearest them.
 local Order = {}
 ns.Order = Order
 
@@ -30,39 +31,77 @@ local function Identity(a, b)
 	return false
 end
 
-local function Distance(a, b)
+-- The straight distance between two nodes in world yards.
+---@param a GGNode
+---@param b GGNode
+---@return number
+function Order.Distance(a, b)
 	local dx, dy = a.wx - b.wx, a.wy - b.wy
 	return math.sqrt(dx * dx + dy * dy)
 end
+local Distance = Order.Distance
 
--- The loop through points 1 to count under distance d, as the points in visiting order.
+-- The limit points nearest point a of points 1 to count under distance d, nearest first.
+---@param count number
+---@param a number
+---@param limit number
+---@param d fun(a: number, b: number): number
+---@param tick fun()?
+---@return number[]
+local function Closest(count, a, limit, d, tick)
+	local list, far = {}, {}
+	for b = 1, count do
+		if b ~= a then
+			local distance, at = d(a, b), #list
+			if at < limit or distance < far[at] then
+				while at > 0 and far[at] > distance do
+					at = at - 1
+				end
+				table.insert(list, at + 1, b)
+				table.insert(far, at + 1, distance)
+				list[limit + 1], far[limit + 1] = nil, nil
+			end
+		end
+		if tick then
+			tick()
+		end
+	end
+	return list
+end
+
+-- The limit nodes nearest nodes[index] in a straight line, nearest first.
+---@param nodes GGNode[]
+---@param index number
+---@param limit number
+---@return GGNode[]
+function Order.Neighbours(nodes, index, limit)
+	local near = Closest(#nodes, index, limit, function(a, b)
+		return Distance(nodes[a], nodes[b])
+	end)
+	for i, b in ipairs(near) do
+		near[i] = nodes[b]
+	end
+	return near
+end
+
+-- The loop through points 1 to count under distance d, as the points in visiting order. It shortens the loop given as
+-- initial, or one built by nearest neighbour.
 ---@param count number
 ---@param d fun(a: number, b: number): number
 ---@param tick fun()
+---@param initial number[]?
 ---@return number[]
-local function Loop(count, d, tick)
+local function Loop(count, d, tick, initial)
 	local near = {}
 	for a = 1, count do
-		local list, far = {}, {}
-		for b = 1, count do
-			if b ~= a then
-				local distance, at = d(a, b), #list
-				if at < NEIGHBOURS or distance < far[at] then
-					while at > 0 and far[at] > distance do
-						at = at - 1
-					end
-					table.insert(list, at + 1, b)
-					table.insert(far, at + 1, distance)
-					list[NEIGHBOURS + 1], far[NEIGHBOURS + 1] = nil, nil
-				end
-			end
-			tick()
-		end
-		near[a] = list
+		near[a] = Closest(count, a, NEIGHBOURS, d, tick)
 	end
 
-	local order, pos = { 1 }, { 1 }
-	for i = 2, count do
+	local order, pos = initial or { 1 }, {}
+	for i, a in ipairs(order) do
+		pos[a] = i
+	end
+	for i = #order + 1, count do
 		local pick, best = nil, math.huge
 		for b = 1, count do
 			if not pos[b] then
@@ -216,10 +255,14 @@ local function Loop(count, d, tick)
 end
 
 -- Starts a loop job over nodes that carry world coordinates wx and wy. Call Step until it is no longer "working";
--- each call does a bounded slice, so the caller defers the next one a frame.
+-- each call does a bounded slice, so the caller defers the next one a frame. With distance the loop is the shortest
+-- under it; with warm set it shortens the loop the nodes are already in.
 ---@param nodes GGNode[]
+---@param distance (fun(a: GGNode, b: GGNode): number)?
+---@param warm boolean?
 ---@return table job {status, order, yards, Step}
-function Order.Begin(nodes)
+function Order.Begin(nodes, distance, warm)
+	distance = distance or Distance
 	local job = { status = "working", order = {}, yards = 0 }
 	local work = 0
 	local function tick()
@@ -238,9 +281,20 @@ function Order.Begin(nodes)
 		table.sort(sorted, Identity)
 		local result = {}
 		if #sorted > 0 then
+			local initial
+			if warm then
+				local at = {}
+				for i, node in ipairs(sorted) do
+					at[node] = i
+				end
+				initial = {}
+				for i, node in ipairs(nodes) do
+					initial[i] = at[node]
+				end
+			end
 			local order = Loop(#sorted, function(a, b)
-				return Distance(sorted[a], sorted[b])
-			end, tick)
+				return distance(sorted[a], sorted[b])
+			end, tick, initial)
 			for i, a in ipairs(order) do
 				result[i] = sorted[a]
 			end

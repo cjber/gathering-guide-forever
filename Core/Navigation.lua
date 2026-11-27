@@ -14,6 +14,8 @@ end
 --   API.SuspendMapPins(owner) and API.ResumeMapPins(owner) set its other map marks aside (Core/MapHold.lua).
 --   API.JourneyState() reads {busy, pending, failure, blocked}: another journey under way, a route still being worked
 --   out, why the last one failed, and whether combat or a corpse holds guidance.
+--   API.EstimateWalks(owner, from, targets, callback, opts) measures the walk in yards from one place to each of the
+--   others, and API.NavVersion() names the walking data those yards come from.
 local Nav = {}
 ns.Navigation = Nav
 
@@ -142,6 +144,45 @@ function Nav.Cancel()
 		return api.Cancel(Nav.OWNER) == true
 	end
 	return false
+end
+
+-- The walking data walk costs are measured over, or nil when Shortest Path Forever cannot measure walks.
+---@return string?
+function Nav.NavVersion()
+	local api = API()
+	if not api or type(api.EstimateWalks) ~= "function" or type(api.NavVersion) ~= "function" then
+		return nil
+	end
+	local ok, version = pcall(api.NavVersion)
+	return ok and type(version) == "string" and version or nil
+end
+
+-- Measures the walk from one node to each of the others. callback(costs, reason) runs once, later: costs[i] is yards,
+-- or false where there is no walk. Returns whether the search started; combat or loading data refuses it. A new call
+-- drops the search before it.
+---@param from GGNode
+---@param targets GGNode[]
+---@param callback fun(costs: (number|false)[], reason: string?)
+---@return boolean started
+function Nav.Walks(from, targets, callback)
+	local api = API()
+	if not api or not Nav.NavVersion() then
+		return false
+	end
+	local places = {}
+	for i, node in ipairs(targets) do
+		places[i] = { map = node.uiMapID, x = node.x, y = node.y }
+	end
+	-- Water walking is left out, so a kept cost never depends on a buff.
+	local ok, cancel = pcall(
+		api.EstimateWalks,
+		Nav.OWNER,
+		{ map = from.uiMapID, x = from.x, y = from.y },
+		places,
+		callback,
+		{ waterWalking = false }
+	)
+	return ok and cancel ~= nil
 end
 
 -- Travel seconds from the player's place to a map point, or nil when SPF cannot say.
