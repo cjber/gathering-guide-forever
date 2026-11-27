@@ -31,9 +31,9 @@ local function Identity(a, b)
 	return false
 end
 
--- The straight distance between two nodes in world yards.
----@param a GGNode
----@param b GGNode
+-- The straight distance between two places in world yards.
+---@param a {wx: number, wy: number}
+---@param b {wx: number, wy: number}
 ---@return number
 function Order.Distance(a, b)
 	local dx, dy = a.wx - b.wx, a.wy - b.wy
@@ -78,10 +78,11 @@ function Order.Neighbours(nodes, index, limit)
 	local near = Closest(#nodes, index, limit, function(a, b)
 		return Distance(nodes[a], nodes[b])
 	end)
+	local found = {}
 	for i, b in ipairs(near) do
-		near[i] = nodes[b]
+		found[i] = nodes[b]
 	end
-	return near
+	return found
 end
 
 -- The loop through points 1 to count under distance d, as the points in visiting order. It shortens the loop given as
