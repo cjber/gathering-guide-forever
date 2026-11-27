@@ -763,6 +763,9 @@ function Planner.ListZones(limit, yield)
 		local order, yards = Planner.Loop(byMap[uiMapID], yield)
 		local seconds = Planner.Seconds(yards, #order)
 		local travel = Travel(uiMapID, order)
+		if yield then
+			yield()
+		end
 		local found, walked = {}, 0
 		for _, node in ipairs(order) do
 			local item = wanted[node.name]
