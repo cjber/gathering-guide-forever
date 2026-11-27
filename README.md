@@ -88,7 +88,7 @@ Saved farming settings from Shortest Path Forever are read once and never change
 ## Known limitations
 
 - Skill-up chances follow Classic's rule: a node gives a skill point for certain while your skill is under 25 above its requirement, then 75%, 25% and never from 100 above. WoW: Forever may differ.
-- The rate assumes a walking pace of 7 yards a second and 5 seconds at each node. The loop is a close approximation of the shortest one, not the exact shortest. The zone page's times and rates use the loop's straight-line length.
+- The rate assumes a walking pace of 7 yards a second and 5 seconds at each node. The loop is a close approximation of the shortest one, not the exact shortest. The zone page's times and rates use the loop's straight-line length. Each walk is measured in one direction, so where a drop makes the way back longer the loop can still take you that way.
 - A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned.
 - The time to a skill assumes the same loop every lap. It is left off when the loop's nodes cannot take you that far.
 - Nodes are whatever your GatherMate2 database holds.

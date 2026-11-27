@@ -412,7 +412,7 @@
     },
     {
       "source": "Journey/Tour.lua",
-      "sha256": "0e539020ed5faf25857c4171cd2ed3de932f20bd1ad81f5d67882833d3007c64",
+      "sha256": "20b31536c0dc1976bd6762e4b4ee07f5b642d546499bb82b6df5ad1c4b4045da",
       "review": "Tour.Reason feeds the GameFontDisableSmall footerText on a failed tour start (UI/Panel.lua) and the status objective line Tracker.Blocks adds while a tour is not running, in ObjectiveTrackerLineFont. Neither caller changes the font after setting the text. Tour.Describe goes only to the report text.",
       "bindings": [
         {

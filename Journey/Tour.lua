@@ -350,7 +350,8 @@ local function Resume(saved)
 end
 
 -- A reload keeps a running tour: leaving the world saves it with its session, and the entry that ends a reload runs it
--- again. Logging in forgets it.
+-- again. Logging in forgets it. Any other entry into the world sends a waiting tour again: a reload in a dungeon has no
+-- position to start from until the player walks out.
 ns.On("PLAYER_LOGOUT", function()
 	ns.Char.running = state and { tour = state, session = ns.Session.Current() } or nil
 	Tour.Stop(true)
@@ -362,5 +363,7 @@ ns.On("PLAYER_ENTERING_WORLD", function(_, reload)
 		ns.Defer(function()
 			Resume(saved)
 		end)
+	else
+		Retry()
 	end
 end)

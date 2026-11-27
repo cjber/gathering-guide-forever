@@ -210,6 +210,18 @@ assert(Tour.Start(zone))
 Reload(true)
 assert(not Tour.Active(), "logging in does not start the last tour")
 
+-- A reload where no journey can start, as in a dungeon, leaves the tour waiting for the next entry into the world.
+assert(Tour.Start(zone))
+ShortestPathForever.API.NavigateRoute = function()
+	return false
+end
+Reload()
+assert(Tour.Progress().status == "refused", Tour.Progress().status)
+ShortestPathForever.API.NavigateRoute = navigate
+events.PLAYER_ENTERING_WORLD(false, false)
+assert(Tour.Progress().status == "running", "walking out sends the tour again")
+Tour.Stop()
+
 -- A walking order that arrives is taken up at the next node reached: the node headed for stays next, and the one just
 -- reached comes last. A start uses it from the first.
 ns.World.player = { x = 100, y = 0 }

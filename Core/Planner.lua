@@ -311,7 +311,9 @@ local NO_WALK = 100000
 ---@type GGWalk?
 local walking
 
--- Costs are one for both ways round, kept under the lower position first.
+-- Costs are one for both ways round, kept under the lower position first: the solver turns stretches of the loop
+-- about, which needs a leg to cost the same either way. A drop can make the way back longer (13 of 183 legs measured
+-- apart by over 50 yards).
 ---@param pairs_ GGWalkCosts
 ---@param a GGNode
 ---@param b GGNode
@@ -412,7 +414,8 @@ local function Resolve(job)
 end
 
 -- Sends the job's next search, or solves once none are left. A search Shortest Path Forever refuses or fails ends the
--- job; the next call for its loop takes it up from the costs kept.
+-- job; the next call for its loop takes it up from the costs kept, asking the same again: a refusal passes (combat,
+-- loading), and a failed search is Shortest Path Forever's error to fix.
 ---@param job GGWalk
 function Advance(job)
 	if walking ~= job then
