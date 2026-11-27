@@ -12,7 +12,7 @@ Each version's entry is also its release notes on GitHub and CurseForge.
 
 ### Added
 
-- **Demonsage and Heavy Thorium Veins.** Both now show in the zone pages, tours and farming list, at skill 300, with Demonsage and Heavy Thorium Ore as list items.
+- **Demonsage and Heavy Thorium Veins.** Both now show on the zone pages and in the farming list, at skill 300, with Demonsage and Heavy Thorium Ore as list items. They give no skill-up at the skill cap, so farming list tours visit them, and zone tours do with **Skip nodes with no skill-up** turned off.
 
 ### Changed
 
