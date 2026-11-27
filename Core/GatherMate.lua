@@ -216,6 +216,7 @@ function GM.SetIcons(style)
 	if style ~= "gathermate" then
 		if not hooked then
 			hooked = true
+			-- taint-ok: GatherMate2 owns its Display module and its pins, never a Blizzard frame.
 			hooksecurefunc(gm:GetModule("Display"), "addMiniPin", Fade)
 		end
 		for _, entry in ipairs(ns.Kinds) do
