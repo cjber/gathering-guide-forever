@@ -19,7 +19,8 @@ local HIDE_TIP = "Shows only this addon's pins on the world map. It hides Gather
 	.. "their newer versions). The tour's markers come back when it stops. GatherMate2's pins come back when you turn "
 	.. "this off, log out or disable the addon."
 local ICONS_TIP = "Draws GatherMate2's herb and ore pins with this addon's pictures, on the minimap and on its world "
-	.. "map. Nodes close to you keep GatherMate2's hollow ring, so the game's tracking dot shows through."
+	.. "map. On the minimap they are see-through, and close nodes keep GatherMate2's hollow ring, so the game's "
+	.. "tracking dot shows under them."
 local TIPS = { onlyGatheringPins = HIDE_TIP, gatheringIcons = ICONS_TIP }
 -- Row heights, and the room before and after a row, by type. A heading with a back button and a zone's own card are
 -- taller (Height).

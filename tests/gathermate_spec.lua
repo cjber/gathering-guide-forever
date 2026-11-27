@@ -160,8 +160,39 @@ do
 	ns.Kinds = { { kind = "Mining" }, { kind = "Herb Gathering" } }
 	local mining, fishing = { [201] = "gm-copper", [99999] = "gm-unknown" }, { [101] = "gm-pool" }
 	local textures = { Mining = mining, ["Herb Gathering"] = { [401] = "gm-peacebloom" }, Fishing = fishing }
+	-- GatherMate2's Display resets a pin's colour each time it places it.
+	local display = {
+		addMiniPin = function(_, pin)
+			pin.texture:SetVertexColor(1, 1, 1, 1)
+		end,
+	}
+	hooksecurefunc = function(object, name, post)
+		local original = object[name]
+		object[name] = function(...)
+			original(...)
+			post(...)
+		end
+	end
+	local function Alpha(nodeType, nodeID, isCircle)
+		local alpha
+		display:addMiniPin({
+			nodeType = nodeType,
+			nodeID = nodeID,
+			isCircle = isCircle,
+			texture = {
+				SetVertexColor = function(_, _, _, _, value)
+					alpha = value
+				end,
+			},
+		})
+		return alpha
+	end
 	local sent = 0
 	GatherMate2 = {
+		GetModule = function(_, name)
+			assert(name == "Display")
+			return display
+		end,
 		nodeTextures = textures,
 		db = {
 			profile = { show = {} },
@@ -181,7 +212,11 @@ do
 	assert(textures["Herb Gathering"][401] == ns.NodeArt["Peacebloom"], "and so does a herb")
 	assert(mining[99999] == "gm-unknown" and fishing[101] == "gm-pool", "other pins keep GatherMate2's")
 	assert(sent == 1, "swapping redraws once")
+	assert(Alpha("Mining", 201) < 1, "our minimap pin is see-through")
+	assert(Alpha("Mining", 201, true) == 1, "the hollow ring keeps GatherMate2's colour")
+	assert(Alpha("Mining", 99999) == 1 and Alpha("Fishing", 101) == 1, "other pins are left alone")
 	Settings.Set("gatheringIcons", false)
+	assert(Alpha("Mining", 201) == 1, "turned off, nothing fades")
 	assert(mining[201] == "gm-copper" and textures["Herb Gathering"][401] == "gm-peacebloom", "originals are back")
 	assert(sent == 2, "and redrawn")
 end

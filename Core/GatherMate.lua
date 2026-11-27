@@ -6,7 +6,8 @@ end
 
 -- Reads the player's GatherMate2 database. Its nodes are never written; the one setting touched is the profile's
 -- world map switch, while the Only show Gathering pins on the map setting is on (HideWorldMap), and the player's value
--- is put back after it. SetIcons swaps GatherMate2's herb and ore pictures for this addon's, in memory only.
+-- is put back after it. SetIcons swaps GatherMate2's herb and ore pictures for this addon's, in memory only, and makes
+-- its minimap pins see-through.
 -- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (GPL-2.0-or-later; see THIRD_PARTY.md).
 local GM = {}
 ns.GatherMate = GM
@@ -153,10 +154,24 @@ local function ProfileName()
 end
 
 local originals ---@type table<table, table<number, any>>?
+local hooked = false
+-- The game draws its yellow tracking dot under GatherMate2's minimap pins: this much of a pin lets the dot show.
+local FADE = 0.5
+
+-- Runs after GatherMate2 has placed a minimap pin and set its colour. Its hollow ring and every pin that keeps its
+-- picture are left as they are.
+local function Fade(_, pin)
+	if not originals or pin.isCircle then
+		return
+	end
+	local swapped = originals[Addon().nodeTextures[pin.nodeType]]
+	if swapped and swapped[pin.nodeID] then
+		pin.texture:SetVertexColor(1, 1, 1, FADE)
+	end
+end
 
 -- GatherMate2 draws a herb or ore pin, on the minimap and its world map, from GatherMate2.nodeTextures[kind][nodeID],
--- and its Display holds that same table, so entries are replaced in place and put back from `originals`. Within its
--- tracking distance the minimap pin is GatherMate2's own hollow ring, which leaves the game's tracking dot in view.
+-- and its Display holds that same table, so entries are replaced in place and put back from `originals`.
 ---@param ours boolean
 function GM.SetIcons(ours)
 	local gm = Addon()
@@ -165,6 +180,10 @@ function GM.SetIcons(ours)
 		return
 	end
 	if ours then
+		if not hooked then
+			hooked = true
+			hooksecurefunc(gm:GetModule("Display"), "addMiniPin", Fade)
+		end
 		originals = {}
 		for _, entry in ipairs(ns.Kinds) do
 			local icons, saved = textures[entry.kind], {}

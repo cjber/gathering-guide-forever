@@ -37,12 +37,12 @@ end
 
 -- GatherMate2's icons and its world map switch follow their settings.
 function Settings.SyncGatherMate()
-	ns.GatherMate.SetIcons(ns.DB.gatheringIcons)
 	if ns.DB.onlyGatheringPins then
 		ns.GatherMate.HideWorldMap()
 	else
 		ns.GatherMate.RestoreWorldMap()
 	end
+	ns.GatherMate.SetIcons(ns.DB.gatheringIcons)
 end
 
 ---@param key string
