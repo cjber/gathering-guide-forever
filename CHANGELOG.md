@@ -8,6 +8,20 @@ Added/Fixed lists.
 
 Each version's entry is also its release notes on GitHub and CurseForge.
 
+## [0.1.1] - 2026-11-27
+
+### Added
+
+- **Demonsage and Heavy Thorium Veins.** Both now show in the zone pages, tours and farming list, at skill 300, with Demonsage and Heavy Thorium Ore as list items.
+
+### Changed
+
+- **An empty GatherMate2 database says what to do.** With no nodes for your professions, the Gathering page explains how to import them with GatherMate2_Data, and the README lists the steps.
+
+### Fixed
+
+- **A closed Gathering page stays off the map.** A tour update no longer brings back the pins of the zone you were viewing after you close the page.
+
 ## [0.1.0] - 2026-11-26
 
 <!-- discord-image: docs/screenshots/gathering-tour.png -->

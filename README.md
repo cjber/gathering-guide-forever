@@ -53,6 +53,13 @@ Download the zip from [Releases](https://github.com/cjber/gathering-guide-foreve
 
 It needs [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) for node locations and [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) to walk a tour. Without Shortest Path Forever you can still plan.
 
+GatherMate2 starts with no node locations and records each node you gather. To fill it at once:
+
+1. Install [GatherMate2_Data](https://www.curseforge.com/wow/addons/gathermate2_data) and enable it.
+2. Type `/gathermate` and open Import.
+3. Under Databases to Import, tick Herbalism and Mining.
+4. Click Import GatherMate2Data.
+
 ## Quickstart
 
 1. Open the world map and pick the Gathering tab, or type `/gathering`.
@@ -83,7 +90,7 @@ Saved farming settings from Shortest Path Forever are read once and never change
 - The time to a skill assumes the same loop every lap. It is left off when the loop's nodes cannot take you that far.
 - Nodes are whatever your GatherMate2 database holds.
 - Node and item names are in English in every client language.
-- Heavy Thorium Veins, Demonsage and Marefoil are left out: the skill they need is not known yet.
+- Marefoil is left out: the skill it needs is not known yet.
 
 ## Credits
 
@@ -128,6 +135,6 @@ python3 tools/repo_rules.py
 
 [AGENTS.md](AGENTS.md) lists the full gate.
 
-**Releasing:** move the `[Unreleased]` notes in `CHANGELOG.md` under `## [X.Y.Z] - YYYY-MM-DD`, then `git tag -s vX.Y.Z && git push --tags`.
+**Releasing:** `python3 tools/changelog.py release X.Y.Z` writes that version's `CHANGELOG.md` section from the notes in `changes/`. Merge it, then `git tag -s vX.Y.Z && git push origin vX.Y.Z`.
 
 See [CONTRIBUTING](https://github.com/cjber/.github/blob/main/CONTRIBUTING.md) and [SECURITY](https://github.com/cjber/.github/blob/main/SECURITY.md).

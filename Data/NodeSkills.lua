@@ -2,6 +2,8 @@
 -- 186 is Mining. Copied from SkillUp Forever's generated Data/Sources.lua.
 -- Source: CMaNGOS classic-db 22b51464f1625f6ef6275771de1f5466c6f5d19e (GPL-3.0) gameobject_template; gathering locks:
 -- wago.tools Lock, wow_classic_beta 1.60.1.70959.
+-- Demonsage and Heavy Thorium Vein are new in WoW: Forever and not in that database. Their requirements are the ones
+-- Wowhead's Forever tooltips give for objects 566786 and 566779.
 ---@type string, GGNamespace
 local _, ns = ...
 
@@ -13,6 +15,7 @@ ns.NodeSkills = {
 	["Bruiseweed"] = { 182, 100 },
 	["Copper Vein"] = { 186, 1 },
 	["Dark Iron Deposit"] = { 186, 230 },
+	["Demonsage"] = { 182, 300 },
 	["Dreamfoil"] = { 182, 270 },
 	["Earthroot"] = { 182, 15 },
 	["Fadeleaf"] = { 182, 160 },
@@ -24,6 +27,7 @@ ns.NodeSkills = {
 	["Grave Moss"] = { 182, 120 },
 	["Gromsblood"] = { 182, 250 },
 	["Hakkari Thorium Vein"] = { 186, 275 },
+	["Heavy Thorium Vein"] = { 186, 300 },
 	["Icecap"] = { 182, 290 },
 	["Incendicite Mineral Vein"] = { 186, 65 },
 	["Indurium Mineral Vein"] = { 186, 150 },

@@ -56,6 +56,8 @@ local specs = {}
 ---@type Frame?, ScrollFrame?, Texture?, Button?, (EditBox|{Instructions: FontString})?, FontString?, Button?
 local content, scroll, background, footerButton, search, footerText, cog
 local pickedZone
+-- Whether the player can see the page, as the tab module last reported it.
+local onScreen = false
 -- Whether the player asked for every zone on the overview.
 local expanded = false
 
@@ -231,6 +233,22 @@ local function ListCard(listRows, refresh)
 	return card
 end
 
+-- Says why no zone is listed: `reason`, unless GatherMate2 holds no node of the player's professions, when it says
+-- how to import them.
+---@param out table[]
+---@param ranks table<string, number>
+---@param reason string
+local function NoZones(out, ranks, reason)
+	if next(ranks) and #ns.Planner.Zones(ranks) == 0 then
+		out[#out + 1] = {
+			type = "text",
+			text = L["GatherMate2 has no nodes for your skills yet. Install GatherMate2_Data, then type /gathermate."],
+		}
+		reason = L["Open Import, tick Herbalism and Mining, then click Import GatherMate2Data."]
+	end
+	out[#out + 1] = { type = "text", text = reason }
+end
+
 -- The zones whose name holds the typed text. A match opens the zone; its trip and rate are planned there.
 ---@param out table[]
 ---@param ranks table<string, number>
@@ -246,7 +264,7 @@ local function SearchResults(out, ranks, refresh)
 		}
 	end
 	if #found == 0 then
-		out[#out + 1] = { type = "text", text = L["No zone with nodes for your skills matches."] }
+		NoZones(out, ranks, L["No zone with nodes for your skills matches."])
 	end
 end
 
@@ -266,7 +284,7 @@ local function BestZones(out, ranks, refresh)
 	end
 	header.count = tostring(ranking.total)
 	if ranking.total == 0 then
-		out[#out + 1] = { type = "text", text = L["No zone in your GatherMate2 data can raise your skill."] }
+		NoZones(out, ranks, L["No zone in your GatherMate2 data can raise your skill."])
 		return
 	end
 	local zones, pending = ranking.zones, nil
@@ -683,10 +701,7 @@ function Panel.ListSpecs(refresh)
 		return out
 	end
 	if #zones == 0 then
-		out[#out + 1] = {
-			type = "text",
-			text = L["No zone in your GatherMate2 data has anything on your list that your skill can gather."],
-		}
+		NoZones(out, ranks, L["No zone in your GatherMate2 data has anything on your list that your skill can gather."])
 		return out
 	end
 	local picked = zones[1]
@@ -1317,9 +1332,9 @@ local function PlaceSearch(searchRow)
 	end
 end
 
--- Draws the current view.
+-- Draws the current view. A hidden page is left alone, so it cannot put its zone's loop back on the world map.
 function Panel.Refresh()
-	if not panel or not content or not scroll or not background then
+	if not onScreen or not panel or not content or not scroll or not background then
 		return
 	end
 	pickedZone = nil
@@ -1473,6 +1488,7 @@ local function Build()
 		order = 30,
 		safeCall = ns.core.SafeCall,
 		shown = function(visible)
+			onScreen = visible
 			ns.MapFocus.SetPanelShown(visible)
 			if visible then
 				Panel.Refresh()

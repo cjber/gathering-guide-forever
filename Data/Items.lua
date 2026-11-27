@@ -21,11 +21,12 @@ ns.OreNodes = {
 		"Rich Thorium Vein",
 		"Ooze Covered Rich Thorium Vein",
 	},
+	["Heavy Thorium Ore"] = { "Heavy Thorium Vein" },
 }
 
 -- The item ID of every herb and ore the farming list holds, by English name. Bag counts, prices and icons go by ID,
 -- which works in every client language and for items the client has not seen. From wago.tools ItemSparse, build
--- 1.60.1.71091.
+-- 1.60.1.71091; Demonsage and Heavy Thorium Ore from build 1.60.1.71139.
 ns.ItemIDs = {
 	["Arthas' Tears"] = 8836,
 	["Black Lotus"] = 13468,
@@ -34,6 +35,7 @@ ns.ItemIDs = {
 	["Bruiseweed"] = 2453,
 	["Copper Ore"] = 2770,
 	["Dark Iron Ore"] = 11370,
+	["Demonsage"] = 248821,
 	["Dreamfoil"] = 13463,
 	["Earthroot"] = 2449,
 	["Fadeleaf"] = 3818,
@@ -44,6 +46,7 @@ ns.ItemIDs = {
 	["Goldthorn"] = 3821,
 	["Grave Moss"] = 3369,
 	["Gromsblood"] = 8846,
+	["Heavy Thorium Ore"] = 248815,
 	["Icecap"] = 13467,
 	["Incendicite Ore"] = 3340,
 	["Indurium Ore"] = 5833,

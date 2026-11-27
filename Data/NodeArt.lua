@@ -1,5 +1,5 @@
 -- The picture each gathering node wears on the world map: [node name] = texture path, for every name in
--- Data/NodeSkills.lua. Nodes that give the same ore share one. The art is exported by tools/export_nodes.py.
+-- Data/NodeSkills.lua. Nodes of one mineral share one. The art is exported by tools/export_nodes.py.
 ---@type string, GGNamespace
 local _, ns = ...
 
@@ -11,6 +11,7 @@ ns.NodeArt = {
 	["Bruiseweed"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Bruiseweed.tga",
 	["Copper Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Copper.tga",
 	["Dark Iron Deposit"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\DarkIron.tga",
+	["Demonsage"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Demonsage.tga",
 	["Dreamfoil"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Dreamfoil.tga",
 	["Earthroot"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Earthroot.tga",
 	["Fadeleaf"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Fadeleaf.tga",
@@ -22,6 +23,7 @@ ns.NodeArt = {
 	["Grave Moss"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\GraveMoss.tga",
 	["Gromsblood"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Gromsblood.tga",
 	["Hakkari Thorium Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Thorium.tga",
+	["Heavy Thorium Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Thorium.tga",
 	["Icecap"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Icecap.tga",
 	["Incendicite Mineral Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Incendicite.tga",
 	["Indurium Mineral Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Indurium.tga",
