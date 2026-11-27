@@ -8,6 +8,12 @@ Added/Fixed lists.
 
 Each version's entry is also its release notes on GitHub and CurseForge.
 
+## [0.1.1] - 2026-11-27
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ## [0.1.0] - 2026-11-26
 
 <!-- discord-image: docs/screenshots/gathering-tour.png -->
