@@ -181,7 +181,10 @@ scenario("zones, a tour in the tracker and the pages with planned zones", {
 	local onward = assert(row("Title", "Hillsbrad Foothills"), "the next zone")
 	assert(onward.Levels:GetText() == "20-30", "with the client's level range")
 
-	click(assert(footer("Start tour"), "the start button"))
+	-- Opening the zone started its tour. Stopping it leaves it stopped until the player starts it again.
+	click(assert(footer("Stop tour"), "opening a zone starts its tour"))
+	sim:advance(3)
+	click(assert(footer("Start tour"), "a stopped tour stays stopped"))
 	local tracker = G.GatheringGuideForeverObjectiveTracker
 	sim:advance(3)
 	-- Eight of the twenty veins and four of the six herbs can still raise a skill; the loop skips the others.

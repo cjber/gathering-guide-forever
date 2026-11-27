@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "378153d4ce977cfd0c42fe64f7cfb2ab6bc7bcdee87946a8bf72c1aee8cadec4",
+      "sha256": "18f9a3894fcfc71bb44e4f73d68ee2b6972192b4e9a786d9a532b73d4f3294a3",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
