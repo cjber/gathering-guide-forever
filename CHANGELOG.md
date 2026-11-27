@@ -8,6 +8,26 @@ Added/Fixed lists.
 
 Each version's entry is also its release notes on GitHub and CurseForge.
 
+## [0.2.0] - 2026-11-27
+
+<!-- discord-image: docs/screenshots/gathering-tour.png -->
+
+### Added
+
+- **Hover a node pin.** It names its herbs and ores and, on a tour, where each comes in the loop.
+- Choose the herb and ore icons under "Node icons" in the settings menu: this addon's pictures (the default), the game's item icons or GatherMate2's own. The choice covers the loop on the world map and GatherMate2's pins on the minimap and world map. On the minimap this addon's pictures and the item icons are see-through, and nodes close to you keep GatherMate2's hollow ring, so the game's tracking dot shows under them.
+
+### Changed
+
+- **Opening a zone starts its tour.** It starts when no tour or other journey is guiding you; a tour you stop stays stopped.
+- **A calmer route line.** With Shortest Path Forever 1.49.0 or later, a tour draws a solid line with softly rounded corners over the leg you are on and the next four, the later ones faded.
+
+### Fixed
+
+- **A reload keeps your tour.** It carries on from the same node, with the same skill-up and loot counts.
+- Tours no longer take long jumps across a zone or double back over it: the loop through the nodes is much shorter.
+- A loop is ordered by walking distance, so it no longer detours round hills and walls to reach the next node. Shortest Path Forever measures the walks in the background once a zone's tour starts, which takes about half a minute for a couple of hundred nodes, longer in larger zones; the tour takes the new order at the next node you reach, and later tours in that zone start with it.
+
 ## [0.1.1] - 2026-11-27
 
 ### Added
