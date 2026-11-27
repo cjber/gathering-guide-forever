@@ -14,6 +14,7 @@ Settings.options = {
 	{ key = "skipNoSkillUp", label = L["Skip nodes with no skill-up"] },
 	{ key = "loopOnMap", label = L["Draw the loop on the world map"] },
 	{ key = "onlyGatheringPins", label = L["Only show Gathering pins on the map"] },
+	{ key = "gatheringIcons", label = L["Use Gathering icons on the minimap"] },
 	{ key = "showTracker", label = L["Show the Gathering Tour in the objective tracker"] },
 }
 
@@ -34,8 +35,9 @@ function Settings.ImportFromSPF()
 	return true
 end
 
--- GatherMate2's world map icons follow the setting.
+-- GatherMate2's icons and its world map switch follow their settings.
 function Settings.SyncGatherMate()
+	ns.GatherMate.SetIcons(ns.DB.gatheringIcons)
 	if ns.DB.onlyGatheringPins then
 		ns.GatherMate.HideWorldMap()
 	else
@@ -47,8 +49,10 @@ end
 ---@param value boolean
 function Settings.Set(key, value)
 	ns.DB[key] = value and true or false
-	if key == "onlyGatheringPins" then
+	if key == "onlyGatheringPins" or key == "gatheringIcons" then
 		Settings.SyncGatherMate()
+	end
+	if key == "onlyGatheringPins" then
 		ns.MapFocus.Sync()
 	end
 	if ns.Tour then

@@ -5,8 +5,8 @@ if ns.broken then
 end
 
 -- Reads the player's GatherMate2 database. Its nodes are never written; the one setting touched is the profile's
--- world map switch, while the Hide GatherMate2 map icons setting is on (HideWorldMap), and the player's value is put
--- back after it. The minimap keeps its own switch (showMinimap) untouched: our pins are for the world map.
+-- world map switch, while the Only show Gathering pins on the map setting is on (HideWorldMap), and the player's value
+-- is put back after it. SetIcons swaps GatherMate2's herb and ore pictures for this addon's, in memory only.
 -- GatherMate2 is by Kagaro, Xinhuan, Nevcairiel and Ammo (GPL-2.0-or-later; see THIRD_PARTY.md).
 local GM = {}
 ns.GatherMate = GM
@@ -150,6 +150,45 @@ end
 local function ProfileName()
 	local gm = Addon()
 	return gm and gm.db and type(gm.db.GetCurrentProfile) == "function" and gm.db:GetCurrentProfile() or nil
+end
+
+local originals ---@type table<table, table<number, any>>?
+
+-- GatherMate2 draws a herb or ore pin, on the minimap and its world map, from GatherMate2.nodeTextures[kind][nodeID],
+-- and its Display holds that same table, so entries are replaced in place and put back from `originals`. Within its
+-- tracking distance the minimap pin is GatherMate2's own hollow ring, which leaves the game's tracking dot in view.
+---@param ours boolean
+function GM.SetIcons(ours)
+	local gm = Addon()
+	local textures = gm and gm.nodeTextures
+	if type(textures) ~= "table" or ours == (originals ~= nil) then
+		return
+	end
+	if ours then
+		originals = {}
+		for _, entry in ipairs(ns.Kinds) do
+			local icons, saved = textures[entry.kind], {}
+			for nodeID, texture in pairs(icons) do
+				local name = ns.NodeNames[nodeID]
+				local art = name and ns.NodeArt[name]
+				if art then
+					saved[nodeID], icons[nodeID] = texture, art
+				end
+			end
+			originals[icons] = saved
+		end
+	else
+		for icons, saved in pairs(assert(originals)) do
+			for nodeID, texture in pairs(saved) do
+				icons[nodeID] = texture
+			end
+		end
+		originals = nil
+	end
+	local profile = Profile()
+	if profile then
+		Refresh(profile)
+	end
 end
 
 -- Turns GatherMate2's world map pins off through its own profile switch. The player's value is saved per profile

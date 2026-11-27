@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "18f9a3894fcfc71bb44e4f73d68ee2b6972192b4e9a786d9a532b73d4f3294a3",
+      "sha256": "f2f35fe4fe4358dc9b5cf82656abaf6050b9b53b2c866418802669abc4fe8ebc",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
@@ -370,7 +370,7 @@
     },
     {
       "source": "Core/Core.lua",
-      "sha256": "96f35ebc245bdb98083d54f0c0e6e349e0998b485277bdbae0670d209508dce9",
+      "sha256": "4ae8e57320f56bb4abb4cd627e62da0d571e3e8656c1ab57af194624a4e3a2d4",
       "review": "The Kinds labels reach the panel's heading skill line and zone card goal lines (UI/Panel.lua, GameFontHighlightSmall) and the tracker's skill lines and onward line (UI/Tracker.lua, default objective lines with ObjectiveTrackerLineFont). ns.Markup returns only icon markup. ReportTitle configures the ForeverCore v1.17.5 report window, whose SetTitle writes the Blizzard PortraitFrameTemplate TitleText with GameFontNormal.",
       "bindings": [
         {

@@ -152,6 +152,40 @@ do
 	assert(sent == 1, "a complete profile is redrawn")
 end
 
+-- GatherMate2 draws its pins from nodeTextures, which its Display holds on to, so the table is changed in place: each
+-- herb and ore this addon has a picture for wears it, everything else keeps GatherMate2's, and turning it off puts
+-- every original back.
+do
+	H.Load(ns, "Data/NodeNames.lua", "Data/NodeArt.lua")
+	ns.Kinds = { { kind = "Mining" }, { kind = "Herb Gathering" } }
+	local mining, fishing = { [201] = "gm-copper", [99999] = "gm-unknown" }, { [101] = "gm-pool" }
+	local textures = { Mining = mining, ["Herb Gathering"] = { [401] = "gm-peacebloom" }, Fishing = fishing }
+	local sent = 0
+	GatherMate2 = {
+		nodeTextures = textures,
+		db = {
+			profile = { show = {} },
+			GetCurrentProfile = function()
+				return "Default"
+			end,
+		},
+		SendMessage = function()
+			sent = sent + 1
+		end,
+	}
+	ns.DB = { gatheringIcons = true, onlyGatheringPins = false }
+	Settings.SyncGatherMate()
+	Settings.SyncGatherMate()
+	assert(textures.Mining == mining and GatherMate2.nodeTextures == textures, "GatherMate2's tables are kept")
+	assert(mining[201] == ns.NodeArt["Copper Vein"], "a vein wears our picture")
+	assert(textures["Herb Gathering"][401] == ns.NodeArt["Peacebloom"], "and so does a herb")
+	assert(mining[99999] == "gm-unknown" and fishing[101] == "gm-pool", "other pins keep GatherMate2's")
+	assert(sent == 1, "swapping redraws once")
+	Settings.Set("gatheringIcons", false)
+	assert(mining[201] == "gm-copper" and textures["Herb Gathering"][401] == "gm-peacebloom", "originals are back")
+	assert(sent == 2, "and redrawn")
+end
+
 -- GatherMate2 names its nodes in the client's language, so a node is identified by its ID: a German client's zone has
 -- the same nodes as an English one's.
 H.Load(ns, "Data/NodeNames.lua", "Data/NodeSkills.lua", "Data/Items.lua")

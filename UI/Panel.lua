@@ -16,8 +16,11 @@ ns.Panel = Panel
 local PAD = 12
 local HIDE_TIP = "Shows only this addon's pins on the world map. It hides GatherMate2's world map icons, and during a "
 	.. "tour Shortest Path Forever's numbered stop markers and Adventure Guide Forever's map pins (these two need "
-	.. "their newer versions). The tour's markers come back when it stops. GatherMate2's icons come back when you turn "
-	.. "this off, log out or disable the addon. Minimap icons are not changed."
+	.. "their newer versions). The tour's markers come back when it stops. GatherMate2's pins come back when you turn "
+	.. "this off, log out or disable the addon."
+local ICONS_TIP = "Draws GatherMate2's herb and ore pins with this addon's pictures, on the minimap and on its world "
+	.. "map. Nodes close to you keep GatherMate2's hollow ring, so the game's tracking dot shows through."
+local TIPS = { onlyGatheringPins = HIDE_TIP, gatheringIcons = ICONS_TIP }
 -- Row heights, and the room before and after a row, by type. A heading with a back button and a zone's own card are
 -- taller (Height).
 local HEIGHTS = {
@@ -1436,9 +1439,10 @@ local function OpenSettings(owner)
 				end
 				Panel.Refresh()
 			end)
-			if option.key == "onlyGatheringPins" then
+			local tip = TIPS[option.key]
+			if tip then
 				entry:SetTooltip(function(tooltip)
-					tooltip:SetText(L[HIDE_TIP], nil, nil, nil, nil, true)
+					tooltip:SetText(L[tip], nil, nil, nil, nil, true)
 				end)
 			end
 		end
