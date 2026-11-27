@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "1acea65d1c50629cd30c74ed92149ceff94c2f41e2bb433d4c8369d3386020eb",
+      "sha256": "378153d4ce977cfd0c42fe64f7cfb2ab6bc7bcdee87946a8bf72c1aee8cadec4",
       "review": "Checked every view spec against the RowTypes Build and Fill functions: each row font string is created with one FontObject and later only changes colour, so the heading, header, card, node, item, place, zone, more, check and text rows keep the fonts listed. SearchBoxTemplate draws Instructions with GameFontDisableSmall (InputBoxInstructionsTemplate in the pinned Blizzard InputBoxTemplates.xml). SharedButtonSmallTemplate declares the footer button's normal, highlight and disabled FontObjects in the pinned ThreeSliceButtonTemplate.xml. Skill labels substituted into these formats are bound under Core/Core.lua. Zone, node and item names, numbers, level ranges, user input, tooltips and the ForeverCore settings menu are excluded.",
       "bindings": [
         {
@@ -264,7 +264,7 @@
         {
           "font": "GameFontHighlightSmall",
           "widget": "RowTypes.text Text",
-          "phrase": "GatherMate2 has no nodes for your skills yet. Install GatherMate2_Data, then type /gathermate."
+          "phrase": "GatherMate2 has no nodes for your skills yet. With GatherMate2_Data installed, type /gathermate."
         },
         {
           "font": "GameFontHighlightSmall",
@@ -469,7 +469,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "4281c3c51648c773a1ae32f78f72c65a111741d929e8f45b051bb6371121e027",
+      "sha256": "fddecc462c8a6bff8483b639c1d26a16deb998d438638f0c3b67d3a6b6c698c7",
       "review": "In the pinned Blizzard ObjectiveTracker XML the module Header.Text inherits ObjectiveTrackerHeaderFont, and both a block's HeaderText and an objective line's Text inherit ObjectiveTrackerLineFont. LayoutContents and ForeverCore v1.17.5 TrackerSection.UpdateText only set text and colour. ForeverCore's TrackerHost swaps in its own chat-face font while another addon has shrunk the shared fonts below the game's minimum; that fallback is not covered. Zone, node and item names, coin strings and numbers are game data.",
       "bindings": [
         {
