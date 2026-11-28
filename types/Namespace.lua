@@ -9,7 +9,6 @@
 ---@field x number
 ---@field y number
 ---@field name string
----@field variant string? the smaller node's name where a record is one (GatherMate.Variant)
 ---@field wx number?
 ---@field wy number?
 ---@field world number?

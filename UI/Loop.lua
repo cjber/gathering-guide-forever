@@ -27,6 +27,12 @@ local pool
 ---@type table?
 local preview
 
+---@param node GGNode
+---@return string? name the smaller node's, where the record is one
+local function Variant(node)
+	return ns.GatherMate.Variant(node.uiMapID, node.nodeID, node.coord, node.x, node.y)
+end
+
 function NodePin:OnLoad()
 	self:SetScalingLimits(1, 1, 1.2)
 	-- Without a level type the pin sits under the map's explored-area art and shows only over unexplored ground.
@@ -40,10 +46,11 @@ function NodePin:OnAcquired(node, state, steps, total)
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
 	local first = node.members[1]
-	local texture, inset = ns.GatherMate.Icon(ns.DB.iconStyle, first.name, first.kind, first.nodeID, first.variant)
+	local variant = Variant(first)
+	local texture, inset = ns.GatherMate.Icon(ns.DB.iconStyle, first.name, first.kind, first.nodeID, variant)
 	-- A node the style has no picture for wears this addon's.
 	if not texture then
-		texture, inset = ns.NodeArt[first.variant or first.name], 0
+		texture, inset = ns.NodeArt[variant or first.name], 0
 	end
 	self.Texture:SetTexture(texture)
 	self.Texture:SetTexCoord(inset, 1 - inset, inset, 1 - inset)
@@ -55,7 +62,7 @@ end
 function NodePin:OnMouseEnter()
 	local names, count, first = {}, {}, {}
 	for _, node in ipairs(self.members) do
-		local name = node.variant or node.name
+		local name = Variant(node) or node.name
 		if not count[name] then
 			names[#names + 1] = name
 			count[name], first[name] = 0, self.steps and self.steps[node]

@@ -296,10 +296,13 @@ local function At(uiMapID, x, y)
 	end
 	return ns.GatherMate.Nodes(uiMapID, "Mining")[1]
 end
-local small = At(9999, 40.2, 60)
-assert(small.variant == "Poor Copper Vein" and small.name == "Copper Vein", "a record by a small spawn")
-assert(At(9999, 40.2, 60.25).variant == nil, "a record out of reach is ordinary")
-assert(At(1415, 40, 60).variant == nil, "a zone with no smaller veins")
+local function Variant(node)
+	return ns.GatherMate.Variant(node.uiMapID, node.nodeID, node.coord, node.x, node.y)
+end
+local small = At(9999, 40.1, 60.1)
+assert(Variant(small) == "Poor Copper Vein" and small.name == "Copper Vein", "a record a grid step from a small spawn")
+assert(Variant(At(9999, 40.2, 60)) == nil, "a record two grid steps off is ordinary")
+assert(Variant(At(1415, 40, 60)) == nil, "a zone with no smaller veins")
 ns.SmallNodes[201][9999] = nil
 for nodeID, entry in pairs(ns.SmallNodes) do
 	assert(ns.NodeNames[nodeID], entry.name .. " is under a node ID the addon knows")

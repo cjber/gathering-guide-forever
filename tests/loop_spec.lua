@@ -251,7 +251,8 @@ reach = 0
 assert(#Draw(nil) == 3, "nodes apart keep their own pins")
 
 -- A smaller node wears its own art and is named as the game names it, apart from the ordinary node.
-crowd[3].variant = "Poor Copper Vein"
+ns.SmallNodes[201][7] = { 16, 50 }
+crowd[3].uiMapID, crowd[3].nodeID, crowd[3].coord = 7, 201, 1
 assert(Art(Draw(nil)[3], "Poor Copper Vein"), "the smaller vein's art")
 reach = 1
 assert(Tip(Draw(nil)[1]) == "Peacebloom; Copper Vein; Poor Copper Vein", "the two sizes are listed apart")

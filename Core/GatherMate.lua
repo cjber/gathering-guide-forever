@@ -61,10 +61,10 @@ local function Known(nodeID)
 	end
 end
 
--- How far, in map percent, a record may sit from a small spawn and still be it. The spawns are given to 0.1 and
--- GatherMate2 records where the player stood to gather; no ordinary node of the same kind spawns within 0.8 of a small
--- one in the zones Data/SmallNodes.lua lists.
-local REACH = 0.3
+-- How far, in map percent on each axis, a record may sit from a small spawn and still be it. The spawns are given to
+-- 0.1, so one spawn rounded by two sources is at most one such step away; the half step absorbs float error and a
+-- player's own record, which is where they stood to gather.
+local REACH = 0.15
 ---@type table<number[], table<number, boolean>> by a zone's spawns, whether the record at a coord is on one
 local matched = {}
 
@@ -88,7 +88,7 @@ function GM.Variant(uiMapID, nodeID, coord, x, y)
 		cache[coord] = false
 		for i = 1, #spawns, 2 do
 			local dx, dy = x * 100 - spawns[i], y * 100 - spawns[i + 1]
-			if dx * dx + dy * dy <= REACH * REACH then
+			if math.abs(dx) <= REACH and math.abs(dy) <= REACH then
 				cache[coord] = true
 				break
 			end
@@ -152,7 +152,6 @@ function GM.Nodes(uiMapID, kind)
 				x = x,
 				y = y,
 				name = name,
-				variant = GM.Variant(uiMapID, nodeID, coord, x, y),
 				line = skill[1],
 				required = skill[2],
 			}

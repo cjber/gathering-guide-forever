@@ -25,7 +25,7 @@ A tour starts at the node nearest you. Shortest Path Forever draws the way throu
 
 <p align="center"><img src="docs/screenshots/gathering-map-pins.png" width="640" alt="The world map during a tour: small pins for the nodes still to visit and the journey line"></p>
 
-Only the nodes still to visit get a pin, showing the herb or ore (Poor Copper Vein, Wilted Peacebloom and Stunted Silverleaf have pictures of their own), and the next one is clearer. Nearby nodes share one pin until you zoom in.
+Only the nodes still to visit get a pin, showing the herb or ore (with this addon's icons, the default, Poor Copper Vein, Wilted Peacebloom and Stunted Silverleaf have pictures of their own), and the next one is clearer. Nearby nodes share one pin until you zoom in.
 
 <p align="center"><img src="docs/screenshots/gathering-tracker.png" width="300" alt="The Gathering Tour section of the objective tracker"></p>
 
