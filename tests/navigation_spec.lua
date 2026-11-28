@@ -140,7 +140,7 @@ local overlong = {}
 for i = 1, Nav.MAX_STOPS + 1 do
 	overlong[i] = stops[1]
 end
-assert(Nav.Route(overlong) == false and Nav.Route(overlong, false, true) == true, "a loop takes more stops than a route")
+assert(Nav.Route(overlong) == false and Nav.Route(overlong, false, true) == true, "a loop takes more")
 ShortestPathForever.API.minor = nil
 
 print("navigation_spec ok")
