@@ -8,6 +8,12 @@ Added/Fixed lists.
 
 Each version's entry is also its release notes on GitHub and CurseForge.
 
+## [0.2.2] - 2026-11-28
+
+### Changed
+
+- The starting zones' smaller nodes look different on the map. With this addon's own node icons (the default), Poor Copper Vein, Wilted Peacebloom and Stunted Silverleaf each wear their own picture, one nodule, petal or leaf short of the ordinary one, on the loop and on the minimap. Hovering a loop pin names them.
+
 ## [0.2.1] - 2026-11-27
 
 ### Fixed

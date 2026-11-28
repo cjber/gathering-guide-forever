@@ -19,6 +19,7 @@ Core\ForeverRequire.lua
 Core\Require.lua
 Locales\enUS.lua
 Data\NodeNames.lua
+Data\SmallNodes.lua
 Data\NodeSkills.lua
 Data\NodeArt.lua
 Data\Items.lua

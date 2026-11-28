@@ -46,7 +46,7 @@ These images are captures from the game client.
 
 Skill-up chances follow Classic's rule: certain while your skill is under 25 above a node's requirement, then 75%, 25% and never from 100 above. WoW: Forever may differ.
 
-Node and item names are in English in every client language. Marefoil is left out: the skill it needs is not known yet.
+Node and item names are in English in every client language. Marefoil is left out: the skill it needs is not known yet. A smaller starting-zone node is told apart by where it spawns: a record away from those spots, or a poor copper vein on Zephras Isle, wears the ordinary picture.
 
 A lap takes at least ten minutes, the assumed time a node needs to respawn: no source gives Forever's real time. A zone's rate also counts the trip there from where you stand when it is planned. The time to a skill is left off when a loop's nodes cannot take you that far.
 

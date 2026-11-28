@@ -46,6 +46,10 @@
 ---@field required number
 ---@field count number
 
+---@class GGSmallNode a node the starting zones draw smaller
+---@field name string
+---@field [number] number[] by uiMapID, the x, y pairs it spawns at, in map percent
+
 ---@class GGNamespace
 ---@field [string] any
 ---@field L table<string, string>
@@ -54,3 +58,4 @@
 ---@field NodeNames table<number, string>
 ---@field ItemIDs table<string, number>
 ---@field NodeSkills table<string, number[]>
+---@field SmallNodes table<number, GGSmallNode> by GatherMate2 node ID

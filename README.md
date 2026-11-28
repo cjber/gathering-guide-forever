@@ -25,7 +25,7 @@ A tour starts at the node nearest you. Shortest Path Forever draws the way throu
 
 <p align="center"><img src="docs/screenshots/gathering-map-pins.png" width="640" alt="The world map during a tour: small pins for the nodes still to visit and the journey line"></p>
 
-Only the nodes still to visit get a pin, showing the herb or ore, and the next one is clearer. Nearby nodes share one pin until you zoom in.
+Only the nodes still to visit get a pin, showing the herb or ore (with this addon's icons, the default, Poor Copper Vein, Wilted Peacebloom and Stunted Silverleaf have pictures of their own), and the next one is clearer. Nearby nodes share one pin until you zoom in.
 
 <p align="center"><img src="docs/screenshots/gathering-tracker.png" width="300" alt="The Gathering Tour section of the objective tracker"></p>
 
@@ -94,6 +94,7 @@ Saved farming settings from Shortest Path Forever are read once and never change
 - Nodes are whatever your GatherMate2 database holds.
 - Node and item names are in English in every client language.
 - Marefoil is left out: the skill it needs is not known yet.
+- A smaller starting-zone node is told apart by where it spawns, from Wowhead's positions: a GatherMate2 record away from those spots wears the ordinary picture. So do Zephras Isle's poor copper veins, most of which spawn where ordinary veins do.
 
 ## Credits
 

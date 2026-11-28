@@ -12,8 +12,9 @@ whether any of it reaches the zip players install. The addon itself is GPL-3.0-o
 | [GatherMate2](https://www.curseforge.com/wow/addons/gathermate2) by Kagaro, Xinhuan, Nevcairiel and Ammo | The node ID numbers and English names in `Data/NodeNames.lua`, from its `Constants.lua`. Node locations are read from the player's own database at runtime; `Core/GatherMate.lua` is a reader written for this addon | GatherMate2 1.52.7 | GPL-2.0-or-later |
 | [wago.tools](https://wago.tools/db2/ItemSparse) ItemSparse | The item ID of each herb and ore, in `Data/Items.lua` | `1.60.1.71091`; Demonsage and Heavy Thorium Ore `1.60.1.71139` | Game data |
 | Wowhead's Forever tooltips for objects [566786](https://nether.wowhead.com/forever/tooltip/object/566786) and [566779](https://nether.wowhead.com/forever/tooltip/object/566779) | The skill Demonsage and Heavy Thorium Vein need, in `Data/NodeSkills.lua` | Read 27 November 2026 | Game data |
+| Wowhead's Forever pages for objects [562111](https://www.wowhead.com/forever/object=562111), [656160](https://www.wowhead.com/forever/object=656160), [657454](https://www.wowhead.com/forever/object=657454), [656161](https://www.wowhead.com/forever/object=656161) and [657455](https://www.wowhead.com/forever/object=657455) | Where Poor Copper Vein, Wilted Peacebloom and Stunted Silverleaf spawn, in `Data/SmallNodes.lua` | Read 28 November 2026 | Game data |
 
-The map pins in `media/Nodes/`, one per herb and ore, are original art made for this addon with AI assistance
+The map pins in `media/Nodes/`, one per herb and ore and one for each smaller starting-zone node, are original art made for this addon with AI assistance
 (Google's `gemini-nano-banana-2.1`) and no Blizzard art. `tools/export_nodes.py` exports them from the originals in
 `tools/pin_source/`.
 
