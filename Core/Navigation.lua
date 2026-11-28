@@ -21,6 +21,8 @@ ns.Navigation = Nav
 
 Nav.OWNER = "GatheringGuideForever"
 Nav.MAX_STOPS = 64
+-- The most stops a closed loop takes.
+Nav.MAX_LOOP_STOPS = 2048
 
 ---@return table?
 local function API()
@@ -55,6 +57,11 @@ Nav.MARKERS_OPTION = "stopMarkers"
 Nav.TOUR_OPTION = "tourLine"
 Nav.TOUR_MINOR = 12
 
+-- The option that takes the stops as one closed loop: the world map draws all of it, and the journey carries on from
+-- the last stop to the first. Shortest Path Forever publishes it from API minor 14.
+Nav.LOOP_OPTION = "loop"
+Nav.LOOP_MINOR = 14
+
 -- Where that is missing, the option that draws the legs past the next stop at full strength, so a tour's dotted line
 -- stays readable. Published from API minor 10. Either option makes an older Shortest Path Forever refuse the call.
 Nav.FADE_OPTION = "fadeLaterLegs"
@@ -62,8 +69,9 @@ Nav.FADE_MINOR = 10
 
 ---@param api table
 ---@param bare boolean?
+---@param loop boolean?
 ---@return table<string, string|boolean>
-local function Options(api, bare)
+local function Options(api, bare, loop)
 	---@type table<string, string|boolean>
 	local options = { policy = "walking" }
 	local minor = type(api.minor) == "number" and api.minor or 0
@@ -75,29 +83,41 @@ local function Options(api, bare)
 	if bare then
 		options[Nav.MARKERS_OPTION] = false
 	end
+	if loop and minor >= Nav.LOOP_MINOR then
+		options[Nav.LOOP_OPTION] = true
+	end
 	return options
 end
 
+-- Whether a tour can hand over its whole loop at once.
+---@return boolean
+function Nav.CanLoop()
+	local api = API()
+	return api ~= nil and type(api.minor) == "number" and api.minor >= Nav.LOOP_MINOR
+end
+
 -- Starts a walking journey through the stops. Returns whether it started, and why not. With bare set, Shortest Path
--- Forever draws the route line without its numbered markers when this version can; an older one keeps them.
+-- Forever draws the route line without its numbered markers when this version can; an older one keeps them. With loop
+-- set (and Nav.CanLoop true) the stops are one closed loop, up to Nav.MAX_LOOP_STOPS.
 ---@param stops {map: number, x: number, y: number, title: string?, tooltip: string?}[]
 ---@param bare boolean?
+---@param loop boolean?
 ---@return boolean ok
 ---@return string? reason
-function Nav.Route(stops, bare)
+function Nav.Route(stops, bare, loop)
 	local api = API()
 	if not Nav.Available() or not api then
 		return false, "unavailable"
 	end
-	if #stops == 0 or #stops > Nav.MAX_STOPS then
+	if #stops == 0 or #stops > (loop and Nav.CanLoop() and Nav.MAX_LOOP_STOPS or Nav.MAX_STOPS) then
 		return false, "invalid"
 	end
 	local ok, result
 	if bare then
-		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api, true))
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api, true, loop))
 	end
 	if not (ok and result == true) then
-		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api))
+		ok, result = pcall(api.NavigateRoute, Nav.OWNER, stops, Options(api, false, loop))
 	end
 	if not ok or result ~= true then
 		return false, ok and "refused" or "error"

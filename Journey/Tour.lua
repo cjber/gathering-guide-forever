@@ -6,8 +6,9 @@ end
 local L = ns.L
 
 -- A tour: the loop through a zone's nodes, started at the one nearest the player and handed to Shortest Path Forever in
--- batches of up to 64 stops. The tour advances when the journey reports a stop arrived and sends the next batch after
--- the last stop of this one, so the loop repeats until the player stops it.
+-- one closed loop where Shortest Path Forever takes it (API minor 14), else in batches of up to 64 stops. The tour
+-- advances when the journey reports a stop arrived; a batch is followed by the next after its last stop, so the loop
+-- repeats until the player stops it.
 -- Batching follows Shortest Path Forever's Journey/FarmingCursor.lua (GPL-3.0).
 local Tour = {}
 ns.Tour = Tour
@@ -86,7 +87,8 @@ end
 -- Sends the next batch to the journey. Returns whether it started.
 local function Submit()
 	local tour, db = assert(state), assert(ns.DB)
-	local batch = Batch(tour.pos, ns.Navigation.MAX_STOPS)
+	local loop = ns.Navigation.CanLoop()
+	local batch = Batch(tour.pos, loop and ns.Navigation.MAX_LOOP_STOPS or ns.Navigation.MAX_STOPS)
 	if #batch == 0 then
 		tour.status = "nothing"
 		return false
@@ -96,12 +98,12 @@ local function Submit()
 		local node = tour.order[index]
 		stops[i] = { map = node.uiMapID, x = node.x, y = node.y, title = node.name }
 	end
-	local ok, why = ns.Navigation.Route(stops, db.onlyGatheringPins)
+	local ok, why = ns.Navigation.Route(stops, db.onlyGatheringPins, loop)
 	if not ok then
 		tour.status = ns.Navigation.State().blocked and "blocked" or why or "refused"
 		return false
 	end
-	tour.batch = batch
+	tour.batch, tour.loop = batch, loop
 	tour.pos = batch[1]
 	tour.status = "running"
 	return true
@@ -147,13 +149,14 @@ local function Observed(phase, index)
 	end
 	state.visited = state.visited + 1
 	local after = orderIndex % #state.order + 1
-	local upcoming = state.batch[index + 1] or Batch(after, 1)[1] or after
+	-- A loop handed over whole carries on from its last stop to its first.
+	local upcoming = state.batch[index + 1] or (state.loop and state.batch[1]) or Batch(after, 1)[1] or after
 	-- The loop's next stop sits no further on than this one only after the walk came round.
 	if upcoming <= orderIndex then
 		state.laps = state.laps + 1
 	end
 	state.pos = upcoming
-	if not Reorder(state.order[orderIndex]) and index < #state.batch then
+	if not Reorder(state.order[orderIndex]) and (index < #state.batch or state.loop) then
 		Notify()
 		return
 	end

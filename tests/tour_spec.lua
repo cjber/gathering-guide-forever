@@ -250,6 +250,19 @@ assert(#Tour.Progress().order == 3 and Tour.Progress().next == first, "a start t
 walked = nil
 Tour.Stop()
 
+-- Where Shortest Path Forever takes a loop whole, the tour sends it once and carries on round it.
+ShortestPathForever.API.minor = 14
+started, why = Tour.Start({ kind = "Mining", uiMapID = 1, name = "Whole", order = loop })
+assert(started, why)
+local whole = #routes
+assert(#routes[whole] == 6, "every node, as a loop")
+for i = 1, 6 do
+	observer("arrived", i, routes[whole][i])
+end
+assert(#routes == whole and Tour.Progress().laps == 1, "the loop is not sent again after a lap")
+assert(Tour.Progress().pos == 1, "and the next stop is its first")
+ShortestPathForever.API.minor = nil
+
 -- A blocked journey and a missing API refuse the start with a reason.
 ShortestPathForever.API.JourneyState = function()
 	return { blocked = "combat" }
