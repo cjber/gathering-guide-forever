@@ -4,8 +4,15 @@ local ns = H.Namespace()
 
 -- Every node the addon knows a skill for has its own picture, and the file it names is there.
 H.Load(ns, "Locales/enUS.lua", "Data/NodeSkills.lua")
-H.Load(ns, "Data/NodeArt.lua")
+H.Load(ns, "Data/NodeArt.lua", "Data/SmallNodes.lua")
+local names = {}
 for name in pairs(ns.NodeSkills) do
+	names[name] = true
+end
+for _, small in pairs(ns.SmallNodes) do
+	names[small.name] = true
+end
+for name in pairs(names) do
 	local path = ns.NodeArt[name]
 	assert(path, name .. " has no map pin art")
 	local file = path:match("^Interface\\AddOns\\GatheringGuideForever\\(.+)$")
@@ -242,6 +249,15 @@ assert(Tip(grouped[1]) == "Copper Vein; Node 3 of 3", Tip(grouped[1]))
 assert(Tip(Draw(nil)[1]) == "Peacebloom; Copper Vein x2", "a preview counts each name and has no steps")
 reach = 0
 assert(#Draw(nil) == 3, "nodes apart keep their own pins")
+
+-- A smaller node wears its own art and is named as the game names it, apart from the ordinary node.
+crowd[3].variant = "Poor Copper Vein"
+assert(Art(Draw(nil)[3], "Poor Copper Vein"), "the smaller vein's art")
+reach = 1
+assert(Tip(Draw(nil)[1]) == "Peacebloom; Copper Vein; Poor Copper Vein", "the two sizes are listed apart")
+ns.DB.iconStyle, reach = "blizzard", 0
+assert(Art(Draw(nil)[3], "Poor Copper Vein"), "with no item icon the smaller vein still wears its own art")
+ns.DB.iconStyle = "gathering"
 
 -- A zone on another map, or the setting off, draws nothing.
 acquired, tour = {}, nil

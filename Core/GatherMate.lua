@@ -61,6 +61,42 @@ local function Known(nodeID)
 	end
 end
 
+-- How far, in map percent, a record may sit from a small spawn and still be it. The spawns are given to 0.1 and
+-- GatherMate2 records where the player stood to gather; no ordinary node of the same kind spawns within 0.8 of a small
+-- one in the zones Data/SmallNodes.lua lists.
+local REACH = 0.3
+---@type table<number[], table<number, boolean>> by a zone's spawns, whether the record at a coord is on one
+local matched = {}
+
+-- The smaller node's name where a record is one (Data/SmallNodes.lua), else nil. GatherMate2 records both sizes under
+-- one node ID, and asks again for every minimap pin as the player moves, so each record's answer is kept.
+---@param uiMapID number
+---@param nodeID number
+---@param coord number
+---@param x number 0 to 1
+---@param y number 0 to 1
+---@return string?
+function GM.Variant(uiMapID, nodeID, coord, x, y)
+	local small = ns.SmallNodes[nodeID]
+	local spawns = small and small[uiMapID]
+	if not spawns then
+		return nil
+	end
+	local cache = matched[spawns] or {}
+	matched[spawns] = cache
+	if cache[coord] == nil then
+		cache[coord] = false
+		for i = 1, #spawns, 2 do
+			local dx, dy = x * 100 - spawns[i], y * 100 - spawns[i + 1]
+			if dx * dx + dy * dy <= REACH * REACH then
+				cache[coord] = true
+				break
+			end
+		end
+	end
+	return cache[coord] and small.name or nil
+end
+
 -- The zones holding at least one node of this kind that this addon knows.
 ---@param kind string
 ---@return number[]
@@ -116,6 +152,7 @@ function GM.Nodes(uiMapID, kind)
 				x = x,
 				y = y,
 				name = name,
+				variant = GM.Variant(uiMapID, nodeID, coord, x, y),
 				line = skill[1],
 				required = skill[2],
 			}
@@ -164,16 +201,18 @@ local FADE = 0.5
 local BEVEL = 0.08
 
 -- The picture a herb or ore node wears in an icon style, and how much of each side of it to cut off: this addon's, the
--- game's icon of the item the node gives, or GatherMate2's own. Nil where the style has none for the node.
+-- game's icon of the item the node gives, or GatherMate2's own. Only this addon's tells a smaller node apart. Nil where
+-- the style has none for the node.
 ---@param style GGIconStyle
 ---@param name string
 ---@param kind string
 ---@param nodeID number
+---@param variant string? the smaller node's name
 ---@return number|string? texture
 ---@return number inset
-function GM.Icon(style, name, kind, nodeID)
+function GM.Icon(style, name, kind, nodeID, variant)
 	if style == "gathering" then
-		return ns.NodeArt[name], 0
+		return ns.NodeArt[variant or name], 0
 	elseif style == "blizzard" then
 		return ns.Planner.ItemIcon(name), BEVEL
 	end
@@ -193,6 +232,12 @@ local function Fade(_, pin)
 		pin.texture:SetVertexColor(1, 1, 1, FADE)
 		if applied == "blizzard" then
 			pin.texture:SetTexCoord(BEVEL, 1 - BEVEL, BEVEL, 1 - BEVEL)
+		else
+			-- The swap above is per node ID: a smaller node's picture goes on its own pins.
+			local variant = GM.Variant(pin.zone, pin.nodeID, pin.coords, pin.x, pin.y)
+			if variant then
+				pin.texture:SetTexture(ns.NodeArt[variant])
+			end
 		end
 	end
 end

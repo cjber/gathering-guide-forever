@@ -1,5 +1,6 @@
--- The picture each gathering node wears on the world map: [node name] = texture path, for every name in
--- Data/NodeSkills.lua. Nodes of one mineral share one. The art is exported by tools/export_nodes.py.
+-- The picture each gathering node wears on a map pin: [node name] = texture path, for every name in
+-- Data/NodeSkills.lua and Data/SmallNodes.lua. Nodes of one mineral share one. The art is exported by
+-- tools/export_nodes.py.
 ---@type string, GGNamespace
 local _, ns = ...
 
@@ -45,6 +46,7 @@ ns.NodeArt = {
 	["Ooze Covered Truesilver Deposit"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Truesilver.tga",
 	["Peacebloom"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Peacebloom.tga",
 	["Plaguebloom"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Plaguebloom.tga",
+	["Poor Copper Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\PoorCopper.tga",
 	["Purple Lotus"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\PurpleLotus.tga",
 	["Rich Thorium Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Thorium.tga",
 	["Silver Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Silver.tga",
@@ -52,9 +54,11 @@ ns.NodeArt = {
 	["Small Obsidian Chunk"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Obsidian.tga",
 	["Small Thorium Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Thorium.tga",
 	["Stranglekelp"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Stranglekelp.tga",
+	["Stunted Silverleaf"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\StuntedSilverleaf.tga",
 	["Sungrass"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Sungrass.tga",
 	["Tin Vein"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Tin.tga",
 	["Truesilver Deposit"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Truesilver.tga",
 	["Wild Steelbloom"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\WildSteelbloom.tga",
+	["Wilted Peacebloom"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\WiltedPeacebloom.tga",
 	["Wintersbite"] = "Interface\\AddOns\\GatheringGuideForever\\media\\Nodes\\Wintersbite.tga",
 }

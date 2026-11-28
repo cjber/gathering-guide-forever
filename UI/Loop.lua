@@ -40,10 +40,10 @@ function NodePin:OnAcquired(node, state, steps, total)
 	self:SetSize(size, size)
 	self:SetAlpha(ALPHA[state])
 	local first = node.members[1]
-	local texture, inset = ns.GatherMate.Icon(ns.DB.iconStyle, first.name, first.kind, first.nodeID)
+	local texture, inset = ns.GatherMate.Icon(ns.DB.iconStyle, first.name, first.kind, first.nodeID, first.variant)
 	-- A node the style has no picture for wears this addon's.
 	if not texture then
-		texture, inset = ns.NodeArt[first.name], 0
+		texture, inset = ns.NodeArt[first.variant or first.name], 0
 	end
 	self.Texture:SetTexture(texture)
 	self.Texture:SetTexCoord(inset, 1 - inset, inset, 1 - inset)
@@ -55,11 +55,12 @@ end
 function NodePin:OnMouseEnter()
 	local names, count, first = {}, {}, {}
 	for _, node in ipairs(self.members) do
-		if not count[node.name] then
-			names[#names + 1] = node.name
-			count[node.name], first[node.name] = 0, self.steps and self.steps[node]
+		local name = node.variant or node.name
+		if not count[name] then
+			names[#names + 1] = name
+			count[name], first[name] = 0, self.steps and self.steps[node]
 		end
-		count[node.name] = count[node.name] + 1
+		count[name] = count[name] + 1
 	end
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	for i, name in ipairs(names) do

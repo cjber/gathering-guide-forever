@@ -156,7 +156,7 @@ end
 -- herb and ore the icon style has a picture for wears it, everything else keeps GatherMate2's, and GatherMate2's own
 -- style puts every original back.
 do
-	H.Load(ns, "Data/NodeNames.lua", "Data/NodeArt.lua")
+	H.Load(ns, "Data/NodeNames.lua", "Data/NodeArt.lua", "Data/SmallNodes.lua")
 	ns.Kinds = { { kind = "Mining" }, { kind = "Herb Gathering" } }
 	local mining = { [201] = "gm-copper", [225] = "gm-obsidian", [99999] = "gm-unknown" }
 	local fishing = { [101] = "gm-pool" }
@@ -224,6 +224,28 @@ do
 	assert(sent == 1, "swapping redraws once")
 	local alpha, left = Alpha("Mining", 201)
 	assert(alpha < 1 and left == nil, "our minimap pin is see-through and shown whole")
+	local poor = ns.SmallNodes[201][1426]
+	local function Picture(x, y)
+		local path
+		display:addMiniPin({
+			nodeType = "Mining",
+			nodeID = 201,
+			zone = 1426,
+			coords = x * 1000 + y,
+			x = x / 100,
+			y = y / 100,
+			texture = {
+				SetVertexColor = function() end,
+				SetTexCoord = function() end,
+				SetTexture = function(_, value)
+					path = value
+				end,
+			},
+		})
+		return path
+	end
+	assert(Picture(poor[1], poor[2]) == ns.NodeArt["Poor Copper Vein"], "a smaller vein's minimap pin wears its art")
+	assert(Picture(1, 1) == nil, "a vein elsewhere keeps the ordinary art")
 	assert(Alpha("Mining", 201, true) == 1, "the hollow ring keeps GatherMate2's colour")
 	assert(Alpha("Mining", 99999) == 1 and Alpha("Fishing", 101) == 1, "other pins are left alone")
 	Settings.SetIconStyle("blizzard")
@@ -232,6 +254,7 @@ do
 	assert(textures["Herb Gathering"][401] == "gm-peacebloom", "no picture of the last style stays")
 	alpha, left = Alpha("Mining", 201)
 	assert(alpha < 1 and left > 0, "the item icon is see-through and loses its border")
+	assert(Picture(poor[1], poor[2]) == nil, "the item icon is the same for both sizes")
 	assert(sent == 2, "and redrawn")
 	Settings.SetIconStyle("gathermate")
 	alpha, left = Alpha("Mining", 201)
@@ -242,7 +265,7 @@ end
 
 -- GatherMate2 names its nodes in the client's language, so a node is identified by its ID: a German client's zone has
 -- the same nodes as an English one's.
-H.Load(ns, "Data/NodeNames.lua", "Data/NodeSkills.lua", "Data/Items.lua")
+H.Load(ns, "Data/NodeNames.lua", "Data/NodeSkills.lua", "Data/Items.lua", "Data/SmallNodes.lua")
 GatherMate2 = {
 	GetNodesForZone = function()
 		return next, { [1] = 201, [2] = 99999 }
@@ -257,6 +280,33 @@ GatherMate2 = {
 local nodes = ns.GatherMate.Nodes(1426, "Mining")
 assert(#nodes == 1, "a node with no known skill is left out, the rest stay")
 assert(nodes[1].name == "Copper Vein" and nodes[1].required == 1 and nodes[1].line == 186, nodes[1].name)
+
+-- A record where a smaller node spawns is that node, under the ordinary name everything else counts it by; within
+-- reach of the spawn only, and never in a zone that has none.
+ns.SmallNodes[201][9999] = { 40, 60 }
+local coord = 100 -- each record its own, as in GatherMate2: an answer is kept by coord
+local function At(uiMapID, x, y)
+	coord = coord + 1
+	local at = coord
+	GatherMate2.GetNodesForZone = function()
+		return next, { [at] = 201 }
+	end
+	GatherMate2.DecodeLoc = function()
+		return x / 100, y / 100
+	end
+	return ns.GatherMate.Nodes(uiMapID, "Mining")[1]
+end
+local small = At(9999, 40.2, 60)
+assert(small.variant == "Poor Copper Vein" and small.name == "Copper Vein", "a record by a small spawn")
+assert(At(9999, 40.2, 60.25).variant == nil, "a record out of reach is ordinary")
+assert(At(1415, 40, 60).variant == nil, "a zone with no smaller veins")
+ns.SmallNodes[201][9999] = nil
+for nodeID, entry in pairs(ns.SmallNodes) do
+	assert(ns.NodeNames[nodeID], entry.name .. " is under a node ID the addon knows")
+	for uiMapID, spawns in pairs(entry) do
+		assert(uiMapID == "name" or (#spawns > 0 and #spawns % 2 == 0), entry.name .. " has x, y pairs")
+	end
+end
 
 -- Every node can be placed on a skill, and everything the farming list holds has an item ID and findable nodes.
 local findable = {}
