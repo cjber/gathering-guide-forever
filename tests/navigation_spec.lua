@@ -136,11 +136,11 @@ ShortestPathForever.API.minor = 14
 assert(Nav.CanLoop())
 assert(Nav.Route(stops, false, true) == true and calls[2].options.loop == true, "a loop of stops")
 assert(Nav.Route(stops) == true and calls[3].options.loop == nil, "a plain route stays one")
-local many = {}
+local overlong = {}
 for i = 1, Nav.MAX_STOPS + 1 do
-	many[i] = stops[1]
+	overlong[i] = stops[1]
 end
-assert(Nav.Route(many) == false and Nav.Route(many, false, true) == true, "a loop takes more stops than a route")
+assert(Nav.Route(overlong) == false and Nav.Route(overlong, false, true) == true, "a loop takes more stops than a route")
 ShortestPathForever.API.minor = nil
 
 print("navigation_spec ok")
