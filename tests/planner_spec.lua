@@ -282,7 +282,17 @@ do
 	}
 
 	missing = 12
-	local list = ns.Planner.ListZones(4)
+	local steps = {}
+	local estimate = ns.Navigation.Estimate
+	ns.Navigation.Estimate = function()
+		steps[#steps + 1] = "estimate"
+		return estimate()
+	end
+	local list = ns.Planner.ListZones(4, function()
+		steps[#steps + 1] = "yield"
+	end)
+	assert(table.concat(steps, " ") == "estimate yield estimate yield", "a chance to end the frame after each estimate")
+	ns.Navigation.Estimate = estimate
 	assert(list[1].uiMapID == 1426, "12 missing: the near zone finishes first")
 	local whole = 26215 * 12 / 183 / 7 + 12 * 5 + 217
 	assert(math.abs(list[1].whole - whole) < 1e-6 and #list[1].lacking == 0, "the whole list, trip included")
